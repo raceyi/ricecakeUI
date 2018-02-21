@@ -1,0 +1,14 @@
+<ion-menu [content]="content">
+    <ion-content>
+        
+         <button ion-button icon-left full menuClose [hidden]="checkPageHidden('AdministratorPage')" (click)="openAdministratorPage()">
+          관리자페이지
+         </button>
+         <button ion-button icon-left full menuClose [hidden]="checkPageHidden('GarbagePage')" (click)="openGarbagePage()">
+           휴지통
+         </button>
+    
+    </ion-content>
+</ion-menu>
+
+<ion-nav #content [root]="rootPage"></ion-nav>
