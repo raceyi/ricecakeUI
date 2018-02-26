@@ -15,28 +15,50 @@
   </ion-navbar>
 </ion-header>
 
-
+<!-- main Slide -->
 <ion-content padding>
-  <ion-list>
-    <ion-item>
-      <ion-label>Password</ion-label>
-      <ion-input type="password"></ion-input>
-    </ion-item>
-  </ion-list>
+  <ion-slides #slider class="content-slider" direction="vertical">
+    
+    <!-- Login Page -->
+    <ion-slide class="swiper-no-swiping">
+      <ion-slides #innerSlider class="content-slider">
 
-  <!-- Digital Keyboard plugin -->
+        <ion-slide class="swiper-no-swiping">
+          <div style="padding: 0% 100px 400px 100px">
+            <ion-item>
+              <ion-label floating>Password</ion-label>
+              <ion-input type="password"></ion-input>
+            </ion-item>
+            <button ion-button block round (click)="login()" color="primary" class="login-button">LOGIN</button>
+            <button ion-button clear (click)="slideNext()" color="primary" class="forgot-button">CHANGE / FORGOT PASSWORD</button>
+          </div>
+        </ion-slide>
 
-  <!--                         -->
+        <!-- inner slide (Change / Forgot Password) -->
+        <ion-slide class="swiper-no-swiping">
+          <div style="padding: 0% 100px 400px 100px">
+            <ion-item>
+              <ion-label floating>E-Mail</ion-label>
+              <ion-input type="email"></ion-input>
+            </ion-item>
+            <button ion-button block round (click)="resetPassword()" color="primary" class="login-button">RESET PASSWORD</button>
+            <button ion-button clear (click)="slidePrevious()" color="primary" class="goback-button"><ion-icon name="arrow-back"></ion-icon>GO BACK</button>
+          </div>
+        </ion-slide>
 
-  <ion-grid>
-    <ion-row>
-      <ion-col offset-5>
-          <ion-label><div style="text-align:center"><h1>Sales Management</h1></div></ion-label>
-      </ion-col>
-      <ion-col offset-2>
-          <div text-right><button ion-button round>X</button></div>        
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-  
+      </ion-slides>
+    </ion-slide>
+
+    <ion-slide class="zoom swiper-no-swiping">
+      <button ion-button clear (click)="goToHome()" class="slide-button">
+        <ion-icon name="arrow-back"></ion-icon>
+      </button>
+      <div style="padding: 32px">
+        <ion-item>
+          <ion-label floating>Sales Management</ion-label>
+        </ion-item>
+      </div>
+    </ion-slide>
+
+  </ion-slides>
 </ion-content>

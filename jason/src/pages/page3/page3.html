@@ -10,14 +10,37 @@
     <button ion-button menuToggle>
       <ion-icon name="ios-menu"></ion-icon>
     </button>
-    <ion-title>Trash</ion-title>
+    <ion-grid><ion-row>
+      <ion-col col-10>
+        <ion-title><div style="text-align:center"><h1>Trash</h1></div></ion-title>
+      </ion-col>
+      <ion-col col-2>
+        <div text-right><button ion-button clear full outline color="danger" (click)="doConfirmRemoveTrash">DELETE&nbsp;</button></div>
+      </ion-col>
+    </ion-row></ion-grid>
   </ion-navbar>
 
 </ion-header>
 
 
-<ion-content padding class="action-sheets-page3-page">
-  <button ion-button block (click)="openMenu()">
-    Show Action Sheet
-  </button>
+<ion-content padding>
+  <div class="trashItems">
+    <ion-row class="trashItem">
+      <ion-col col-2 class="text">
+        <p class="curTime">get Current Time</p>
+        <button ion-button clear color="danger" class="modifyItem">modify</button>
+      </ion-col>
+      <ion-col col-6 class="text">
+        <p class="recipientAddr">recipient address</p>
+        <ion-card class="memo">
+          Here is memo area.
+        </ion-card>
+      </ion-col>
+      <ion-col col-4 class="text">
+        <p class="buyerInfo">buyer info</p>
+        <p class="paymenInfo">payment info</p>
+        <p class="creditInfo">credit info</p>
+      </ion-col>
+    </ion-row>
+  </div>
 </ion-content>

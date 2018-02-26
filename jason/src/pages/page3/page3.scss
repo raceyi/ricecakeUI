@@ -1,18 +1,61 @@
-.action-sheets-page3-page 
-{
-    .ion-md-share {
-        color: #ED4248;
-    }
-    .ion-md-arrow-dropright-circle {
-        color: #508AE4;
-    }
+.removeTrashAll{
+    font-size: 15px;
+    font-weight: 700;
+}
 
-    .ion-md-heart-outline {
-        color: #31D55F;
-    }
 
-    .action-sheet-cancel ion-icon,
-    .action-sheet-destructive ion-icon{
-        color: #757575;
+.trashItems{
+    .trashItem{
+        background: linear-gradient(45deg, rgb(255, 255, 255), #5e6d8c);
+        padding: 10px;
+        border-radius: 10px;
+        margin: 10px auto;
+
+
+        .text{
+           .curTime{
+            color: rgb(0, 0, 0);
+            font-size: 15px;
+            font-weight: 700;
+           }
+           
+           .modifyItem{
+            color: rgb(255, 0, 0);
+            font-size: 15px;
+            font-weight: 700;
+           }
+           
+           .recipientAddr{
+            color: rgb(0, 0, 0);
+            font-size: 15px;
+            font-weight: 700;
+           }
+           
+           .memo{
+            background: inherit;
+            
+            color: rgb(150, 150, 0);
+            font-size: 15px;
+            font-weight: 700;
+           }
+
+           .buyerInfo{
+            color: rgb(0, 0, 0);
+            font-size: 15px;
+            font-weight: 700;
+           }
+
+           .paymenInfo{
+            color: rgb(0, 0, 0);
+            font-size: 15px;
+            font-weight: 700;
+           }
+
+           .creditInfo{
+            color: rgb(0, 0, 0);
+            font-size: 15px;
+            font-weight: 700;
+           }
+        }
     }
-}   
+}
