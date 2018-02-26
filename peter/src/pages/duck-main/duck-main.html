@@ -1,75 +1,156 @@
-<!--
-  Generated template for the DuckMainPage page.
-
-  See http://ionicframework.com/docs/components/#navigation for more info on
-  Ionic pages and navigation.
--->
 <ion-header>
 
-  <ion-navbar>
-    
+  <ion-navbar no-border-bottom>
     <div text-left>
-      <button ion-button menuToggle>
-          <ion-icon name="ios-menu"></ion-icon>관리자페이지
+      <button ion-button (click)="openAdministratorPage()">
+          <ion-icon name="ios-power"></ion-icon>
       </button>
 
-      <button ion-button menuToggle>
-        <ion-icon name="ios-menu"></ion-icon>휴지통
+      <button ion-button (click)="openGarbagePage()">
+        <ion-icon name="ios-trash"></ion-icon>
       </button>
+      
+      <div text-right>
+       <button ion-button text-right><ion-icon name="ios-print"></ion-icon></button> 
+      </div> 
     </div>
-
-    <div text-center>
-        <button ion-button color="blue" (click)= "orderOpen()" > 주문</button>
-        <button ion-button color="blue" (click)= "deliveryOpen()" > 배달</button>
-        <button ion-button color="blue" (click)= "productionOpen()" > 생산</button>
-            
-    </div>
-    
-    <div text-right>
-    <button ion-button> 인쇄</button>    
-    </div>
-    <p text-center> 검색:___</p>
-    <p text-center>2018년 2월 7일 수요일 </p>
   </ion-navbar>
-</ion-header>
+ 
+<!--print버튼이 관리자,휴지통 으로 이동하는 버튼과 동일선상에 놓여져 있게 만들것-->
+<!--print버튼을 누르면 당일의 '주문목록'을 프린터로 출력할 수 있습니다.-->
 
+  <ion-toolbar no-border-top>
+      <ion-segment [(ngModel)]="duck">
+        <ion-segment-button value="order">
+          주문
+         </ion-segment-button>
+        <ion-segment-button value="delivery">
+          배달
+         </ion-segment-button>
+        <ion-segment-button value="production">
+          생산
+         </ion-segment-button>
+       </ion-segment>
+   </ion-toolbar>
+  <!--주문,배달,생산 3개 표시등이 관리자,휴지통 으로 이동하는 버튼과 동일선상에 놓여 있게 만들것-->
+
+  <p text-center> 검색:___</p>
+   <!--검색상자내용추가할것-->
+
+</ion-header>
 
 <ion-content padding>
 
-  <div *ngIf="order"> 
-
+  <div text-center>
+    <button ion-button><</button>
+    <!--'<'버튼을 누르면 전일 날짜의 '주문목록'을 볼 수 있다.-->
+    <ion-datetime displayFormat="YYYY년 MM월 DD일 HH시mm분" pickerFormat="YYYY MM DD HH" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+    <button ion0button>></button>
+    <!--'>'버튼을 누르면 내일 날짜의 '주문목록'을 볼 수 있다.-->
+    
+    <!--각각의 segment마다 날짜를 가져와서 가져오는 자료가 다르다, 태그를 header에 넣고 각 segment마다 끌고오는 자료가 
+      달라지는 게 맞는건지 아니면 각 segment마다 각가에 달력을 입력해 줘야 되는지 고민이다.-->
   </div>
-
-  <div *ngIf="delivery"> 
-
-  </div>
-
-  <div *ngIf="production"> 
-
-  </div>
-
- 
- 
- <button ion-button>신규주문</button>
-   
- <ion-card>
-
-    <ion-card-content>
-     주문목록1
-    </ion-card-content>
   
-  </ion-card>
-  <ion-card>
+  <div [ngSwitch]="duck">
+      <ion-list *ngSwitchCase="'order'">
+          
+        <button ion-button >신규주문</button>
+               
+        <!--<button ion-button (click)="주문목록추가"></button>>신규주문 버튼을 누르면 '주문목록n'이 생긴다.</button>--> 
+        
+          <ion-card>
+      
+            <ion-card-content>
+             1.(주문목록'n';일일 기준 1번부터 숫자가 올라갈것)2.'00시 00분';24:00으로 맞추자.(주문시간) 3.서울특별시 마포구 매봉산로 31;주소API불러오는거 알아보기(주소) 6. 김영희;아이패드 키보드 입력이 편할것 같음(주문자) 
+             4.장동건님 앞 010-6367-6367(상품 받는 사람 연락처)                                                                                               7. 010-0000-0000;다이얼을 불러오는 게 편할 것 같음(주문자 연락처) 
+             5.떡국떡 2kg;떡종류,수량 kg고정시키고 숫자만  떡종류는 sorting된 순서로 스크롤 해서 선택할 수 있게 하고 '00'단위로 변경할 수 있게 해보자.(주문내용)                                
+                떡의 종류와 수량은 계속 추가가 가능하다.                                                                                                                                             8.000,000,000원(주문자 결제내역)
+                                                                                   11.저희 상품을 이용해주셔서 감사합니다.(비고란);키보드로 내용을 입력할 수 있음.9.현금,카드,계좌이체,무통장입금(주문자 결제방법)
+                                                                                                                                                           10.즉납,선금/잔금,후불,입금대기,입금완료;입금대기와 입금완료는 거래내역 api 이용(주문자 결제상태) 
+              1)수정버튼 (누르면 내용을 '주문목록1'을 수정할 수 있다.)                                  
+              2)저장버튼 (누르면 내용이 '주문목록1'을 저장한다.) 이때, 저장 버튼은 신규주문과 같은 선상에 생기게 하도록 한다.
+              3)'주문목록1'을 슬라이드할 때, '지우기'버튼이 세로로 생긴다. (힌트:일반적으로 글을 쓸 때 사람들은 가로줄 왼쪽부터 오른쪽으로 글을 쓴다.)           
+            </ion-card-content>
+            <ion-card-content>
+              1.(주문목록'n';일일 기준 1번부터 숫자가 올라갈것)2.'00시 00분';24:00으로 맞추자.(주문시간) 3.서울특별시 마포구 매봉산로 31;주소API불러오는거 알아보기(주소) 6. 김영희;아이패드 키보드 입력이 편할것 같음(주문자) 
+              4.장동건님 앞 010-6367-6367(상품 받는 사람 연락처)                                                                                               7. 010-0000-0000;다이얼을 불러오는 게 편할 것 같음(주문자 연락처) 
+              5.떡국떡 2kg;떡종류,수량 kg고정시키고 숫자만  떡종류는 sorting된 순서로 스크롤 해서 선택할 수 있게 하고 '00'단위로 변경할 수 있게 해보자.(주문내용)                                
+                 떡의 종류와 수량은 계속 추가가 가능하다.                                                                                                                                             8.000,000,000원(주문자 결제내역)
+                                                                                    11.저희 상품을 이용해주셔서 감사합니다.(비고란);키보드로 내용을 입력할 수 있음.9.현금,카드,계좌이체,무통장입금(주문자 결제방법)
+                                                                                                                                                            10.즉납,선금/잔금,후불,입금대기,입금완료;입금대기와 입금완료는 거래내역 api 이용(주문자 결제상태) 
+               1)수정버튼 (누르면 내용을 '주문목록1'을 수정할 수 있다.)                                  
+               2)저장버튼 (누르면 내용이 '주문목록1'을 저장한다.) 이때, 저장 버튼은 신규주문과 같은 선상에 생기게 하도록 한다.
+               3)'주문목록1'을 슬라이드할 때, '지우기'버튼이 세로로 생긴다. (힌트:일반적으로 글을 쓸 때 사람들은 가로줄 왼쪽부터 오른쪽으로 글을 쓴다.)           
+             </ion-card-content>
+             <ion-card-content>
+              1.(주문목록'n';일일 기준 1번부터 숫자가 올라갈것)2.'00시 00분';24:00으로 맞추자.(주문시간) 3.서울특별시 마포구 매봉산로 31;주소API불러오는거 알아보기(주소) 6. 김영희;아이패드 키보드 입력이 편할것 같음(주문자) 
+              4.장동건님 앞 010-6367-6367(상품 받는 사람 연락처)                                                                                               7. 010-0000-0000;다이얼을 불러오는 게 편할 것 같음(주문자 연락처) 
+              5.떡국떡 2kg;떡종류,수량 kg고정시키고 숫자만  떡종류는 sorting된 순서로 스크롤 해서 선택할 수 있게 하고 '00'단위로 변경할 수 있게 해보자.(주문내용)                                
+                 떡의 종류와 수량은 계속 추가가 가능하다.                                                                                                                                             8.000,000,000원(주문자 결제내역)
+                                                                                    11.저희 상품을 이용해주셔서 감사합니다.(비고란);키보드로 내용을 입력할 수 있음.9.현금,카드,계좌이체,무통장입금(주문자 결제방법)
+                                                                                                                                                            10.즉납,선금/잔금,후불,입금대기,입금완료;입금대기와 입금완료는 거래내역 api 이용(주문자 결제상태) 
+               1)수정버튼 (누르면 내용을 '주문목록1'을 수정할 수 있다.)                                  
+               2)저장버튼 (누르면 내용이 '주문목록1'을 저장한다.) 이때, 저장 버튼은 신규주문과 같은 선상에 생기게 하도록 한다.
+               3)'주문목록1'을 슬라이드할 때, '지우기'버튼이 세로로 생긴다. (힌트:일반적으로 글을 쓸 때 사람들은 가로줄 왼쪽부터 오른쪽으로 글을 쓴다.)           
+             </ion-card-content>
+          <!--카드에 나오는 구성성분을 정리해 보았다. 1.~10.까지는 카드의 내용, 1)~3)까지는 카드안에서 생성되는 버튼이다.
+              오른쪽으로 슬라이드 하는 거 ionicframework/Docs Component Slide 참조할 것-->
 
-      <ion-card-content>
-       주문목록2
-      </ion-card-content>
-  </ion-card>
+          </ion-card>
+          
+          
+      </ion-list>
   
-  <ion-card>
-      <ion-card-content>
-       주문목록3
-      </ion-card-content>
-  </ion-card>
+        <ion-list *ngSwitchCase="'delivery'">
+          
+            <div text-right><button ion-button (click)="openBaedalPage()">배달인원관리</button></div>
+      
+            <ion-card>
+             <ion-card-content>
+               <p>1.OOO X</p>
+               
+               생성된 m개의 주문목록들이 보인다.
+               이때, m개의 주문목록들은 무한스크롤 할 수 있다.
+               m개의 주문목록 중에서 주문목록n을 OOO 배달자에게 지정해준다. 
+               
+             </ion-card-content> 
+                  
+             <ion-card-content>
+               생성된 m개의 주문목록들이 보인다.
+               주문목록들을 스크롤을 할 수 있다.
 
+             </ion-card-content>
+        
+             
+            </ion-card>
+
+            
+  
+        </ion-list>
+    
+        <ion-list *ngSwitchCase="'production'">
+            <ion-grid>
+                <ion-row>
+                  <ion-col>백설기;떡종류</ion-col>
+                  <ion-col>30개 7시 30분;수량 시간</ion-col>
+                </ion-row>
+               
+                               
+                생산목록이 나온다. 떡종류는 추가할 수 있다.
+                종류를 추가하면 수량과 시간을 지정할 수 있다.
+                모두 스크롤해서 찾을 수 있다.
+    
+              </ion-grid>
+         </ion-list>
+    </div>
+  
 </ion-content>
+     
+          
+              
+               
+              
+          
+
+     

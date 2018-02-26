@@ -1,31 +1,51 @@
-<!--
-  Generated template for the AdministratorPage page.
-
-  See http://ionicframework.com/docs/components/#navigation for more info on
-  Ionic pages and navigation.
--->
-
+<!--이 페이지에 들어오기 전에 비밀번호를 입력하고 들어와야 합니다.-->
+<!--비밀번호를 입력하면 관리자 페이지 안에 내용을 볼 수 있게 합니다.-->
 <ion-header>
 
-  <ion-navbar>
-    <button ion-button>
-      <ion-icon name="ios-menu"></ion-icon>
-    </button>
-    <div text-center>
-     <ion-title>관리자 페이지</ion-title>
-    </div>
+ <ion-navbar>
+   <div text-left>
+     <button ion-button (click)="openDuckMainPage()">
+         <ion-icon name="ios-power"></ion-icon>
+     </button>
+
+     <button ion-button (click)="openGarbagePage()">
+       <ion-icon name="ios-trash"></ion-icon>
+     </button>
+   </div>
   </ion-navbar>
+     
+  <div text-center>
+    관리자 페이지
+  </div>
+
+  <!--<p text-center>0000년00월00일~0000년00월00일</p>-->
+  <ion-toolbar>
+    <div text-center>
+      <button ion-button><</button><!--'<'버튼을 누르면 전날 '매출합계'를 볼 수 있습니다.-->
+      <ion-datetime displayFormat=" < YYYY년 MM월 DD일 HH시mm분 > " pickerFormat="YYYY MM DD HH" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+      <button ion-button>></button><!--'>'버튼을 누르면 내일 '매출합계'를 볼 수 있습니다.-->
+    </div>
+  </ion-toolbar>
+  <!--입력받은 날짜의 '매출내용'을 가져옵니다-->
 
 </ion-header>
 
-
-
-
 <ion-content padding>
-  <ion-list>
-   <ion-item>
-      <ion-label color="primary" fixed>비밀번호</ion-label>
-      <ion-input type="password"placeholder="비밀번호"></ion-input>
-   </ion-item>
-  </ion-list>
+  <!--'content'안의 내용에는 '매출합계'를 넣어 주었다. 그날의 '현금매출'과'카드매출'을 보여주고 '현금매출'과 '카드매출을'
+    합친 '합계'를 포시해 주었습니다.-->
+  <ion-grid text-center>
+      <ion-row>
+        <ion-col>현금:</ion-col>
+        <ion-col>000,000,000원</ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>카드</ion-col>
+        <ion-col>000,000,000원</ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>합계</ion-col>
+        <ion-col>000,000,000원</ion-col>
+      </ion-row>
+  </ion-grid>
+  
 </ion-content>

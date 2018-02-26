@@ -1,0 +1,38 @@
+<ion-header>
+
+  <ion-navbar text-center>
+    
+     <ion-title>배달인원관리</ion-title>
+    
+     <div text-right>
+      <button ion-button (click)="openDuckMainPage()"><ion-icon name="ios-close"></ion-icon></button>
+     </div>
+
+  </ion-navbar>
+
+</ion-header>
+
+<!--배달인원을 추가하거나 삭제하는 기능이 있는 페이지입니다. 이 페이지에서 지정한 명단이 '메인 페이지에서'반영될
+    될 수 있도록 합니다.'-->
+    
+<ion-content padding>
+  <p>1.장동건 </p>
+  <button ion-button><ion-icon name="ios-close"></ion-icon></button>
+
+  <!--'close'버튼을 누르게 되면 정말 배달자명단에서 지우시겠습니까? 라고 더 물어보고 지우도록 'popup'창이 나타난다.-->
+
+  <p>2.원빈</p>
+  <button ion-button><ion-icon name="ios-close"></ion-icon></button>
+  
+  <p>3.강동원</p>
+  <button ion-button><ion-icon name="ios-close"></ion-icon></button>
+
+  <div text-center>
+    <button ion-button>
+      <ion-icon name="ios-add"></ion-icon>
+    </button>
+  </div>
+
+  <!-- 1.'+'버튼을 누르면, 자동적으로 'N'번이 쓰이고 키보드가 나와서 배달자 이름을 쓸 수 있게한다.
+  -->
+</ion-content>
