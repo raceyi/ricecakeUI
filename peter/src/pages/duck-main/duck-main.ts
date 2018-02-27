@@ -95,6 +95,7 @@ export class DuckMainPage {
     
     let order={deliveryDue: this.DeliveryDate ,address: "address" ,recipientName: "recipientName",recipientTel: "recipientTel",buyerName:"buyerName", buyerTel:"buyerTel" ,
      menus:[{menuName:"menuName", menuAmount:"menuAmount",menuUnit:"menuUnit" }], amount:"amount" , paymentType: "paymentType", paymentStatus:"paymentStatus" , memo:"memo", delivery:"delivery"};
-    this.orderList.push(order);
+    //delivery를 집어넣어도 되는지
+     this.orderList.push(order);
   }
 }
