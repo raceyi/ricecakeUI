@@ -55,14 +55,14 @@
 
         <ion-row>
           <ion-col col-1 text-center>
-          <button ion-button> < </button>
+          <button ion-button><ion-icon name="arrow-back"></ion-icon></button>
           <!--'<'버튼을 누르면 전일 날짜의 '주문목록'을 볼 수 있다.-->
           </ion-col>
           <ion-col col-10 text-center>
            <ion-datetime displayFormat="YYYY년 MM월 DD일 HH시mm분" pickerFormat="YYYY MM DD HH" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
           </ion-col>
           <ion-col col-1 text-center>
-            <button ion-button> > </button>
+            <button ion-button><ion-icon name="arrow-forward"></ion-icon></button>
           <!--'>'버튼을 누르면 내일 날짜의 '주문목록'을 볼 수 있다.-->
          </ion-col>  
         </ion-row>
@@ -74,7 +74,7 @@
 
 
          <ion-col text-right>
-          <button ion-button> 저장 </button>
+          <button ion-button (click)="save()"> 저장 </button>
          </ion-col> 
         </ion-row>
 
@@ -88,22 +88,24 @@
                   
       
              <ion-list>
-               <ion-item-sliding #item>
+               <ion-item-sliding>
                   <ion-item>
                       <ion-list>
                         <ion-grid>
                           <ion-row>
                             <ion-col col-2>
                                 <ion-item>
-                              <ion-datetime displayFormat="HH시mm분" pickerFormat="HH mm" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+                              <ion-datetime displayFormat="HH시mm분" pickerFormat="HH mm" [(ngModel)]="DeliveryDate" (click)="checkInput()"></ion-datetime>
                                </ion-item>
                             </ion-col>
                             <ion-col col-6>
-                              <ion-item>주소</ion-item>
+                              <ion-item>
+                                <ion-input type="text" placeholder="주소입력" [(ngModel)]="address"></ion-input>
+                              </ion-item>
                             </ion-col>
                             <ion-col col-4>
                               <ion-item>
-                                 <ion-input type="text" placeholder="주문자"></ion-input>
+                                 <ion-input type="text" placeholder="주문자"[(ngModel)]="buyerName"></ion-input>
                               </ion-item>
                             </ion-col>
                           </ion-row>
@@ -113,17 +115,17 @@
                             </ion-col>
                             <ion-col col-2>
                               <ion-item>
-                              <ion-input type="text" placeholder="받는분"></ion-input>
+                              <ion-input type="text" placeholder="받는분" [(ngModel)]="recipientName"></ion-input>
                             </ion-item>
                             </ion-col>
                             <ion-col col-4>
                               <ion-item>
-                              <ion-input type="tel" placeholder="연락처"></ion-input>
+                              <ion-input type="tel" placeholder="받는분연락처"[(ngModel)]="recipientTel"></ion-input>
                             </ion-item>
                             </ion-col>
                             <ion-col col-4>
                               <ion-item>
-                              <ion-input type="tel" placeholder="주문자연락처"></ion-input>
+                              <ion-input type="tel" placeholder="주문자연락처" [(ngModel)]="buyerTel"></ion-input>
                             </ion-item>
                             </ion-col>
                           </ion-row>
@@ -131,19 +133,44 @@
                             <ion-col col-2>
                               &nbsp;
                             </ion-col>
-                            <ion-col col-2>
+                            <ion-col col-4>
                               <ion-item>
-                                <ion-input type="text" placeholder="떡종류"></ion-input>
+                                <ion-select [(ngModel)]="menuName">
+                                  <ion-option value="ducktype1">떡국떡</ion-option>
+                                  <ion-option value="ducktype2">바람떡</ion-option>
+                                  <ion-option value="ducktype3">찹살가루</ion-option>
+                                  <ion-option value="ducktype4">쑥인절미</ion-option>
+                                  <ion-option value="ducktype5">흰인절미</ion-option>
+                                  <ion-option value="ducktype6">인절미</ion-option>
+                                  <ion-option value="ducktype7">이티떡</ion-option>
+                                  <ion-option value="ducktype8">송편</ion-option>
+                                  <ion-option value="ducktype9">꿀떡</ion-option>
+                                  <ion-option value="ducktype10">콩송편</ion-option>
+                                  <ion-option value="ducktype11">가래떡</ion-option>
+                                  <ion-option value="ducktype12">현미쑥가래떡</ion-option>
+                                  <ion-option value="ducktype13">현미가래떡</ion-option>
+                                  <ion-option value="ducktype14">쑥가래떡</ion-option>
+                                  <ion-option value="ducktype15">미니설기</ion-option>
+                                  <ion-option value="ducktype16">녹두호박떡</ion-option>
+                                  <ion-option value="ducktype17">단호박소담</ion-option>
+                                  <ion-option value="ducktype18">백설기</ion-option>
+                                </ion-select>
                               </ion-item>
                             </ion-col>
-                            <ion-col col-2>
+                            <ion-col col-1>
                               <ion-item>
-                                <ion-input type="text" placeholder="수량"></ion-input>
+                                <ion-input type="text" placeholder="수량" [(ngModel)]="menuAmount"></ion-input>
                               </ion-item>
                             </ion-col>
-                            <ion-col col-2>
+                            <ion-col col-1>
                               <ion-item>
-                                <ion-input type="text" placeholder="단위"></ion-input>
+                                <ion-select [(ngModel)]="menuUnit">
+                                  <ion-option value="duckunit1">kg</ion-option>
+                                  <ion-option value="duckunit2">말</ion-option>
+                                  <ion-option value="duckunit3">되</ion-option>
+                                  <ion-option value="duckunit4">접시</ion-option>
+                                  <ion-option value="duckunit5">개</ion-option>
+                                </ion-select>
                               </ion-item>
                             </ion-col>
                             <ion-col col-4>
@@ -174,24 +201,27 @@
                              </ion-col>
                             <ion-col col-6>
                               <ion-item>
-                              <ion-textarea class="bigolan" type="text" placeholder="비고란"></ion-textarea>
+                              <ion-textarea class="bigolan" type="text" placeholder="비고란" [(ngModel)]="memo"></ion-textarea>
                               </ion-item>
                             </ion-col>
                             <ion-col col-4>
                               <ion-grid>
                                 <ion-row>
                                   <ion-item>
-                                   <ion-input type="text" placeholder="가격"></ion-input>
+                                   <ion-input type="text" placeholder="가격" [(ngModel)]="amount"></ion-input>
                                   </ion-item>
                                 </ion-row>
                                 <ion-row>
                                   <ion-item>
-                                    <ion-input placeholder="결제수단"></ion-input>
+                                    <ion-select [(ngModel)]="paymentType">
+                                      <ion-option value="paymentway1">현금</ion-option>
+                                      <ion-option value="paymentway2">카드</ion-option>
+                                    </ion-select>
                                   </ion-item>
                                 </ion-row>
                                 <ion-row>
                                   <ion-item>
-                                    <ion-input placeholder="결제여부"></ion-input>
+                                    <ion-input type="text" placeholder="결제여부" [(ngModel)]="paymentStatus"></ion-input>>
                                   </ion-item>
                                 </ion-row>
                               </ion-grid>
@@ -206,7 +236,15 @@
                   -->
                
                <ion-item-options slide="right">
-                  <button ion-button (click)="erase">지우기</button>
+                  
+                  <button ion-button (click)="clarify" color="primary">
+                      수정
+                  </button> 
+                 
+                  <button ion-button (click)="erase" color="secondary">
+                    지우기
+                  </button>
+                  
                </ion-item-options>
 
                </ion-item-sliding>
@@ -222,14 +260,14 @@
           
             <ion-row>
                 <ion-col col-1 text-center>
-                <button ion-button> < </button>
+                <button ion-button><ion-icon name="arrow-back"></ion-icon> </button>
                 <!--'<'버튼을 누르면 전일 날짜의 '주문목록'을 볼 수 있다.-->
                 </ion-col>
                 <ion-col col-10 text-center>
                  <ion-datetime displayFormat="YYYY년 MM월 DD일 HH시mm분" pickerFormat="YYYY MM DD HH" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
                 </ion-col>
                 <ion-col col-1 text-center>
-                  <button ion-button> > </button>
+                  <button ion-button> <ion-icon name="arrow-forward"></ion-icon> </button>
                 <!--'>'버튼을 누르면 내일 날짜의 '주문목록'을 볼 수 있다.-->
                </ion-col>  
               </ion-row>
@@ -282,17 +320,19 @@
               <ion-list>
                   <ion-grid>
                     <ion-row>
-                      <ion-col col-2>
+                      <ion-col col-3>
                           <ion-item>
-                        <ion-datetime displayFormat="HH시mm분" pickerFormat="HH mm" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+                        <ion-datetime displayFormat="HH시mm분" pickerFormat="HH mm" [(ngModel)]="DeliveryDate" (click)="checkInput()"></ion-datetime>
                          </ion-item>
                       </ion-col>
                       <ion-col col-6>
-                        <ion-item>주소</ion-item>
+                        <ion-item>
+                          <ion-input type="text" placeholder="주소" [(ngModel)]="address"></ion-input>
+                        </ion-item>
                       </ion-col>
                       <ion-col col-4>
                         <ion-item>
-                           <ion-input type="text" placeholder="주문자"></ion-input>
+                           <ion-input type="text" placeholder="주문자" [(ngModel)]="buyerName"></ion-input>
                         </ion-item>
                       </ion-col>
                     </ion-row>
@@ -302,17 +342,17 @@
                       </ion-col>
                       <ion-col col-2>
                         <ion-item>
-                        <ion-input type="text" placeholder="받는분"></ion-input>
+                        <ion-input type="text" placeholder="받는분" [(ngModel)]="recipientName"></ion-input>
                       </ion-item>
                       </ion-col>
                       <ion-col col-4>
                         <ion-item>
-                        <ion-input type="tel" placeholder="연락처"></ion-input>
+                        <ion-input type="tel" placeholder="연락처"[(ngModel)]="recipientTel"></ion-input>
                       </ion-item>
                       </ion-col>
                       <ion-col col-4>
                         <ion-item>
-                        <ion-input type="tel" placeholder="주문자연락처"></ion-input>
+                        <ion-input type="tel" placeholder="주문자연락처"[(ngModel)]="buyerTel"></ion-input>
                       </ion-item>
                       </ion-col>
                     </ion-row>
@@ -322,17 +362,42 @@
                       </ion-col>
                       <ion-col col-2>
                         <ion-item>
-                          <ion-input type="text" placeholder="떡종류"></ion-input>
+                          <ion-select [(ngModel)]="menuName">
+                            <ion-option value="ducktype1">떡국떡</ion-option>
+                            <ion-option value="ducktype2">바람떡</ion-option>
+                            <ion-option value="ducktype3">찹살가루</ion-option>
+                            <ion-option value="ducktype4">쑥인절미</ion-option>
+                            <ion-option value="ducktype5">흰인절미</ion-option>
+                            <ion-option value="ducktype6">인절미</ion-option>
+                            <ion-option value="ducktype7">이티떡</ion-option>
+                            <ion-option value="ducktype8">송편</ion-option>
+                            <ion-option value="ducktype9">꿀떡</ion-option>
+                            <ion-option value="ducktype10">콩송편</ion-option>
+                            <ion-option value="ducktype11">가래떡</ion-option>
+                            <ion-option value="ducktype12">현미쑥가래떡</ion-option>
+                            <ion-option value="ducktype13">현미가래떡</ion-option>
+                            <ion-option value="ducktype14">쑥가래떡</ion-option>
+                            <ion-option value="ducktype15">미니설기</ion-option>
+                            <ion-option value="ducktype16">녹두호박떡</ion-option>
+                            <ion-option value="ducktype17">단호박소담</ion-option>
+                            <ion-option value="ducktype18">백설기</ion-option>
+                          </ion-select>
                         </ion-item>
                       </ion-col>
                       <ion-col col-2>
                         <ion-item>
-                          <ion-input type="text" placeholder="수량"></ion-input>
+                          <ion-input type="text" placeholder="수량" [(ngModel)]="menuAmount"></ion-input>
                         </ion-item>
                       </ion-col>
                       <ion-col col-2>
                         <ion-item>
-                          <ion-input type="text" placeholder="단위"></ion-input>
+                          <ion-select [(ngModel)]="menuUnit">
+                            <ion-option value="duckunit1">kg</ion-option>
+                            <ion-option value="duckunit2">말</ion-option>
+                            <ion-option value="duckunit3">되</ion-option>
+                            <ion-option value="duckunit4">접시</ion-option>
+                            <ion-option value="duckunit5">개</ion-option>
+                          </ion-select>
                         </ion-item>
                       </ion-col>
                       <ion-col col-4>
@@ -350,7 +415,7 @@
                            </ion-row>
                            <ion-row>
                              <ion-item>
-                               <ion-select [(ngModel)]="delivery">
+                               <ion-select [(ngModel)]="deliveryman">
                                  <ion-option value="deliveryman1">1.장동건</ion-option>
                                  <ion-option value="deliveryman2">2.원빈</ion-option>
                                  <ion-option value="deliveryman3">3.마동석</ion-option>
@@ -362,32 +427,33 @@
                              &nbsp;
                            </ion-row>
                            <ion-row>
-                             <ion-item>
-                              <button ion-button (click)="modify">수정</button>
-                             </ion-item>
+                             &nbsp;
                             </ion-row>
                           </ion-grid>
                        </ion-col>
                       <ion-col col-6>
                         <ion-item>
-                        <ion-textarea class="bigolan" type="text" placeholder="비고란"></ion-textarea>
+                        <ion-textarea class="bigolan" type="text" placeholder="비고란"[(ngModel)]="memo"></ion-textarea>
                         </ion-item>
                       </ion-col>
                       <ion-col col-4>
                         <ion-grid>
                           <ion-row>
                             <ion-item>
-                             <ion-input type="text" placeholder="가격"></ion-input>
+                             <ion-input type="text" placeholder="가격"[(ngModel)]="amount"></ion-input>
                             </ion-item>
                           </ion-row>
                           <ion-row>
                             <ion-item>
-                              <ion-input placeholder="결제수단"></ion-input>
+                              <ion-select [(ngModel)]="paymentType">
+                                <ion-option value="cash">현금</ion-option>
+                                <ion-option value="card">카드</ion-option>
+                              </ion-select>
                             </ion-item>
                           </ion-row>
                           <ion-row>
                             <ion-item>
-                              <ion-input placeholder="결제여부"></ion-input>
+                              <ion-input placeholder="결제여부" [(ngModel)]="paymentStatus"></ion-input>
                             </ion-item>
                           </ion-row>
                         </ion-grid>
@@ -417,35 +483,138 @@
         <ion-list *ngSwitchCase="'production'">
             <ion-grid>
                 <ion-row>
-                  <ion-col col-2>
+                  <ion-col col-1>
                     <ion-item>
                       백설기
                     </ion-item>
                   </ion-col>
-                  <ion-col col-8>
+                  <ion-col col-1>
                     <ion-item>
                       30개
                     </ion-item>
                     
                   </ion-col>
+                  <ion-col col-2>
+                    <ion-item>
+                      <ion-datetime displayFormat="(HH시mm분)" pickerFormat="HH mm" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+                    </ion-item>
+                  </ion-col>
                 </ion-row>
                 <ion-row>
-                    <ion-col col-2>
+                    <ion-col col-1>
                       <ion-item>
                         시루떡
                       </ion-item>
                     </ion-col>
-                    <ion-col col-2>
+                    <ion-col col-1>
                         <ion-item>
-                          2kg
+                         멥쌀 2kg
                         </ion-item>
                       </ion-col>
-                    <ion-col col-8>
+                    <ion-col col-2>
                       <ion-item>
-                        멥쌀 2kg
+                        <ion-datetime displayFormat="(HH시mm분)" pickerFormat="HH mm" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col col-1>
+                        <ion-item>
+                          0.5말
+                        </ion-item>
+                      </ion-col>
+                    <ion-col col-2>
+                      <ion-item>
+                        <ion-datetime displayFormat="(HH시mm분)" pickerFormat="HH mm" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                  <ion-row>
+                    <ion-col col-1>
+                      <ion-item>
+                        제사편
+                      </ion-item>
+                    </ion-col>
+                    <ion-col col-1>
+                      <ion-item>
+                        3kg
                       </ion-item>
                       
-  
+                    </ion-col>
+                    <ion-col col-2>
+                      <ion-item>
+                        <ion-datetime displayFormat="(HH시mm분)" pickerFormat="HH mm" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                  <ion-row>
+                    <ion-col col-1>
+                      <ion-item>
+                        가래떡
+                      </ion-item>
+                    </ion-col>
+                    <ion-col col-1>
+                      <ion-item>
+                        4kg
+                      </ion-item>
+                      
+                    </ion-col>
+                    <ion-col col-2>
+                      <ion-item>
+                        <ion-datetime displayFormat="(HH시mm분)" pickerFormat="HH mm" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                  <ion-row>
+                    <ion-col col-1>
+                      <ion-item>
+                        절편
+                      </ion-item>
+                    </ion-col>
+                    <ion-col col-1>
+                      <ion-item>
+                        3kg
+                      </ion-item>
+                      
+                    </ion-col>
+                    <ion-col col-2>
+                      <ion-item>
+                        <ion-datetime displayFormat="(HH시mm분)" pickerFormat="HH mm" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                  <ion-row>
+                    <ion-col col-1>
+                      <ion-item>
+                        꿀떡
+                      </ion-item>
+                    </ion-col>
+                    <ion-col col-1>
+                      <ion-item>
+                        8kg
+                      </ion-item>
+                      
+                    </ion-col>
+                    <ion-col col-2>
+                      <ion-item>
+                        <ion-datetime displayFormat="(HH시mm분)" pickerFormat="HH mm" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                  <ion-row>
+                    <ion-col col-1>
+                      <ion-item>
+                        수수
+                      </ion-item>
+                    </ion-col>
+                    <ion-col col-1>
+                      <ion-item>
+                        1되
+                      </ion-item>
+                      
+                    </ion-col>
+                    <ion-col col-2>
+                      <ion-item>
+                        <ion-datetime displayFormat="(HH시mm분)" pickerFormat="HH mm" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+                      </ion-item>
                     </ion-col>
                   </ion-row>
 

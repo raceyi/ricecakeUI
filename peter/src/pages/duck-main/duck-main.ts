@@ -25,7 +25,10 @@ export class DuckMainPage {
   isAndroid:boolean=false;
 
   myDate:string;
+  DeliveryDate:string;
   
+  orderList=[];
+
   constructor(platform: Platform, private app: App,public navCtrl: NavController, public navParams: NavParams) {
    this.isAndroid = platform.is('android');
   
@@ -41,6 +44,7 @@ export class DuckMainPage {
    
    //var dString=d.toISOString(); //UTC time
    this.myDate=dString;
+   this.DeliveryDate=dString;
   }
   
   /*initializeItems(){
@@ -87,4 +91,10 @@ export class DuckMainPage {
     console.log("month"+date.getMonth()+"date:"+date.getDate()+"hour"+date.getHours());
   }    
     
+  save(){
+    
+    let order={deliveryDue: this.DeliveryDate ,address: "address" ,recipientName: "recipientName",recipientTel: "recipientTel",buyerName:"buyerName", buyerTel:"buyerTel" ,
+     menus:[{menuName:"menuName", menuAmount:"menuAmount",menuUnit:"menuUnit" }], amount:"amount" , paymentType: "paymentType", paymentStatus:"paymentStatus" , memo:"memo", delivery:"delivery"};
+    this.orderList.push(order);
+  }
 }
