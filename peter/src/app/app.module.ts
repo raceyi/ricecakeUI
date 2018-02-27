@@ -21,7 +21,7 @@ import {BaedalPageModule} from '../pages/baedal/baedal.module';
     DuckMainPageModule,
     AdministratorPageModule,
 
-    IonicModule.forRoot(MyApp),
+    IonicModule.forRoot(MyApp, {mode: 'ios'}),
     
     GarbagePageModule,
     BaedalPageModule

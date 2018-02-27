@@ -3,7 +3,7 @@
 <ion-header>
 
  <ion-navbar>
-   <div text-left>
+   <ion-buttons start>
      <button ion-button (click)="openDuckMainPage()">
          <ion-icon name="ios-power"></ion-icon>
      </button>
@@ -11,20 +11,29 @@
      <button ion-button (click)="openGarbagePage()">
        <ion-icon name="ios-trash"></ion-icon>
      </button>
-   </div>
+    </ion-buttons>
   </ion-navbar>
      
-  <div text-center>
-    관리자 페이지
-  </div>
+  <ion-toolbar text-center>
+    <h3>관리자 페이지</h3>
+ 
 
   <!--<p text-center>0000년00월00일~0000년00월00일</p>-->
-  <ion-toolbar>
-    <div text-center>
-      <button ion-button><</button><!--'<'버튼을 누르면 전날 '매출합계'를 볼 수 있습니다.-->
-      <ion-datetime displayFormat=" < YYYY년 MM월 DD일 HH시mm분 > " pickerFormat="YYYY MM DD HH" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
-      <button ion-button>></button><!--'>'버튼을 누르면 내일 '매출합계'를 볼 수 있습니다.-->
-    </div>
+    <ion-grid>
+      <ion-row>
+          <ion-col col-1 text-center>
+          <button ion-button> < </button>
+          <!--'<'버튼을 누르면 전일 날짜의 '주문목록'을 볼 수 있다.-->
+          </ion-col>
+          <ion-col col-10 text-center>
+           <ion-datetime displayFormat="YYYY년 MM월 DD일 HH시mm분" pickerFormat="YYYY MM DD HH" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+          </ion-col>
+          <ion-col col-1 text-center>
+            <button ion-button> > </button>
+          <!--'>'버튼을 누르면 내일 날짜의 '주문목록'을 볼 수 있다.-->
+         </ion-col>  
+        </ion-row>
+    </ion-grid>    
   </ion-toolbar>
   <!--입력받은 날짜의 '매출내용'을 가져옵니다-->
 
