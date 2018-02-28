@@ -40,7 +40,8 @@ export class DuckMainPage {
   deliveryman:string;
   paymentType:string;
 
-  orderList=[{}];
+  orderList=[];
+  menus=[];
 
   constructor(platform: Platform, private app: App,public navCtrl: NavController, public navParams: NavParams) {
    this.isAndroid = platform.is('android');
@@ -102,14 +103,26 @@ export class DuckMainPage {
     console.log(this.myDate);
     var date=new Date(this.myDate);
     console.log("month"+date.getMonth()+"date:"+date.getDate()+"hour"+date.getHours());
-  }    
+  }
+  checkInput1(){
+    console.log(this.myDate);
+    var date=new Date(this.myDate);
+    console.log("month"+date.getMonth()+"date:"+date.getDate()+"hour"+date.getHours());
+  }        
     
   save(){
     
     let order={deliveryDue: this.DeliveryDate ,address: this.address ,recipientName: this.recipientName ,recipientTel: this.recipientTel, buyerName: this.buyerName, buyerTel: this.buyerTel ,
-     menus:[{menuName: this.menuName, menuAmount: this.menuAmount, menuUnit: this.menuUnit }], amount: this.amount , paymentType: this.paymentType, paymentStatus: this.paymentStatus , memo: this.memo, deliveryman: this.deliveryman};
-    //deliveryman를 집어넣어도 되는지
+     menus: this.menus , amount: this.amount , paymentType: this.paymentType, paymentStatus: this.paymentStatus , memo: this.memo, deliveryman: this.deliveryman};
+    
      this.orderList.push(order);
-     console.log(JSON.stringify(this.orderList))
+     console.log(JSON.stringify(this.orderList)) 
+     this.menus=[];
   }
+
+  savemenu(){
+    let menu={menuName:this.menuName, menuAmount: this.menuAmount, menuUnit: this.menuUnit}
+    this.menus.push(menu);
+  }
+  
 }
