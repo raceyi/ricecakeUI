@@ -9,24 +9,10 @@
   <ion-grid>
     <ion-row>
       <ion-col col-3>
-        1.장동건 
+        <ion-input type="text" placeholder="배달자를 입력해주세요" [(ngModel)]="deliveryman"></ion-input> 
       </ion-col>
       <ion-col col-3>
-        <button ion-button><ion-icon name="ios-close" (click)="deleteconfirm()"></ion-icon></button>
-      </ion-col>
-      <ion-col col-3>
-       &nbsp;
-      </ion-col>
-      <ion-col col-3>
-       &nbsp;
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col col-3>
-        2.원빈
-      </ion-col>
-      <ion-col col-3>
-        <button ion-button><ion-icon name="ios-close" (click)="deleteconfirm()"></ion-icon></button>
+        &nbsp;
       </ion-col>
       <ion-col col-3>
        &nbsp;
@@ -35,26 +21,14 @@
        &nbsp;
       </ion-col>
     </ion-row>
+  </ion-grid>
+  <ion-grid *ngFor="let deliverymanadd of appDataProvider.deliverymanList; let i=index;">
     <ion-row>
       <ion-col col-3>
-       3.강동원
+        {{i+1}}:{{deliverymanadd.deliveryman}} 
       </ion-col>
       <ion-col col-3>
-        <button ion-button><ion-icon name="ios-close" (click)="deleteconfirm()"></ion-icon></button>
-      </ion-col>
-      <ion-col col-3>
-       &nbsp;
-      </ion-col>
-      <ion-col col-3>
-       &nbsp;
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col col-3>
-        4.장근석
-      </ion-col>
-      <ion-col col-3>
-        <button ion-button><ion-icon name="ios-close" (click)="deleteconfirm()"></ion-icon></button>
+        <button ion-button><ion-icon name="ios-close" (click)="deleteconfirm(i)"></ion-icon></button>
       </ion-col>
       <ion-col col-3>
        &nbsp;
@@ -65,7 +39,7 @@
     </ion-row>
   </ion-grid>
   <div text-center>
-    <button ion-button><ion-icon name="ios-add"></ion-icon></button>
+    <button ion-button (click)="savedeliverymanadd()"><ion-icon name="ios-add"></ion-icon></button>
   </div>
   <!-- 1.'+'버튼을 누르면, 자동적으로 'N'번이 쓰이고 키보드가 나와서 배달자 이름을 쓸 수 있게한다.-->
 </ion-content>

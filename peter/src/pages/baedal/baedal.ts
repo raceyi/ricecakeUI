@@ -2,6 +2,9 @@ import { Component } from '@angular/core';
 
 import { IonicPage, NavController, NavParams, AlertController } from 'ionic-angular';
 import { App } from 'ionic-angular';
+
+import {AppDataProvider} from '../../providers/app-data/app-data';
+
 import { DuckMainPage } from '../duck-main/duck-main';
 
 @IonicPage()
@@ -12,11 +15,15 @@ import { DuckMainPage } from '../duck-main/duck-main';
 })
 export class BaedalPage {
   currentPage='DuckMainPage';
+  
+  deliveryman:string;
 
-  constructor(public app:App, public navCtrl: NavController, public navParams: NavParams, public alertCtrl: AlertController){
+  deliverymanList=[];
+
+  constructor(public app:App, public navCtrl: NavController, public navParams: NavParams, public alertCtrl: AlertController, public appDataProvider:AppDataProvider){
   }
 
-  ionViewDidLoad() {
+  ionViewDidLoad(){
     console.log('ionViewDidLoad BaedalPage');
    }
   openDuckMainPage(){
@@ -25,7 +32,7 @@ export class BaedalPage {
     setTimeout(()=> { this.currentPage='DuckMainPage';}, 500);
   }
   
-  deleteconfirm(){
+  deleteconfirm(i){
     let confirm = this.alertCtrl.create({
       title: '배달자를 삭제하시겠습니까?',
       message: '배달자를 정말 삭제하시겠습니까?',
@@ -40,10 +47,16 @@ export class BaedalPage {
           text: '확인',
           handler: () => {
             console.log('Agree');
+            this.appDataProvider.deliverymanList.splice(i,1)
           }
         }
       ]
     });
     confirm.present();
-  }  
+  }
+  savedeliverymanadd(){
+    let deliverymanadd={deliveryman: this.deliveryman};
+    this.appDataProvider.deliverymanList.push(deliverymanadd);
+    console.log(JSON.stringify(this.deliverymanList));
+  }
 }

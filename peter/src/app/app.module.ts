@@ -12,6 +12,8 @@ import {AdministratorPageModule} from '../pages/administrator/administrator.modu
 import {GarbagePageModule} from '../pages/garbage/garbage.module';
 import {BaedalPageModule} from '../pages/baedal/baedal.module';
 
+import { AppDataProvider } from '../providers/app-data/app-data';
+
 @NgModule({
   declarations: [
     MyApp
@@ -33,7 +35,8 @@ import {BaedalPageModule} from '../pages/baedal/baedal.module';
   providers: [
     StatusBar,
     SplashScreen,
-    {provide: ErrorHandler, useClass: IonicErrorHandler}
+    {provide: ErrorHandler, useClass: IonicErrorHandler},
+    AppDataProvider
   ]
 })
 export class AppModule {}

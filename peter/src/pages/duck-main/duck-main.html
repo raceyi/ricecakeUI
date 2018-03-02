@@ -302,16 +302,17 @@
         <!--달력버튼-->  
 
         <ion-buttons end>
-          <button ion-button>배달인원저장</button>
           <button ion-button (click)="openBaedalPage()">배달인원관리</button>
         </ion-buttons>
 
-        <!--배달인원관리및 저장버튼--> 
+        <!--배달인원관리버튼--> 
 
         <ion-grid>
-         <ion-row><ion-col col-1><ion-item>1.</ion-item></ion-col><ion-col col-2><ion-item>장동건</ion-item></ion-col></ion-row>
-         <ion-row><ion-col col-1><ion-item>2.</ion-item></ion-col><ion-col col-2><ion-item>원빈</ion-item></ion-col></ion-row>
-         <ion-row><ion-col col-1><ion-item>3.</ion-item></ion-col><ion-col col-2><ion-item>김연우</ion-item></ion-col></ion-row>
+          <ion-row *ngFor="let deliverymans of appDataProvider.deliverymanList; let i=index;">
+            <ion-col col-3>
+              {{i+1}}:{{deliverymans.deliveryman}}
+            </ion-col>
+          </ion-row>
         </ion-grid>
 
         <!--배달인원목록-->
@@ -394,11 +395,9 @@
                              <ion-list>
                                <ion-row>
                                  <ion-item>
-                                   <ion-select [(ngModel)]="deliveryman">
-                                     <ion-option value="장동건">장동건</ion-option>
-                                     <ion-option value="원빈">원빈</ion-option>
-                                     <ion-option value="마동석">마동석</ion-option>
-                                   </ion-select>
+                                    <ion-select>
+                                     <ion-option *ngFor="let deliverymans of appDataProvider.deliverymanList; let i=index;" value ="{{deliverymans.deliveryman}}"> {{deliverymans.deliveryman}} </ion-option>
+                                    </ion-select>
                                   </ion-item>
                                </ion-row>
                               </ion-list>
