@@ -1,60 +1,47 @@
 <!--이 페이지에 들어오기 전에 비밀번호를 입력하고 들어와야 합니다.-->
 <!--비밀번호를 입력하면 관리자 페이지 안에 내용을 볼 수 있게 합니다.-->
 <ion-header>
-
  <ion-navbar>
-   <ion-buttons start>
-     <button ion-button (click)="openDuckMainPage()">
-         <ion-icon name="ios-power"></ion-icon>
-     </button>
-
-     <button ion-button (click)="openGarbagePage()">
-       <ion-icon name="ios-trash"></ion-icon>
-     </button>
+    <ion-buttons start>
+     <button ion-button (click)="openDuckMainPage()"><ion-icon name="ios-power"></ion-icon></button>
+     <button ion-button (click)="openGarbagePage()"><ion-icon name="ios-trash"></ion-icon></button>
     </ion-buttons>
-  </ion-navbar>
-     
-  <ion-toolbar text-center>
-    <h3>관리자 페이지</h3>
- 
-
-  <!--<p text-center>0000년00월00일~0000년00월00일</p>-->
-    <ion-grid>
-      <ion-row>
-          <ion-col col-1 text-center>
-          <button ion-button> < </button>
-          <!--'<'버튼을 누르면 전일 날짜의 '주문목록'을 볼 수 있다.-->
-          </ion-col>
-          <ion-col col-10 text-center>
-           <ion-datetime displayFormat="YYYY년 MM월 DD일 HH시mm분" pickerFormat="YYYY MM DD HH" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
-          </ion-col>
-          <ion-col col-1 text-center>
-            <button ion-button> > </button>
+ </ion-navbar>
+ <ion-toolbar text-center>
+   <h3>관리자 페이지</h3>
+   <!--<p text-center>0000년00월00일~0000년00월00일</p>-->
+   <ion-grid>
+     <ion-row>
+       <ion-col col-1 text-center>
+         <button ion-button><ion-icon name="arrow-back"></ion-icon></button>
+         <!--'<'버튼을 누르면 전일 날짜의 '주문목록'을 볼 수 있다.-->
+       </ion-col>
+       <ion-col col-10 text-center>
+         <ion-datetime displayFormat="YYYY년 MM월 DD일 HH시mm분" pickerFormat="YYYY MM DD HH" [(ngModel)]="myDate" (click)="checkInput()"></ion-datetime>
+       </ion-col>
+       <ion-col col-1 text-center>
+          <button ion-button><ion-icon name="arrow-forward"></ion-icon></button>
           <!--'>'버튼을 누르면 내일 날짜의 '주문목록'을 볼 수 있다.-->
-         </ion-col>  
-        </ion-row>
+       </ion-col>  
+      </ion-row>
     </ion-grid>    
   </ion-toolbar>
   <!--입력받은 날짜의 '매출내용'을 가져옵니다-->
-
 </ion-header>
-
-<ion-content padding>
-  <!--'content'안의 내용에는 '매출합계'를 넣어 주었다. 그날의 '현금매출'과'카드매출'을 보여주고 '현금매출'과 '카드매출을'
-    합친 '합계'를 포시해 주었습니다.-->
+<ion-content padding class="grid-basic-page">
+  <!--'content'안의 내용에는 '매출합계'를 넣어 주었다. 그날의 '현금매출'과'카드매출'을 보여주고 '현금매출'과 '카드매출을' 합친 '합계'를 포시해 주었습니다.-->
   <ion-grid text-center>
-      <ion-row>
-        <ion-col>현금:</ion-col>
-        <ion-col>000,000,000원</ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col>카드</ion-col>
-        <ion-col>000,000,000원</ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col>합계</ion-col>
-        <ion-col>000,000,000원</ion-col>
-      </ion-row>
+    <ion-row>
+      <ion-col col-3>현금:</ion-col>
+      <ion-col col-9>000,000,000원</ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col col-3>카드</ion-col>
+      <ion-col col-9>000,000,000원</ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col col-3>합계</ion-col>
+      <ion-col col-9>000,000,000원</ion-col>
+    </ion-row>
   </ion-grid>
-  
 </ion-content>

@@ -18,7 +18,6 @@
   </ion-toolbar>
   <!--주문,배달,생산 3개 표시등이 관리자,휴지통 으로 이동하는 버튼과 동일선상에 놓여 있게 만들것-->
 </ion-header>
-
 <ion-content padding>
   <div [ngSwitch]="duck">
     <ion-list *ngSwitchCase="'order'">
@@ -40,17 +39,17 @@
         <!--달력버튼-->
         <ion-row>
           <ion-col>
-            <button ion-button (click)="neworder"> 신규주문 </button> <!--(click)="neworder()"-->
+            <button ion-button (click)="neworder"> 신규주문 </button> 
           </ion-col>
           <ion-col text-right>
            <button ion-button (click)="save()"> 저장 </button>
           </ion-col> 
         </ion-row>
         <!--신규주문버튼,주석버튼-->
-       <ion-list>
-         <ion-item-sliding>
+        <ion-list>
           <ion-item>
             <ion-list>
+             <!--주문목록시작-->
              <ion-grid>
               <ion-row>
                <ion-col col-2>
@@ -69,6 +68,7 @@
                 </ion-item>
                </ion-col>
               </ion-row>
+              <!--다음 줄로 내려감-->
               <ion-row>
                 <ion-col col-2>
                   &nbsp;
@@ -90,10 +90,10 @@
                 </ion-col>
               </ion-row>
               <ion-row>
-                <ion-col col-1>
+                <ion-col col-2>
                  <button ion-button><ion-icon name="ios-add"(click)="savemenu()"></ion-icon></button>
                 </ion-col>
-                <ion-col col-4>
+                <ion-col col-3>
                   <ion-item>
                     <ion-select [(ngModel)]="menuName">
                       <ion-option value="떡국떡">떡국떡</ion-option>
@@ -133,7 +133,7 @@
                     </ion-select>
                   </ion-item>
                 </ion-col>
-                <ion-col col-2>
+                <ion-col col-4>
                   &nbsp;
                 </ion-col>
               </ion-row>
@@ -146,25 +146,9 @@
               </ion-row>
               <ion-row>
                 <ion-col col-2>
-                  <ion-grid>
                     <ion-row>
                       &nbsp;
                     </ion-row>
-                    <ion-row>
-                      &nbsp;
-                    </ion-row>
-                    <ion-row>
-                      &nbsp;
-                    </ion-row>
-                    <ion-row>
-                      &nbsp;
-                    </ion-row>
-                    <ion-row>
-                     <ion-item>
-                        <button ion-button (click)="modify">수정</button>
-                     </ion-item>
-                    </ion-row>
-                  </ion-grid>
                 </ion-col>
                 <ion-col col-6>
                   <ion-item>
@@ -197,38 +181,28 @@
              </ion-grid>
             </ion-list>
           </ion-item>
-                  <!--
-                  <button ion-button (click)="modify">수정</button>   
-                  -->
-            <ion-item-options slide="right">
-              <button ion-button (click)="clarify" color="primary">수정</button> 
-              <button ion-button (click)="erase" color="secondary">지우기</button>
-            </ion-item-options>
-         </ion-item-sliding>
-       </ion-list>
-      </ion-list>
-
-      <!--주문 탭을 눌렀을 때 정보를 입력하는 화면-->
-      
-        <ion-item *ngFor="let order of orderList; let i=index;">
-          <ion-list>
+        </ion-list>
+        <!--저장된 주문목록들-->
+      <ion-item *ngFor="let order of orderList; let i=index;">
+       <ion-list>
+          <ion-item-sliding>
             <ion-item>
               <ion-list>
                <ion-grid>
                 <ion-row>
                  <ion-col col-2>
                     <ion-item>
-                      <p> 주문번호{{i}}:{{order.deliveryDue}}</p>
+                      주문번호{{i}}:{{order.deliveryDue}}
                     </ion-item>
                  </ion-col>
                  <ion-col col-6>
                  <ion-item>
-                   <p>{{order.address}}</p>   
+                   {{order.address}}   
                  </ion-item>
                  </ion-col>
                    <ion-col col-4>
                     <ion-item>
-                        <p>{{order.buyerName}}</p>        
+                      {{order.buyerName}}        
                     </ion-item>
                    </ion-col>
                   </ion-row>
@@ -238,17 +212,17 @@
                     </ion-col>
                     <ion-col col-2>
                       <ion-item>
-                          <p>{{order.recipientName}} </p>
+                        {{order.recipientName}}
                       </ion-item>
                     </ion-col>
                     <ion-col col-4>
                       <ion-item>
-                          <p>{{order.recipientTel}}</p>
+                          {{order.recipientTel}}
                       </ion-item>
                     </ion-col>
                     <ion-col col-4>
                       <ion-item>
-                          <p>{{order.buyerTel}} </p>
+                        {{order.buyerTel}}
                       </ion-item>
                     </ion-col>
                   </ion-row>
@@ -258,17 +232,17 @@
                     </ion-col>
                     <ion-col col-4>
                       <ion-item>
-                          <p>{{menu.menuName}}</p>     
+                        {{menu.menuName}}    
                       </ion-item>
                     </ion-col>
                     <ion-col col-1>
                       <ion-item>
-                          <p>{{menu.menuAmount}} </p>
+                        {{menu.menuAmount}}
                       </ion-item>
                     </ion-col>
                     <ion-col col-4>
                       <ion-item>
-                          <p>{{menu.menuUnit}}</p>
+                        {{menu.menuUnit}}
                       </ion-item>
                     </ion-col>
                     <ion-col col-2>
@@ -276,61 +250,39 @@
                     </ion-col>
                   </ion-row>
                   <ion-row>
-                       <ion-col col-2>
-                         <ion-grid>
-                           <ion-row>
-                              &nbsp;
-                           </ion-row>
-                           <ion-row>
-                             &nbsp;
-                           </ion-row>
-                           <ion-row>
-                             <ion-list>
-                               <ion-row>
-                                 <ion-item>
-                                   &nbsp;
-                                  </ion-item>
-                               </ion-row>
-                              </ion-list>
-                            </ion-row>
-                            <ion-row>
-                              &nbsp;
-                            </ion-row>
-                            <ion-row>
-                               <ion-item>
-                                 &nbsp;
-                               </ion-item>
-                             </ion-row>
-                          </ion-grid>
-                        </ion-col>
-                          <ion-col col-5>
-                            <ion-item><p>{{order.memo}}</p></ion-item>
-                          </ion-col>
-                          <ion-col col-3>
-                            <ion-grid>
-                              <ion-row>
-                               <ion-item><p>{{order.amount}}</p></ion-item>
-                              </ion-row>
-                              <ion-row>
-                               <ion-item><p>{{order.paymentType}}</p></ion-item>
-                              </ion-row>
-                              <ion-row>
-                               <ion-item><p>{{order.paymentStatus}}</p></ion-item>
-                              </ion-row>
-                            </ion-grid>
-                          </ion-col>
+                    <ion-col col-2>
+                      <ion-row>
+                        &nbsp;
+                      </ion-row> 
+                    </ion-col>
+                    <ion-col col-5>
+                      <ion-item>{{order.memo}}</ion-item>
+                    </ion-col>
+                    <ion-col col-3>
+                     <ion-grid>
+                       <ion-row>
+                         <ion-item>{{order.amount}}</ion-item>
                        </ion-row>
-                      </ion-grid>
-                     </ion-list>
-                    </ion-item>
-                  </ion-list>
-                 </ion-item>
-
-
-
-                 <!--저장버튼을 눌러서 출력되는 화면-->
-
-      
+                       <ion-row>
+                         <ion-item>{{order.paymentType}}</ion-item>
+                       </ion-row>
+                       <ion-row>
+                         <ion-item>{{order.paymentStatus}}</ion-item>
+                       </ion-row>
+                     </ion-grid>
+                    </ion-col>
+                  </ion-row>
+               </ion-grid>
+              </ion-list>
+            </ion-item>
+            <ion-item-options slide="right">
+              <button ion-button (click)="clarify" color="primary">수정</button>
+              <button ion-button (click)="erase" color="secondary">지우기</button>
+            </ion-item-options>
+          </ion-item-sliding>  
+        </ion-list>
+      </ion-item>
+    </ion-list>
     <ion-list *ngSwitchCase="'delivery'">
 
         <ion-row>

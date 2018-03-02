@@ -1,60 +1,30 @@
 <ion-header>
-  
   <ion-navbar>
-    
     <ion-buttons start> 
-      <button ion-button (click)="openAdministratorPage()">
-        <ion-icon name="ios-power"></ion-icon>
-      </button>
-    
-      <button ion-button (click)="openDuckMainPage()">
-        <ion-icon name="ios-trash"></ion-icon>
-      </button>
-     </ion-buttons>
-
-       
-      
-      <!--휴지통 글자가 위에 두 버튼과 같은 라인에 위치해 있고 중간에 표시되게 할 것-->
-     <ion-buttons end> 
-      <button ion-button class="cancelationcomplete" (click)="showConfirm()" >비우기</button>
-     </ion-buttons> 
-       
-     <!--비우기 버튼이 눌러지면 휴지통에 보관되어있는 모든 주문이 사라집니다.
-      휴지통과 동일선상에 놓여지게 합니다.-->
+     <button ion-button (click)="openAdministratorPage()"><ion-icon name="ios-power"></ion-icon></button>
+     <button ion-button (click)="openDuckMainPage()"><ion-icon name="ios-trash"></ion-icon></button>
+    </ion-buttons>
+    <ion-buttons end> 
+     <button ion-button (click)="showConfirm()" >비우기</button>
+    </ion-buttons> 
   </ion-navbar>
-
   <ion-toolbar text-center>
-    
-    <h3>휴지통</h3>
-    
+   <h3>휴지통</h3>
   </ion-toolbar>
 </ion-header>
-
 <ion-content padding>
-
-  <ion-card>
-    <ion-card-content>
-     <ion-list>
-   
-     <ion-item-sliding #item>
-        <ion-item>
-          주문목록1
-        </ion-item>
- 
-
-        <ion-item-options slide="right">
-         <button ion-button (click)="erase">살리기</button>
-        </ion-item-options>
-      </ion-item-sliding>
-    </ion-list>
-  </ion-card-content> 
- </ion-card>
-
-  
+  <ion-list>
+    <ion-item-sliding>
+      <ion-item>
+        주문목록1
+      </ion-item>
+      <ion-item-options slide="right">
+        <button ion-button (click)="erase">살리기</button>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
   <!--삭제된 주문목록들은 휴지통으로 이동합니다.
-      왼쪽으로 주문목록을 슬라이드 하면 살리기 버튼이 나옵니다.
-      살리면 주문목록으로 돌아갑니다. 
-      ==IonicFramework/Docs Component Slide 참조 
-  -->
-  
+    왼쪽으로 주문목록을 슬라이드 하면 살리기 버튼이 나옵니다.
+    살리면 주문목록으로 돌아갑니다.
+  -->  
 </ion-content>

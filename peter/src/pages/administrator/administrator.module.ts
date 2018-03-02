@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { IonicPageModule } from 'ionic-angular';
 import { AdministratorPage } from './administrator';
+
 @NgModule({
   declarations: [
     AdministratorPage,
@@ -9,4 +10,5 @@ import { AdministratorPage } from './administrator';
     IonicPageModule.forChild(AdministratorPage),
   ],
 })
+
 export class AdministratorPageModule {}
