@@ -4,6 +4,8 @@ import { Platform,IonicPage, NavController, NavParams } from 'ionic-angular';
 
 import * as moment from 'moment';
 
+import {AppDataProvider} from '../../providers/app-data/app-data';
+
 import {AdministratorPage} from '../administrator/administrator';
 import {GarbagePage} from '../garbage/garbage';
 import {BaedalPage} from '../baedal/baedal';
@@ -22,15 +24,32 @@ export class DuckMainPage {
   currentPage='AministratorPage';
 
   duck:string = "order";
+  //segment 나눌 때
   isAndroid:boolean=false;
 
   myDate:string;
-  
-  constructor(platform: Platform, private app: App,public navCtrl: NavController, public navParams: NavParams) {
+  DeliveryDate:string;
+  address:string;
+  recipientName:string;
+  recipientTel:string;
+  buyerName:string;
+  buyerTel:string;
+  menuName:string;
+  menuAmount:string;
+  amount:string;
+  paymentStatus:string;
+  memo:string;
+  menuUnit:string;
+  deliveryman:string;
+  paymentType:string;
+
+  orderList=[];
+  menus=[];
+
+  constructor(platform: Platform, private app: App,public navCtrl: NavController, public navParams: NavParams, public appDataProvider:AppDataProvider) {
    this.isAndroid = platform.is('android');
   
-   /*this.initializeItems();
-   */
+   /*this.initializeItems();*/
 
    var d = new Date();
    var mm = d.getMonth() < 9 ? "0" +(d.getMonth() + 1) : (d.getMonth() + 1); //getMonth()
@@ -41,30 +60,9 @@ export class DuckMainPage {
    
    //var dString=d.toISOString(); //UTC time
    this.myDate=dString;
+   this.DeliveryDate=dString;
   }
   
-  /*initializeItems(){
-    this.orderItems = [
-      '주문목록1',
-      '주문목록2',
-      '주문목록3'
-    ];
-  }*/
-  
-  /*getOrderItems(ev){
-    this.initializeItems();
-
-    var val =ev.target.value;
-
-    if(val && val.trim() !='')
-    {
-      this.orderItems = this.orderItems.filter((item)=>
-      {
-        return (item.toLowerCase().indexOf(val.toLowerCase()) > -1);
-      })
-    }
-  }*/
-
   openAdministratorPage(){
     console.log("openAdministratorPage");
     this.app.getRootNavs()[0].setRoot(AdministratorPage);
@@ -85,6 +83,24 @@ export class DuckMainPage {
     console.log(this.myDate);
     var date=new Date(this.myDate);
     console.log("month"+date.getMonth()+"date:"+date.getDate()+"hour"+date.getHours());
-  }    
+  }
+  checkInput1(){
+    console.log(this.myDate);
+    var date=new Date(this.myDate);
+    console.log("month"+date.getMonth()+"date:"+date.getDate()+"hour"+date.getHours());
+  }        
     
+ save(){
+    let order={deliveryDue: this.DeliveryDate ,address: this.address ,recipientName: this.recipientName ,recipientTel: this.recipientTel, buyerName: this.buyerName, buyerTel: this.buyerTel ,
+    menus: this.menus , amount: this.amount , paymentType: this.paymentType, paymentStatus: this.paymentStatus , memo: this.memo, deliveryman: this.deliveryman};
+    this.orderList.push(order);
+    console.log(JSON.stringify(this.orderList)) 
+    this.menus=[];
+  } 
+
+  savemenu(){
+    let menu={menuName:this.menuName, menuAmount: this.menuAmount, menuUnit: this.menuUnit}
+    this.menus.push(menu);
+  }  
 }
+
