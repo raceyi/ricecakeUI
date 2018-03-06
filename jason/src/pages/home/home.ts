@@ -8,6 +8,7 @@ import * as moment from 'moment';
 })
 export class HomePage {
   
+  displayDate;
 
   orderItems;
   myDate:string;
@@ -19,13 +20,13 @@ export class HomePage {
       var d = new Date();
       var mm = d.getMonth() < 9? "0" + (d.getMonth() + 1) : (d.getMonth() +1);
       var dd = d.getDate() <10? "0" + d.getDate() : d.getDate();
-      var dddd = d.getDay();
+//      var dddd = d.getDay();
       var ddYesterday = d.getDate()-1 <10? "0" + d.getDate() : d.getDate();
       var ddTomorrow = d.getDate()+1 <10? "0" + d.getDate() : d.getDate();
       var hh = d.getHours() <10? "0" + d.getHours() : d.getHours();
       var min = d.getMinutes() <10? "0"+d.getMinutes() : d.getMinutes();
       
-      var dString = d.getFullYear()+ '-' + (mm) + '-' + (dd) + 'T' + hh + ":" + min+ moment().format("Z") + '-' +(dddd);
+      var dString = d.getFullYear()+ '-' + (mm) + '-' + (dd) + 'T' + hh + ":" + min+ moment().format("Z");
       var dStringYesterday = d.getFullYear()+ '-' + (mm) + '-' + (ddYesterday) + 'T' + hh + ":" + min+ moment().format("Z");
       var dStringTomorrow = d.getFullYear()+ '-' + (mm) + '-' + (ddTomorrow) + 'T' + hh + ":" + min+ moment().format("Z");
   
@@ -34,8 +35,36 @@ export class HomePage {
       this.myDateYesterday = dStringYesterday;
       this.myDateTomorrow = dStringTomorrow;
 
+      let now=new Date();
+      this.displayDate={ milliseconds:now.getTime() ,ios8601:dString};
   }
 
+
+  getISOtime(time){  // milliseconds
+    let d=new Date();
+    d.setTime(time);
+    var mm = d.getMonth() < 9? "0" + (d.getMonth() + 1) : (d.getMonth() +1);
+    var dd = d.getDate() <10? "0" + d.getDate() : d.getDate();
+    var ddYesterday = d.getDate()-1 <10? "0" + d.getDate() : d.getDate();
+    var ddTomorrow = d.getDate()+1 <10? "0" + d.getDate() : d.getDate();
+    var hh = d.getHours() <10? "0" + d.getHours() : d.getHours();
+    var min = d.getMinutes() <10? "0"+d.getMinutes() : d.getMinutes();
+    
+    var dString = d.getFullYear()+ '-' + (mm) + '-' + (dd) + 'T' + hh + ":" + min+ moment().format("Z");
+    return dString;
+  }
+
+  goYeterday(){  
+    this.displayDate.milliseconds=this.displayDate.milliseconds-24*60*60*1000;
+    console.log("yesterday:"+this.getISOtime(this.displayDate.milliseconds));
+    this.displayDate.ios8601=this.getISOtime(this.displayDate.milliseconds);
+  }
+
+  goTomorrow(){
+    this.displayDate.milliseconds=this.displayDate.milliseconds+24*60*60*1000;
+    console.log("yesterday:"+this.getISOtime(this.displayDate.milliseconds));
+    this.displayDate.ios8601=this.getISOtime(this.displayDate.milliseconds);   
+  }
 
   initializeItems(){
     this.orderItems = [
@@ -117,9 +146,9 @@ export class HomePage {
     var dateYesterday = new Date(this.myDateYesterday);
   }
 
-  goTomorrow(){
-    var dateTomorrow = new Date(this.myDateTomorrow);
-  }
+ // goTomorrow(){
+ //   var dateTomorrow = new Date(this.myDateTomorrow);
+ // }
 
   /*checkInput(){
     console.log(this.myDate);
