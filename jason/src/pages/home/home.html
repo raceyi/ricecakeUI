@@ -39,6 +39,8 @@
   </div>
   
 
+
+
   <!-- BELOW IS AN ORDER SECTION -->
   <div [hidden]="orderButtonFlag">
 
@@ -49,16 +51,17 @@
     <ion-grid>
         <ion-row>
             <ion-col>
-              <button ion-button float-right clear (click)="goYeterday()">
+              <button ion-button float-right clear (click)="goYesterday()">
                 <ion-icon class="icon-md-datetime-left" name="arrow-back"></ion-icon>
               </button>
             </ion-col>
             <ion-col>
               <ion-item class="item-datetime-inner">
-                <ion-datetime class="datetime-text" displayFormat="YYYY년  MM월  DD일  DDDD" pickerFormat="YYYY MM DD" [(ngModel)]="displayDate.ios8601"></ion-datetime>
+                <ion-datetime class="datetime-text" displayFormat="YYYY년  MM월  DD일" pickerFormat="YYYY MM DD" [(ngModel)]="displayDate.ios8601"></ion-datetime>
               </ion-item>
             </ion-col>
             <ion-col>
+              요일
               <button ion-button float-left clear (click)="goTomorrow()">
                 <ion-icon class="icon-md-datetime-right" name="arrow-forward"></ion-icon>
               </button>
@@ -73,20 +76,18 @@
       </ion-buttons>
     </ion-row>
 
-    <ion-list>
-      <ion-item-sliding>
-        <ion-item>
-          <ion-list>
+
+    <!-- order input section -->
             <ion-grid>
               <ion-row>
                 <ion-col col-2>
                   <ion-item>
-                    <ion-datetime displayFormat="HH시mm분" pickerFormat="HH mm" [(ngModel)]="deliverTime" (click)="setDeliverTime()"></ion-datetime>
+                    <ion-datetime displayFormat="HH시 mm분" pickerFormat="HH mm" [(ngModel)]="myHMTime"></ion-datetime>
                   </ion-item>
                 </ion-col>
                 <ion-col col-6>
                   <ion-item>
-                    <ion-input type="text" placeholder="받는분 주소" [(ngModel)]="recipientAddress"></ion-input>
+                    <ion-input type="text" placeholder="주소" [(ngModel)]="recipientAddress"></ion-input>
                   </ion-item>
                 </ion-col>
                 <ion-col col-4>
@@ -118,11 +119,12 @@
               </ion-row>
               
               <ion-row>
-                <ion-col col-1>
-                  <button ion-button><ion-icon name="add" (click)="dduckAdd()"></ion-icon></button>
+                <ion-col col-2>
+                  <button ion-button><ion-icon name="add" (click)="dduckAdd()">&nbsp;떡추가</ion-icon></button>
                 </ion-col>
-                <ion-col col-4>
+                <ion-col col-2>
                   <ion-item>
+                    <ion-label>떡종류</ion-label>
                     <ion-select [(ngModel)]="dduckName">
                       <ion-option value="떡국떡">떡국떡</ion-option>
                       <ion-option value="바람떡">바람떡</ion-option>
@@ -142,8 +144,9 @@
                     <ion-input type="text" placeholder="수량" [(ngModel)]="dduckAmount"></ion-input>
                   </ion-item>
                 </ion-col>
-                <ion-col col-2>
+                <ion-col col-3>
                   <ion-item>
+                    <ion-label>단위</ion-label>
                     <ion-select [(ngModel)]="dduckUnit">
                       <ion-option value="kg">kg</ion-option>
                       <ion-option value="말">말</ion-option>
@@ -162,8 +165,8 @@
               <ion-row *ngFor="let dduckAdded of dduckAddedList">
                 <ion-col col-2>&nbsp;</ion-col>
                 <ion-col col-4>{{dduckAdded.dduckName}}</ion-col>
-                <ion-col col-4>{{dduckAdded.dduckAmount}}</ion-col>
-                <ion-col col-4>{{dduckAdded.dduckUnit}}</ion-col>
+                <ion-col col-2>{{dduckAdded.dduckAmount}}</ion-col>
+                <ion-col col-2>{{dduckAdded.dduckUnit}}</ion-col>
                 <ion-col col-2>&nbsp;</ion-col>
               </ion-row>
 
@@ -193,23 +196,26 @@
                   </ion-row>
                   <ion-row>
                     <ion-item>
+                      <ion-label>결제 수단</ion-label>
                       <ion-select [(ngModel)]="paymentOptions">
-                        <ion-option value="paymentCash">현금</ion-option>
-                        <ion-option value="paymentCard">카드</ion-option>
+                        <ion-option value="현금">현금</ion-option>
+                        <ion-option value="카드">카드</ion-option>
                       </ion-select>
                     </ion-item>
                   </ion-row>
                   <ion-row>
                     <ion-item>
+                      <ion-label>결제 방법</ion-label>
                       <ion-select [(ngModel)]="paymentPlan">
-                        <ion-option value="paymentInFull">완납</ion-option>
-                        <ion-option value="paymentInInstall">분납</ion-option>
+                        <ion-option value="완납">완납</ion-option>
+                        <ion-option value="분납">분납</ion-option>
                       </ion-select>
                     </ion-item>
                   </ion-row>
                 </ion-col>
               </ion-row>
             </ion-grid>
+  <!--          
           </ion-list>
         </ion-item>
         <ion-item-options slide="right">
@@ -222,9 +228,13 @@
         </ion-item-options>
       </ion-item-sliding>
     </ion-list>
+  -->
 
 
-    <ion-item *ngFor="let order of orderlist; let i=index;">
+
+    <!-- show order list -->
+
+    <ion-item *ngFor="let order of orderList; let i=index;">
       <ion-list>
         <ion-item-sliding>
           <ion-item>
@@ -323,7 +333,15 @@
               </ion-row>
             </ion-list>
           </ion-item>
-        </ion-item-sliding>
+          <ion-item-options slide="right">
+              <button ion-button (click)="modify()" color="secondary">
+                <ion-icon name="cut"></ion-icon>수정
+              </button>
+              <button ion-button (click)="delete()" color="danger">
+                <ion-icon name="trash"></ion-icon>삭제
+              </button>  
+            </ion-item-options>
+          </ion-item-sliding>
       </ion-list>
     </ion-item>
 
@@ -342,7 +360,7 @@
     <ion-grid>
       <ion-row>
         <ion-col>
-          <button ion-button float-right clear (click)="goYeterday()">
+          <button ion-button float-right clear (click)="goYesterday()">
             <ion-icon class="icon-md-datetime-left" name="arrow-back"></ion-icon>
           </button>
         </ion-col>

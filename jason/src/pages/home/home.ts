@@ -7,17 +7,11 @@ import * as moment from 'moment';
   templateUrl: 'home.html'
 })
 export class HomePage {
-<<<<<<< HEAD
-  
   displayDate;
-=======
->>>>>>> 4feb33228f276143b627a7374aced92dba8ce06e
-
   //member variables//
   orderItems;
   myDate: string;
-  myDateYesterday: string;
-  myDateTomorrow: string;
+  myHMTime: string;
 
   deliverTime: string;
   recipientAddress: string;
@@ -44,40 +38,29 @@ export class HomePage {
       var d = new Date();
       var mm = d.getMonth() < 9? "0" + (d.getMonth() + 1) : (d.getMonth() +1);
       var dd = d.getDate() <10? "0" + d.getDate() : d.getDate();
-//      var dddd = d.getDay();
-      var ddYesterday = d.getDate()-1 <10? "0" + d.getDate() : d.getDate();
-      var ddTomorrow = d.getDate()+1 <10? "0" + d.getDate() : d.getDate();
+//    var dddd = d.getDay();
       var hh = d.getHours() <10? "0" + d.getHours() : d.getHours();
-      var min = d.getMinutes() <10? "0"+d.getMinutes() : d.getMinutes();
-      
+      var min = d.getMinutes() <10? "0"+d.getMinutes() : d.getMinutes();  
       var dString = d.getFullYear()+ '-' + (mm) + '-' + (dd) + 'T' + hh + ":" + min+ moment().format("Z");
-      var dStringYesterday = d.getFullYear()+ '-' + (mm) + '-' + (ddYesterday) + 'T' + hh + ":" + min+ moment().format("Z");
-      var dStringTomorrow = d.getFullYear()+ '-' + (mm) + '-' + (ddTomorrow) + 'T' + hh + ":" + min+ moment().format("Z");
-  
-      this.myDate = dString;
-      
-      this.myDateYesterday = dStringYesterday;
-      this.myDateTomorrow = dStringTomorrow;
-
+      var hmString = hh + ":" + min + moment().format("Z");
+      //     this.myDate = dString;
+      this.myHMTime=hmString;
       let now=new Date();
       this.displayDate={ milliseconds:now.getTime() ,ios8601:dString};
   }
-  
+
   getISOtime(time){  // milliseconds
     let d=new Date();
     d.setTime(time);
     var mm = d.getMonth() < 9? "0" + (d.getMonth() + 1) : (d.getMonth() +1);
     var dd = d.getDate() <10? "0" + d.getDate() : d.getDate();
-    var ddYesterday = d.getDate()-1 <10? "0" + d.getDate() : d.getDate();
-    var ddTomorrow = d.getDate()+1 <10? "0" + d.getDate() : d.getDate();
     var hh = d.getHours() <10? "0" + d.getHours() : d.getHours();
     var min = d.getMinutes() <10? "0"+d.getMinutes() : d.getMinutes();
-    
     var dString = d.getFullYear()+ '-' + (mm) + '-' + (dd) + 'T' + hh + ":" + min+ moment().format("Z");
     return dString;
   }
 
-  goYeterday(){  
+  goYesterday(){  
     this.displayDate.milliseconds=this.displayDate.milliseconds-24*60*60*1000;
     console.log("yesterday:"+this.getISOtime(this.displayDate.milliseconds));
     this.displayDate.ios8601=this.getISOtime(this.displayDate.milliseconds);
@@ -161,23 +144,6 @@ export class HomePage {
     this.deliverButtonFlag = true;
     this.produceButtonFlag = false;
   }
-
-
-
-  goYesterday() {
-    var dateYesterday = new Date(this.myDateYesterday);
-  }
-
-<<<<<<< HEAD
- // goTomorrow(){
- //   var dateTomorrow = new Date(this.myDateTomorrow);
- // }
-=======
-  goTomorrow() {
-    var dateTomorrow = new Date(this.myDateTomorrow);
-  }
->>>>>>> 4feb33228f276143b627a7374aced92dba8ce06e
-
   /*checkInput(){
     console.log(this.myDate);
     var date=new Date(this.myDate);
@@ -191,16 +157,28 @@ export class HomePage {
     , dduckAddedList: this.dduckAddedList, memo: this.memo, price: this.price, paymentOptions: this.paymentOptions, paymentPlan: this.paymentPlan}
       
     this.orderList.push(order);
-    console.log(JSON.stringify(this.orderList));
+    console.log("orderList:"+JSON.stringify(this.orderList));
+    
+    this.deliverTime="";
+    this.recipientAddress="";
+    this.recipientName="";
+    this.recipientPhoneNumber="";
+    this.buyerName="";
+    this.buyerPhoneNumber="";
+    this.dduckAddedList=
     this.dduckAddedList=[];
+    this.memo="";
+    this.price="";
+    this.paymentOptions="";
+    this.paymentPlan="";
   }
 
   dduckAdd(){
     let dduckAdded={dduckName: this.dduckName, dduckAmount:this.dduckAmount, dduckUnit: this.dduckUnit}
     this.dduckAddedList.push(dduckAdded);
-    this.dduckName=undefined;
-    this.dduckAmount=undefined;
-    this.dduckUnit=undefined;
+    this.dduckName="";
+    this.dduckAmount="";
+    this.dduckUnit="";
   }  
 
 
