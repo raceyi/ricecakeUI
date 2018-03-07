@@ -7,5 +7,9 @@ If you have more questions, please join our website, Thank you very much!
 
 $ionic cordova plugin add cordova-plugin-inappbrowser
 
+$npm install --save @ionic-native/in-app-browser
+
 $ionic corodva plugin add cordova-plugin-printer
+
+$npm install --save @ionic-native/printer
 
