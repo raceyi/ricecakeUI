@@ -8,6 +8,8 @@ import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import {Page2PageModule} from '../pages/page2/page2.module';
 import {Page3PageModule} from '../pages/page3/page3.module';
+import { Printer, PrintOptions } from '@ionic-native/printer'
+import {InAppBrowser } from '@ionic-native/in-app-browser'
 
 @NgModule({
   declarations: [
@@ -35,6 +37,8 @@ import {Page3PageModule} from '../pages/page3/page3.module';
     HomePage
   ],
   providers: [
+    InAppBrowser,
+    Printer,
     StatusBar,
     SplashScreen,
     {provide: ErrorHandler, useClass: IonicErrorHandler}

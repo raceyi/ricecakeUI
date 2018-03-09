@@ -10,9 +10,20 @@ page-home {
     text-align: right;
 }
 
-.datetime-text{
+.order-input-section{
+  border-color: gray;
+  border-style: solid;
+  border-bottom-width: 0.5px;
+}
+
+.main-datetime-text{
   text-align: center;
   font-size: 30px;
+}
+
+.timeonly-text{
+  text-align: center;
+  font-size: 15px;
 }
 
 .top3ButtonsCenterAssign{
@@ -40,11 +51,16 @@ page-home {
   margin: auto;
 }
 
+.addressButton{
+  width: 100%;
+  
+}
+
 .deliver-check-button{
   font-size: 20px;
   text-decoration-line: underline;
 }
 
 .memoTextArea{
-  
+  height: 8vh;
 }
