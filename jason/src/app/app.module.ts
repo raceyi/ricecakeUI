@@ -9,7 +9,8 @@ import { HomePage } from '../pages/home/home';
 import {Page2PageModule} from '../pages/page2/page2.module';
 import {Page3PageModule} from '../pages/page3/page3.module';
 import { Printer, PrintOptions } from '@ionic-native/printer'
-import {InAppBrowser } from '@ionic-native/in-app-browser'
+import { InAppBrowser } from '@ionic-native/in-app-browser'
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import {InAppBrowser } from '@ionic-native/in-app-browser'
     HomePage
   ],
   imports: [
+    HttpClientModule,
     BrowserModule,
     Page2PageModule,
     Page3PageModule,
