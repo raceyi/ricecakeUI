@@ -1,6 +1,5 @@
 page-home {
 
-}
 .adminAndtrashButtonLeftAssign{
   font-size: 20px !important;
 }
@@ -10,9 +9,27 @@ page-home {
     text-align: right;
 }
 
-.datetime-text{
+.order-input-section{
+  border-color: yellowgreen;
+  border-style: solid;
+  border-bottom-width: 0.5px;
+}
+
+.main-datetime-text{
   text-align: center;
   font-size: 30px;
+}
+
+.timeonly-text{
+  text-align: center;
+  font-size: 15px;
+}
+
+.getJusoButton{
+    span{
+        font-size: 1.8rem !important;
+    }
+  //font-size: 2rem !important;
 }
 
 .top3ButtonsCenterAssign{
@@ -40,11 +57,41 @@ page-home {
   margin: auto;
 }
 
+.addressButton{
+  width: 100%;
+  
+}
+
 .deliver-check-button{
-  font-size: 20px;
+  font-size: 7rem;
   text-decoration-line: underline;
 }
 
 .memoTextArea{
-  
+  height: 13vh;
+}
+///////////////////////////////////////////End of ORDER INPUT SCSS//////////////////////////////////
+
+
+
+///// START of SHOW ORDERLIST /////
+.orderlist-section{
+  border-color: steelblue;
+  border-style: outset;
+  border-bottom-width: 0.5px;
+}
+
+
+.timeonly-text-orderlist{
+  p{
+  text-align: center;
+  font-size: 1.8rem;
+  color: black; 
+  }
+}
+
+
+
+
+///// End of HOME.SCSS /////
 }
