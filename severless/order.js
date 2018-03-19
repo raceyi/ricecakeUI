@@ -27,7 +27,7 @@ router.addOrder=function (param){
                         "recipientName":order.recipientName,
                         "recipientPhoneNumber":order.recipientPhoneNumber,
                         "buyerPhoneNumber":order.buyerPhoneNumber,
-                        "menuList":JSON.stringify(order.menuList),
+                        "menuList":order.menuList,
                         "memo":order.memo,
                         "price":order.price,
                         "paymentMethod":order.paymentMethod,//카드,현금
@@ -128,7 +128,7 @@ router.updateOrder=function (param){
                 ":recipientName":order.recipientName,
                 ":recipientPhoneNumber":order.recipientPhoneNumber,
                 ":buyerPhoneNumber":order.buyerPhoneNumber,
-                ":menuList":JSON.stringify(order.menuList),
+                ":menuList":order.menuList,
                 ":memo":order.memo,
                 ":price":order.price,
                 ":paymentMethod":order.paymentMethod,//카드,현금

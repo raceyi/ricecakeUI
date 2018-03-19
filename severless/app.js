@@ -13,6 +13,10 @@ var atomicCounter = require('./atomic-counter');
 //var bankda = JSON.parse(require('fs').readFileSync('./bankda.json', 'utf8'));
 
 app.use(bodyParser.json());
+app.all('*',function(req,res,next){
+      console.log("req.url:"+req.url);
+      next();
+});
 
 app.post('/addOrder',(req,res) =>{
         console.log("addOrder:",req.body);
@@ -111,24 +115,10 @@ app.post('/getMenus',(req,res) =>{
 
 app.post('/addCarrier',(req,res) =>{
         console.log("addCarrier:",req.body);
-        if(!req.body.name || !req.body.phone){
+        if(!req.body.name){
                 res.json({result:"failure",error:"invalid Param"});
         }else{
             carrier.addCarrier(req.body).then(value=>{
-                console.log("value:"+value);
-                res.json({result:"success",carriers:value});
-            },err=>{
-                res.json({result:"failure",error:JSON.stringify(err)});
-            });
-        }
-});
-
-app.post('/updateCarrier',(req,res) =>{
-        console.log("updateCarrier:",req.body);
-        if(!req.body.name || !req.body.phone){
-                res.json({result:"failure",error:"invalid Param"});
-        }else{
-            carrier.updateCarrier(req.body).then(value=>{
                 console.log("value:"+value);
                 res.json({result:"success",carriers:value});
             },err=>{

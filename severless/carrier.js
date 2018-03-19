@@ -9,8 +9,7 @@ router.addCarrier=function (param){
                 let params={
                     TableName:"carrier",
                     Item:{
-                        "name":param.name,
-                        "phone":param.phone
+                        "name":param.name
                     },
                     ConditionExpression : "attribute_not_exists(#name)",
                     ExpressionAttributeNames: {
@@ -38,39 +37,6 @@ router.addCarrier=function (param){
     });
 }
 
-router.updateCarrier=function (param){
-    return new Promise((resolve,reject)=>{
-                let params={
-                    TableName:"carrier",
-                     Key:{
-                        "name": param.name
-                    },
-                    UpdateExpression: "set phone=:phone",
-                    ExpressionAttributeValues:{
-                        ":phone":param.phone 
-                    },
-                    ReturnValues:"UPDATED_NEW"
-                };
-                console.log("updateCarrier-params:"+JSON.stringify(params));
-                dynamoDB.dynamoUpdateItem(params).then((value)=>{
-                    // send push message into others for ordr list update
-                    // 모든 db update에 대해 push 메시지가 전달되어야 한다.
-                    let params = {
-                        TableName: "carrier"
-                    };
-                    dynamoDB.dynamoScanItem(params).then((result)=>{
-                        resolve(result.Items);
-                    },err=>{
-                        if(err=="ConditionalCheckFailedException")
-                            reject("invalidCarrier");
-                        else
-                            reject(err);
-                    });
-                },err=>{
-                        reject(err);
-                });
-    });
-}
 
 router.deleteCarrier=function(param){
     return new Promise((resolve,reject)=>{        
