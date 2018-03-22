@@ -17,3 +17,6 @@ $ionic cordova plugin add cordova-plugin-advanced-http
 
 $npm install --save @ionic-native/http
 
+$ionic cordova plugin rm cordova-plugin-printer
+
+$ionic cordova plugin add https://github.com/katzer/cordova-plugin-printer.git
