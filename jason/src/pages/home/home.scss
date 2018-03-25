@@ -1,4 +1,20 @@
 page-home {
+/////Global SCSS/////
+.select-md{
+  padding: 0;
+}
+
+.select-text{
+  white-space: normal;
+}
+
+ion-select.select.select-ios.ng-valid.ng-dirty.ng-touched {
+  max-width: 80%;
+}
+
+.select-ios{
+  padding: 0;
+}
 
 .adminAndtrashButtonLeftAssign{
   font-size: 20px !important;
@@ -10,9 +26,10 @@ page-home {
 }
 
 .order-input-section{
-  border-color: yellowgreen;
+  border-color: #9acd32;
   border-style: solid;
-  border-bottom-width: 0.5px;
+  border-bottom-style: solid;
+  border-bottom-width: 3px;
 }
 
 .main-datetime-text{
@@ -52,6 +69,16 @@ page-home {
   text-align: left;
 }
 
+.order-new-button {
+  color: #9acd32;
+  border-color: #9acd32;
+}
+
+.order-save-button{
+  color: #9acd32;
+  border-color: #9acd32;
+}
+
 .item-datetime-inner{
   //width: 80%;
   margin: auto;
@@ -62,33 +89,107 @@ page-home {
   
 }
 
+.orderlist-recipientAddress{
+  p{
+    color: black;
+  }
+}
+
+.orderlist-buyerName{
+  p{
+    color: black;
+  }
+}
+
+.orderlist-recipientAddressDetail{
+  p{
+    color: black;
+  }
+}
+
+.orderlist-buyerPhoneNumber{
+  p{
+    color: black;
+  }
+}
+
+.orderlist-recipientName{
+  p{
+    color: black;
+  }
+}
+
+.orderlist-recipientPhoneNumber{
+  p{
+    color: black;
+  }
+}
+
+.orderlist-price{
+  p{
+    color: black;
+    font-weight: bold;
+  }
+}
+
+.orderlist-dduckAddedList{
+  p{
+    color: black;
+    font-size: 2rem;
+    font-weight: bold;
+  }
+}
+
+.orderlist-memo{
+  border-style: solid;
+  p{
+    color: black;
+    font-size: 2rem;
+  }
+}
+
+.orderlist-payment{
+  p{
+    color: black;
+  }
+}
+
 .deliver-check-button{
   font-size: 7rem;
   text-decoration-line: underline;
 }
 
 .memoTextArea{
-  height: 13vh;
+  color: black;
+  border-color: yellow;
+  height: 10vh;
 }
 ///////////////////////////////////////////End of ORDER INPUT SCSS//////////////////////////////////
-
 
 
 ///// START of SHOW ORDERLIST /////
 .orderlist-section{
   border-color: steelblue;
-  border-style: outset;
-  border-bottom-width: 0.5px;
+  border-style: solid;
+  border-bottom-style: solid;
+  border-bottom-width: 3px;
 }
 
 
 .timeonly-text-orderlist{
   p{
   text-align: center;
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   color: black; 
   }
 }
+
+.select-deliveryMan{
+  overflow: visible;
+  width: 80px;
+  max-width: 100%;
+}
+
 
 
 

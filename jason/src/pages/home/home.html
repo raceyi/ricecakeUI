@@ -78,8 +78,8 @@
     <!-- New order & save button -->
 
     <ion-row>
-      <ion-col><button ion-button outline (click)="newOrder()">New Order</button></ion-col>
-      <ion-col text-right><button ion-button outline (click)="save()">Save</button></ion-col>
+      <ion-col><button ion-button outline class="order-new-button" (click)="newOrder()">주문</button></ion-col>
+      <ion-col text-right><button ion-button outline class="order-save-button" (click)="save()">저장</button></ion-col>
     </ion-row>
 
 
@@ -88,13 +88,12 @@
       <ion-row>
         <ion-col col-2 no-padding no-margin>
           <ion-item>
-            <ion-datetime class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="HH mm" [(ngModel)]="deliverTime"></ion-datetime>
+            <ion-datetime class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="HH mm" [(ngModel)]="deliveryTime"></ion-datetime>
           </ion-item>
         </ion-col>
         <ion-col col-7>
           <ion-item>
             <button ion-button class="getJusoButton" outline (click)="getJuso()">{{recipientAddress}}</button>
-           <!-- <ion-input type="text" [(ngModel)]="recipientAddress"></ion-input>-->
           </ion-item>
         </ion-col>
         <ion-col col-3>
@@ -144,13 +143,14 @@
 
       <ion-row>
         <ion-col col-2>
-          <button ion-button><ion-icon name="add" (click)="dduckAdd()">&nbsp;떡추가</ion-icon></button>
+          <button ion-button outline (click)="dduckAdd()"><ion-icon name="add">&nbsp;떡추가</ion-icon></button>
         </ion-col>
         <ion-col col-3>
           <ion-item>
             <ion-label>떡종류</ion-label>
-            <ion-select [(ngModel)]="dduckName">
-              <ion-option value="떡국떡">떡국떡</ion-option>
+            <ion-select interface="action-sheet" [(ngModel)]="dduckName">
+              <ion-option *ngFor="let menu of menus">{{menu.name}}</ion-option>
+              <!--<ion-option value="떡국떡">떡국떡</ion-option>
               <ion-option value="바람떡">바람떡</ion-option>
               <ion-option value="찹쌀가루">찹쌀가루</ion-option>
               <ion-option value="쑥인절미">쑥인절미</ion-option>
@@ -200,7 +200,7 @@
               <ion-option value="무지개떡">무지개떡</ion-option>
               <ion-option value="딸기설기">딸기설기</ion-option>
               <ion-option value="멥편">멥편</ion-option>
-              <ion-option value="약식">약식</ion-option>
+              <ion-option value="약식">약식</ion-option>-->
             </ion-select>
           </ion-item>
         </ion-col>
@@ -212,7 +212,7 @@
         <ion-col col-2>
           <ion-item>
             <ion-label>단위</ion-label>
-            <ion-select [(ngModel)]="dduckUnit">
+            <ion-select interface="action-sheet" [(ngModel)]="dduckUnit">
               <ion-option value="kg">kg</ion-option>
               <ion-option value="말">말</ion-option>
               <ion-option value="되">되</ion-option>
@@ -224,21 +224,20 @@
         <ion-col col-3>
           <ion-item>
             <ion-label>결제 수단</ion-label>
-            <ion-select [(ngModel)]="paymentOptions">
-              <ion-option value="현금">현금</ion-option>
-              <ion-option value="카드">카드</ion-option>
+            <ion-select [(ngModel)]="paymentMethod">
+              <ion-option value="cash">현금</ion-option>
+              <ion-option value="card">카드</ion-option>
             </ion-select>
           </ion-item>
         </ion-col>
       </ion-row>
       
       
-      
       <ion-row *ngFor="let dduckAdded of dduckAddedList; let dduckSelect=index">
         <ion-col col-2>&nbsp;</ion-col>
-        <ion-col col-3>{{dduckAdded.dduckName}}</ion-col>
-        <ion-col col-1>{{dduckAdded.dduckAmount}}</ion-col>
-        <ion-col col-2>{{dduckAdded.dduckUnit}}</ion-col>
+        <ion-col col-3>{{dduckAdded.name}}</ion-col>
+        <ion-col col-1>{{dduckAdded.amount}}</ion-col>
+        <ion-col col-2>{{dduckAdded.unit}}</ion-col>
         <ion-col col-1>
           <button ion-button clear (click)="dduckminus(dduckSelect)">
             <ion-icon name="close-circle"></ion-icon>
@@ -246,10 +245,7 @@
         </ion-col>
         <ion-col col-3>&nbsp;</ion-col>
       </ion-row>
-
-      
-      
-      
+        
       <ion-row>
         <ion-col col-2>
           &nbsp;
@@ -263,20 +259,10 @@
             <ion-row>
               <ion-item>
                 <ion-label>결제 방법</ion-label>
-                <ion-select [(ngModel)]="paymentPlan">
-                  <ion-option value="완납">완납</ion-option>
-                  <ion-option value="분납">분납</ion-option>
+                <ion-select [(ngModel)]="payment">
+                  <ion-option value="paid">선불</ion-option>
+                  <ion-option value="unpaid">후불</ion-option>
                 </ion-select>
-              </ion-item>
-            </ion-row>
-            <ion-row>
-              <ion-item>
-                <ion-input type="number" placeholder="선납금" [(ngModel)]="advancedPayment"></ion-input>
-              </ion-item>
-            </ion-row>
-            <ion-row>
-              <ion-item>
-                <ion-input type="number" placeholder="후납금" [(ngModel)]=price-advancedPayment></ion-input>
               </ion-item>
             </ion-row>
         </ion-col>
@@ -287,118 +273,107 @@
 
 
     <!-- show order list-->
-    <ion-item *ngFor="let order of orderList">
-      <ion-grid class="orderlist-section">
-        <ion-row>
-          <ion-col col-2>
-            <ion-item class="timeonly-text-orderlist">
-              <p>{{order.deliverTime}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-7>
-            <ion-item>
-              <p>{{order.recipientAddress}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-3>
-            <ion-item>
-              <p>{{order.buyerName}}</p>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        
-        <ion-row>
-          <ion-col col-2>
-            &nbsp;
-          </ion-col>
-          <ion-col col-7>
-            <ion-item>
-              <p>{{order.recipientAddressDetail}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-3>
-            <ion-item>
-              <p>{{order.buyerPhoneNumber}}</p>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        
-        <ion-row>
-          <ion-col col-2>
-            &nbsp;
-          </ion-col>
-          <ion-col col-3>
-              <ion-item>
-                <p>{{order.recipientName}}</p>
-              </ion-item>
-            </ion-col>
-          <ion-col col-4>
-              <ion-item>
-                <p>{{order.recipientPhoneNumber}}</p>
-              </ion-item>
-          </ion-col>
-          <ion-col col-3>
-            <ion-item>
-              <p>{{order.price + "원"}}</p>
-            </ion-item> 
-          </ion-col>
-        </ion-row>
-  
-        <ion-row *ngFor="let dduckAdded of order.dduckAddedList">
-          <ion-col col-1>&nbsp;</ion-col>
-          <ion-col col-4>
-            <ion-item>
-              <p>{{dduckAdded.dduckName}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-1>
-            <ion-item>
-              <p>{{dduckAdded.dduckAmount}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-4>
-            <ion-item>
-              <p>{{dduckAdded.dduckUnit}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-2>
-            &nbsp;
-          </ion-col>
-        </ion-row>
+    <ion-list>
+      <ion-item *ngFor = "let order of orderList">
+        <ion-card (swipe) = "swipeCategory($event)">
+        <ion-grid class="orderlist-section">
+            <ion-row>
+              <ion-col col-2>
+                <ion-item class="timeonly-text-orderlist">
+                  <p>{{order.deliveryTime.slice(11,13) + "시 " + order.deliveryTime.slice(14,16) + "분"}}</p>
+                </ion-item>
+              </ion-col>
+              <ion-col col-7>
+                <ion-item class="orderlist-recipientAddress">
+                  <p>{{order.recipientAddress}}</p>
+                </ion-item>
+              </ion-col>
+              <ion-col col-3>
+                <ion-item class="orderlist-buyerName">
+                  <p>{{"구매자:  " + order.buyerName}}</p>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+            
+            <ion-row>
+              <ion-col col-2>
+                &nbsp;
+              </ion-col>
+              <ion-col col-7>
+                <ion-item class="orderlist-recipientAddressDetail">
+                  <p>{{order.recipientAddressDetail}}</p>
+                </ion-item>
+              </ion-col>
+              <ion-col col-3>
+                <ion-item class="orderlist-buyerPhoneNumber">
+                  <p>{{order.buyerPhoneNumber}}</p>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+            
+            <ion-row>
+              <ion-col col-2>
+                <button ion-button text-center large outline color="secondary" (click)="modifyOrder()">수정</button>
+              </ion-col>
+              <ion-col col-3>
+                  <ion-item class="orderlist-recipientName">
+                    <p>{{order.recipientName}}</p>
+                  </ion-item>
+                </ion-col>
+              <ion-col col-4>
+                  <ion-item class="orderlist-recipientPhoneNumber">
+                    <p>{{order.recipientPhoneNumber}}</p>
+                  </ion-item>
+              </ion-col>
+              <ion-col col-3>
+                <ion-item class="orderlist-price">
+                  <p>{{order.price + "  원"}}</p>
+                </ion-item> 
+              </ion-col>
+            </ion-row>
+      
+            <ion-row *ngFor="let dduckAdded of order.menuList" class="orderlist-dduckAddedList">
+              <ion-col col-2>&nbsp;</ion-col>
+              <ion-col col-3>
+                <ion-item>
+                  <p>{{dduckAdded.name}}</p>
+                </ion-item>
+              </ion-col>
+              <ion-col col-2>
+                <ion-item>
+                  <p>{{dduckAdded.amount}}</p>
+                </ion-item>
+              </ion-col>
+              <ion-col col-2>
+                <ion-item>
+                  <p>{{dduckAdded.unit}}</p>
+                </ion-item>
+              </ion-col>
+              <ion-col col-3>
+                &nbsp;
+              </ion-col>
+            </ion-row>
 
-        <ion-row>
-          <ion-col col-2>
-            <ion-row>&nbsp;</ion-row>
-            <ion-row>&nbsp;</ion-row>
-            <ion-row><button ion-button text-center large outline color="danger" (click)="modify()">수정</button></ion-row>
-          </ion-col>
-          <ion-col col-7>
-            <ion-item>
-              <p>{{order.memo}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-3>
             <ion-row>
-              <ion-item>
-                <p>{{order.paymentOptions+ " / " + order.paymentPlan}}</p>
-              </ion-item>
+              <ion-col col-2>
+                <button ion-button text-center large outline color="danger" (click)="confirmHideOrder(order.id)">삭제</button>
+              </ion-col>
+              <ion-col col-7>
+                <ion-item class="orderlist-memo">
+                  <p>{{order.memo}}</p>
+                </ion-item>
+              </ion-col>
+              <ion-col col-3>
+                <ion-item class="orderlist-payment">
+                  <p>{{order.paymentMethod + " / " + order.payment}}</p>
+                </ion-item>
+              </ion-col>
             </ion-row>
-            <ion-row>
-              <ion-item>
-                <p>{{"선금: " + order.advancedPayment + "원"}}</p>
-              </ion-item>
-            </ion-row>
-            <ion-row>
-              <ion-item>
-                <p>{{"잔금:  " + order.balancePayment + "원"}}</p>
-              </ion-item>
-            </ion-row>
-          </ion-col>
-        </ion-row>
-
-      </ion-grid>
-    </ion-item>
-  
+          </ion-grid>
+        </ion-card>
+      </ion-item>
+      
+    </ion-list>
     <!-- Searchbar component Example
     <ion-list>
       <ion-item *ngFor="let orderItem of orderItems">
@@ -433,147 +408,162 @@
             </button>
           </ion-col>
       </ion-row>
-  </ion-grid>
+    </ion-grid>
 
 
     <ion-buttons end>
       <button ion-button outline color="danger" (click)="deliverManManage">배달인원관리</button>
     </ion-buttons>
 
-    <ion-row *ngFor="let deliveryMan of deliveryManList; let deliveryManIndex=index">
-      <ion-col col-1>{{deliveryManIndex+1 + "."}}</ion-col>
-      <ion-col col-2>{{deliveryMan}}</ion-col>
-    </ion-row>
 
-    <!-- show order list-->
-    <div>
-      <button ion-button outline (click)="showlist()"></button>
-    </div>
-    <ion-item *ngFor="let order of orderList">
+    <!-- show order list in deliver tab-->
+    <ion-item *ngFor="let order of orderList,let i=index;">
       <ion-grid class="orderlist-section">
-        <ion-row>
-          <ion-col col-2>
-            <ion-item class="timeonly-text-orderlist">
-              <p>{{order.deliverTime}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-7>
-            <ion-item>
-              <p>{{order.recipientAddress}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-3>
-            <ion-item>
-              <p>{{order.buyerName}}</p>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        
-        <ion-row>
-          <ion-col col-2>
-            &nbsp;
-          </ion-col>
-          <ion-col col-7>
-            <ion-item>
-              <p>{{order.recipientAddressDetail}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-3>
-            <ion-item>
-              <p>{{order.buyerPhoneNumber}}</p>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        
-        <ion-row>
-          <ion-col col-2>
-            &nbsp;
-          </ion-col>
-          <ion-col col-3>
-              <ion-item>
-                <p>{{order.recipientName}}</p>
+
+          <ion-row>
+            <ion-col col-2>
+              <ion-item class="timeonly-text-orderlist">
+                <p>{{order.deliveryTime.slice(11,13) + "시 " + order.deliveryTime.slice(14,16) + "분"}}</p>
               </ion-item>
             </ion-col>
-          <ion-col col-4>
-              <ion-item>
-                <p>{{order.recipientPhoneNumber}}</p>
+            <ion-col col-7>
+              <ion-item class="orderlist-recipientAddress">
+                <p>{{order.recipientAddress}}</p>
               </ion-item>
-          </ion-col>
-          <ion-col col-3>
-            <ion-item>
-              <p>{{order.price + "원"}}</p>
-            </ion-item> 
-          </ion-col>
-        </ion-row>
-  
-        <ion-row *ngFor="let dduckAdded of order.dduckAddedList">
-          <ion-col col-1>&nbsp;</ion-col>
-          <ion-col col-4>
-            <ion-item>
-              <p>{{dduckAdded.dduckName}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-1>
-            <ion-item>
-              <p>{{dduckAdded.dduckAmount}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-4>
-            <ion-item>
-              <p>{{dduckAdded.dduckUnit}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-2>
-            &nbsp;
-          </ion-col>
-        </ion-row>
+            </ion-col>
+            <ion-col col-3>
+              <ion-item class="orderlist-buyerName">
+                <p>{{order.buyerName}}</p>
+              </ion-item>
+            </ion-col>
+          </ion-row>
 
-        <ion-row>
-          <ion-col col-2>
-            <ion-row>
-              <ion-item>
-                <ion-label>배달자</ion-label>
-                <ion-select [(ngModel)]="deliveryMan">
-                  <ion-option *ngFor="let deliveryMan of deliveryManList" value="deliveryMan">{{deliveryMan}}</ion-option>
-                </ion-select>
+          <ion-row>
+            <ion-col col-2>
+              &nbsp;
+            </ion-col>
+            <ion-col col-7>
+              <ion-item class="orderlist-recipientAddressDetail">
+                <p>{{order.recipientAddressDetail}}</p>
               </ion-item>
-            </ion-row>
+            </ion-col>
+            <ion-col col-3>
+              <ion-item class="orderlist-buyerPhoneNumber">
+                <p>{{order.buyerPhoneNumber}}</p>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          
+          <ion-row>
+            <ion-col col-2>
+              &nbsp;
+            </ion-col>
+            <ion-col col-3>
+                <ion-item class="orderlist-recipientName">
+                  <p>{{order.recipientName}}</p>
+                </ion-item>
+              </ion-col>
+            <ion-col col-4>
+                <ion-item class="orderlist-recipientPhoneNumber">
+                  <p>{{order.recipientPhoneNumber}}</p>
+                </ion-item>
+            </ion-col>
+            <ion-col col-3>
+              <ion-item class="orderlist-price">
+                <p>{{order.price + "원"}}</p>
+              </ion-item> 
+            </ion-col>
+          </ion-row>
 
-            <ion-row>&nbsp;</ion-row>
-            <ion-row><button ion-button text-center large outline color="danger" (click)="modify()">수정</button></ion-row>
-          </ion-col>
-          <ion-col col-7>
-            <ion-item>
-              <p>{{order.memo}}</p>
-            </ion-item>
-          </ion-col>
-          <ion-col col-3>
-            <ion-row>
+          <!--<div *ngIf="order.dduckAddedList" >-->
+          <ion-row *ngFor="let dduckAdded of order.menuList" class="orderlist-dduckAddedList">
+            <ion-col col-2>&nbsp;</ion-col>
+            <ion-col col-3>
               <ion-item>
-                <p>{{order.paymentOptions+ " / " + order.paymentPlan}}</p>
+                <p>{{dduckAdded.name}}</p>
               </ion-item>
-            </ion-row>
-            <ion-row>
+            </ion-col>
+            <ion-col col-2>
               <ion-item>
-                <p>{{"선금: " + order.advancedPayment + "원"}}</p>
+                <p>{{dduckAdded.amount}}</p>
               </ion-item>
-            </ion-row>
-            <ion-row>
+            </ion-col>
+            <ion-col col-2>
               <ion-item>
-                <p>{{"잔금:  " + order.balancePayment + "원"}}</p>
+                <p>{{dduckAdded.unit}}</p>
               </ion-item>
-            </ion-row>
-          </ion-col>
-        </ion-row>
+            </ion-col>
+            <ion-col col-3>
+              &nbsp;
+            </ion-col>
+          </ion-row>
+         
+            <ion-row>
+              <ion-col col-2>
+                <ion-row>
+                  <ion-item no-padding no-margin>
+                    <ion-select class="select-deliveryMan" okText="선택" cancelText="취소" (ionChange)="selectDeliveryMan(order)" placeholder="배달" [(ngModel)]="order.carrier">
+                      <ion-option *ngFor="let carrier of carriers" value="{{carrier.name}}" >{{carrier.name}}</ion-option>
+                    </ion-select>
+                  </ion-item>
+                </ion-row>
+              </ion-col>
 
-      </ion-grid>
+              <ion-col col-7>
+                <ion-item class="orderlist-memo">
+                  <p>{{order.memo}}</p>
+                </ion-item>
+              </ion-col>
+
+              <ion-col col-3>
+                <ion-row>
+                  <ion-item class="orderlist-payment">
+                    <p>{{order.paymentOptions+ " / " + order.paymentPlan}}</p>
+                  </ion-item>
+                </ion-row>
+              </ion-col>
+            </ion-row>            
+          </ion-grid>
     </ion-item>
-
-  </div>
+  
+  </div>    
 
   <!-- BELOW IS A PRODUCE SECTION -->
   <div [hidden]="produceButtonFlag">
-        Below is produce section
+    <ion-grid>
+      <ion-row>
+          <ion-col col-3>
+            <button ion-button float-right clear (click)="produceGoYesterday()">
+              <ion-icon class="icon-md-datetime-left" name="arrow-back"></ion-icon>
+            </button>
+          </ion-col>
+          <ion-col col-5>
+            <ion-item class="item-datetime-inner">
+              <ion-datetime class="main-datetime-text" displayFormat="YYYY년  MM월  DD일" pickerFormat="YYYY MM DD" [(ngModel)]="displayProduceDate.ios8601"></ion-datetime>
+            </ion-item>
+          </ion-col>
+          <ion-col col-1>
+            요일
+          </ion-col>
+          <ion-col col-3>
+            <button ion-button float-left clear (click)="produceGoTomorrow()">
+              <ion-icon class="icon-md-datetime-right" name="arrow-forward"></ion-icon>
+            </button>
+          </ion-col>
+      </ion-row>
+    </ion-grid>
+
+
+
+    <ion-item *ngFor="let name of menus.name">
+      <ion-col col-3>
+        {{name}}
+      </ion-col>
+      <ion-col col-9>
+        {{}]}
+      </ion-col>
+    </ion-item>
+
   </div>
 
 </ion-content>

@@ -7,7 +7,9 @@ import { Platform } from 'ionic-angular/platform/platform';
 import { AlertController } from 'ionic-angular/components/alert/alert-controller';
 import { Page2Page } from '../page2/page2';
 import { Page3Page } from '../page3/page3';
-import { HttpHeaders, HttpClient } from '@angular/common/http';
+//import { HttpHeaders, HttpClient } from '@angular/common/http';
+import { Button } from 'ionic-angular/components/button/button';
+import {HTTP} from '@ionic-native/http'
 
 
 var gPage;
@@ -21,12 +23,12 @@ export class HomePage {
   
   displayOrderDate;
   displayDeliverDate;
+  displayProduceDate;
   //member variables//
   orderItems;
   myDate: string;
-//  myHMTime: string;
 
-  deliverTime: string;
+  deliveryTime: string;
   recipientAddress: string="도로명 주소 선택";
   recipientAddressDetail: string;
   buyerName: string;
@@ -38,22 +40,18 @@ export class HomePage {
   dduckUnit: string;
   memo: string;
   price: number=null;
-  paymentOptions: string;
-  paymentPlan: string;
-  advancedPayment: number;
-  balancePayment: number=this.price-this.advancedPayment;
-
+  paymentMethod: string;
+  payment: string;
 
   //deliver section variables
+  carrier: string;
   deliveryMan: string;
-  deliveryManList=["조인성", "김태희", "장동건", "한가인", "정우성", "수지", "원빈", "한효주", "강동원", "정유미"];
-
-
-
 
   //ngFor variables//
   orderList=[];
   dduckAddedList=[];
+  menus=[];
+  carriers=[];
 
   //get address variable
   display: string="order";
@@ -63,8 +61,14 @@ export class HomePage {
   redirectUrl="http://www.takit.biz";
 
 
+  ////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////                              ////////////////////////////////
+  //////////////////////////          CONSTRUCTOR         //////////////////////////////// 
+  //////////////////////////                              ////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  
   constructor(
-    private http: HttpClient,
+    private http: HTTP,
     private platform: Platform,
     public alertCtrl:AlertController, 
     public navCtrl: NavController,
@@ -73,38 +77,125 @@ export class HomePage {
     private printer: Printer,
     private app: App){
       
-      platform.ready().then(() => {
-        console.log("Platform ready comes at homePage");
+    platform.ready().then(() => {
+      console.log("Platform ready comes at homePage");
 
-        this.printer.isAvailable().then((avail)=>{
-            console.log("avail:"+avail);
-            this.printer.check().then((output)=>{
-              console.log("output:"+JSON.stringify(output));
+      let body ={deliveryDate: this.deliveryTime.substring(0,10)};    ///// Does it work?
+      this.http.setDataSerializer("json"); 
+      this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+          console.log("res:"+JSON.stringify(res));
+          let response=JSON.parse(res.data);
+          console.log("getOrderWithDeliverDate response: " + JSON.stringify(response));
+          if(response.result=="success"){
+            response.orders.forEach(order=>{
+              let menuList = order.menuList;
+              order.menuList = JSON.parse(menuList);
+            })
+            this.orderList = response.orders;
+            console.log("orderList: " + JSON.stringify(this.orderList));
+          }
+      },(err)=>{
+          console.log("err:"+JSON.stringify(err));
+      });
+
+
+      //Get Menus
+      body = null;
+      this.http.setDataSerializer("json"); 
+      this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getMenus",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+        console.log("res:"+JSON.stringify(res));
+        let response=JSON.parse(res.data);
+        console.log("response: " + JSON.stringify(response));
+        if(response.result=="success"){
+          this.menus = response.menus;
+          console.log("menus: " + JSON.stringify(this.menus));
+        }
+    },(err)=>{
+        console.log("err:"+JSON.stringify(err));
+    });
+
+
+    //Get Carriers
+    body = null;
+      this.http.setDataSerializer("json"); 
+      this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getCarriers",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+        console.log("res:"+JSON.stringify(res));
+        let response=JSON.parse(res.data);
+        console.log("response: " + JSON.stringify(response));
+        if(response.result=="success"){
+          this.carriers = response.carriers;
+          
+          console.log("carriers: " + JSON.stringify(this.carriers));
+        }
+    },(err)=>{
+        console.log("err:"+JSON.stringify(err));
+    });
+
+/*
+      this.printer.isAvailable().then((avail)=>{
+          console.log("With constructor Is print available??: "+avail);
+          this.printer.check().then((output)=>{
+            console.log("With constructor check print output: "+JSON.stringify(output));
+            let alert = this.alertCtrl.create({
+              title: 'check output.'+JSON.stringify(output),
+              buttons: ['확인']
+            });
+            alert.present();
+            this.printer.pick().then((res)=>{
+
             },err=>{
 
+            })
+          },err=>{
+            let alert = this.alertCtrl.create({
+              title: 'check output-error.'+JSON.stringify(err),
+              buttons: ['확인']
             });
-        }, (err)=>{
-            console.log("err:"+JSON.stringify(err));
+            alert.present();
+
+          });
+      }, (err)=>{
+          console.log("With constructor print err:"+JSON.stringify(err));
+          let alert = this.alertCtrl.create({
+            title: 'avail error-output.'+JSON.stringify(err),
+            buttons: ['확인']
+          });
+          alert.present();
+
         });
+*/
   });
    gPage=this;
 
       this.initializeItems();
       var d = new Date();
+      let milliseconds=d.getMilliseconds();
+      var sss:string =milliseconds<100? ( milliseconds<10?'00'+milliseconds: '0'+milliseconds):milliseconds.toString();
+      var ss = d.getSeconds() < 10? "0" + (d.getSeconds()) : (d.getSeconds());
       var mm = d.getMonth() < 9? "0" + (d.getMonth() + 1) : (d.getMonth() +1);
       var dd = d.getDate() <10? "0" + d.getDate() : d.getDate();
 //    var dddd = d.getDay();
       var hh = d.getHours() <10? "0" + d.getHours() : d.getHours();
       var min = d.getMinutes() <10? "0"+d.getMinutes() : d.getMinutes();  
-      var dString = d.getFullYear()+ '-' + (mm) + '-' + (dd) + 'T' + hh + ":" + min+ moment().format("Z");
-      var hmString = hh + ":" + min;
-      //     this.myDate = dString;
-      this.deliverTime = hmString;
-      console.log("deliverTime: "+this.deliverTime);
+      var dString = d.getFullYear()+ '-' + (mm) + '-' + (dd) + 'T' + hh + ":" + min + ":" + ss + "." + sss;
+
+      this.deliveryTime = dString;
+      console.log("deliverTime: "+this.deliveryTime);
+
       let now=new Date();
       this.displayOrderDate={milliseconds:now.getTime() ,ios8601:dString};
       this.displayDeliverDate={milliseconds:now.getTime(), ios8601:dString};
+      this.displayProduceDate={milliseconds:now.getTime(), ios8601:dString};
   }
+
+
+
+  ////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////                              ////////////////////////////////
+  //////////////////////////        COMMON SECTION        //////////////////////////////// 
+  //////////////////////////                              ////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  
 
   adminPage(){
     console.log("open administarator page");
@@ -121,38 +212,168 @@ export class HomePage {
   getISOtime(time){  // milliseconds
     let d=new Date();
     d.setTime(time);
+    var sss = d.getMilliseconds();
+    var ss = d.getSeconds() < 10? "0" + (d.getSeconds()) : (d.getSeconds());
     var mm = d.getMonth() < 9? "0" + (d.getMonth() + 1) : (d.getMonth() +1);
     var dd = d.getDate() <10? "0" + d.getDate() : d.getDate();
     var hh = d.getHours() <10? "0" + d.getHours() : d.getHours();
     var min = d.getMinutes() <10? "0"+d.getMinutes() : d.getMinutes();
-    var dString = d.getFullYear()+ '-' + (mm) + '-' + (dd) + 'T' + hh + ":" + min+ moment().format("Z");
+    var dString = d.getFullYear()+ '-' + (mm) + '-' + (dd) + 'T' + hh + ":" + min + ":" + ss + "." + sss;
     return dString;
   }
 
   orderGoYesterday(){  
     this.displayOrderDate.milliseconds=this.displayOrderDate.milliseconds-24*60*60*1000;
-    console.log("order tab yesterday:"+this.getISOtime(this.displayOrderDate.milliseconds));
+    console.log("order move yesterday:"+this.getISOtime(this.displayOrderDate.milliseconds));
     this.displayOrderDate.ios8601=this.getISOtime(this.displayOrderDate.milliseconds);
+    this.deliveryTime=this.getISOtime(this.displayOrderDate.milliseconds);
+    console.log("modified deliveryTime: " + this.deliveryTime);
+
+
+    let body ={deliveryDate: this.deliveryTime.substring(0,10)};
+        this.http.setDataSerializer("json"); 
+        this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+          console.log("res:"+JSON.stringify(res));
+          let response=JSON.parse(res.data);
+          if(response.result=="success"){
+            response.orders.forEach(order=>{
+              let menuList = order.menuList;
+              order.menuList = JSON.parse(menuList);
+            })
+            this.orderList = response.orders;
+            console.log("orderList: " + JSON.stringify(this.orderList));
+          }
+      },(err)=>{
+          console.log("err:"+JSON.stringify(err));
+      });
   }
 
   orderGoTomorrow(){
     this.displayOrderDate.milliseconds=this.displayOrderDate.milliseconds+24*60*60*1000;
-    console.log("order tab yesterday:"+this.getISOtime(this.displayOrderDate.milliseconds));
+    console.log("order move tomorrow:"+this.getISOtime(this.displayOrderDate.milliseconds));
     this.displayOrderDate.ios8601=this.getISOtime(this.displayOrderDate.milliseconds);   
+    this.deliveryTime=this.getISOtime(this.displayOrderDate.milliseconds);
+    console.log("modified deliveryTime: " + this.deliveryTime);
+
+
+    let body ={deliveryDate: this.deliveryTime.substring(0,10)};
+        this.http.setDataSerializer("json"); 
+        this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+          console.log("res:"+JSON.stringify(res));
+          let response=JSON.parse(res.data);
+          if(response.result=="success"){
+            response.orders.forEach(order=>{
+              let menuList = order.menuList;
+              order.menuList = JSON.parse(menuList);
+            })
+            this.orderList = response.orders;
+            console.log("orderList: " + JSON.stringify(this.orderList));
+          }
+      },(err)=>{
+          console.log("err:"+JSON.stringify(err));
+      });
   }
 
   deliverGoYesterday(){
     this.displayDeliverDate.milliseconds=this.displayDeliverDate.milliseconds-24*60*60*1000;
-    console.log("deliver tab yesterday:"+this.getISOtime(this.displayDeliverDate.milliseconds));
+    console.log("deliver move yesterday:"+this.getISOtime(this.displayDeliverDate.milliseconds));
     this.displayDeliverDate.ios8601=this.getISOtime(this.displayDeliverDate.milliseconds);
+    this.deliveryTime=this.getISOtime(this.displayDeliverDate.milliseconds);
+    console.log("modified deliveryTime: " + this.deliveryTime);
+
+
+    let body ={deliveryDate: this.deliveryTime.substring(0,10)};
+        this.http.setDataSerializer("json"); 
+        this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+          console.log("res:"+JSON.stringify(res));
+          let response=JSON.parse(res.data);
+          if(response.result=="success"){
+            response.orders.forEach(order=>{
+              let menuList = order.menuList;
+              order.menuList = JSON.parse(menuList);
+            })
+            this.orderList = response.orders;
+            console.log("orderList: " + JSON.stringify(this.orderList));
+          }
+      },(err)=>{
+          console.log("err:"+JSON.stringify(err));
+      });
   }
 
   deliverGoTomorrow(){
     this.displayDeliverDate.milliseconds=this.displayDeliverDate.milliseconds+24*60*60*1000;
-    console.log("deliver tab tomorrow:"+this.getISOtime(this.displayDeliverDate.milliseconds));
+    console.log("deliver move tomorrow:"+this.getISOtime(this.displayDeliverDate.milliseconds));
     this.displayDeliverDate.ios8601=this.getISOtime(this.displayDeliverDate.milliseconds);
+    this.deliveryTime=this.getISOtime(this.displayDeliverDate.milliseconds);
+    console.log("modified deliveryTime: " + this.deliveryTime);
+
+
+    let body ={deliveryDate: this.deliveryTime.substring(0,10)};
+        this.http.setDataSerializer("json"); 
+        this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+          console.log("res:"+JSON.stringify(res));
+          let response=JSON.parse(res.data);
+          if(response.result=="success"){
+            response.orders.forEach(order=>{
+              let menuList = order.menuList;
+              order.menuList = JSON.parse(menuList);
+            })
+            this.orderList = response.orders;
+            console.log("orderList: " + JSON.stringify(this.orderList));
+          }
+      },(err)=>{
+          console.log("err:"+JSON.stringify(err));
+      });
   }
 
+  produceGoYesterday(){
+    this.displayProduceDate.milliseconds=this.displayProduceDate.milliseconds-24*60*60*1000;
+    console.log("produce move yesterday:"+this.getISOtime(this.displayProduceDate.milliseconds));
+    this.displayProduceDate.ios8601=this.getISOtime(this.displayProduceDate.milliseconds);
+    this.deliveryTime=this.getISOtime(this.displayProduceDate.milliseconds);
+    console.log("modified deliveryTime: " + this.deliveryTime);
+    
+    let body ={deliveryDate: this.deliveryTime.substring(0,10)};
+    this.http.setDataSerializer("json"); 
+    this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+      console.log("res:"+JSON.stringify(res));
+      let response=JSON.parse(res.data);
+      if(response.result=="success"){
+        response.orders.forEach(order=>{
+          let menuList = order.menuList;
+          order.menuList = JSON.parse(menuList);
+        })
+        this.orderList = response.orders;
+        console.log("orderList: " + JSON.stringify(this.orderList));
+      }
+  },(err)=>{
+      console.log("err:"+JSON.stringify(err));
+  });
+  }
+
+  produceGoTomorrow(){
+    this.displayProduceDate.milliseconds=this.displayProduceDate.milliseconds+24*60*60*1000;
+    console.log("produce move tomorrow:"+this.getISOtime(this.displayProduceDate.milliseconds));
+    this.displayProduceDate.ios8601=this.getISOtime(this.displayProduceDate.milliseconds);
+    this.deliveryTime=this.getISOtime(this.displayProduceDate.milliseconds);
+    console.log("modified deliveryTime: " + this.deliveryTime);
+    let body ={deliveryDate: this.deliveryTime.substring(0,10)};
+    this.http.setDataSerializer("json"); 
+    this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+      console.log("res:"+JSON.stringify(res));
+      let response=JSON.parse(res.data);
+      if(response.result=="success"){
+        response.orders.forEach(order=>{
+          let menuList = order.menuList;
+          order.menuList = JSON.parse(menuList);
+        })
+        this.orderList = response.orders;
+        console.log("orderList: " + JSON.stringify(this.orderList));
+      }
+  },(err)=>{
+      console.log("err:"+JSON.stringify(err));
+  });
+  }
 
   initializeItems(){
 
@@ -184,9 +405,54 @@ export class HomePage {
   }
 
   ionViewDidLoad() {
-    console.log('ionViewDidLoad Page3Page');
-  }
+/*
+   this.orderList= [{"buyerName":"조씨","deliveryTime":"2018-03-19T14:09:50.634","recipientAddress":"도로명 주소 선택","recipientAddressDetail":"11층","recipientName":"김씨","payment":"paid","memo":"ㅁㅁ","paymentMethod":"cash","carrier":null,"recipientPhoneNumber":"65433","price":"33333","id":31,"menuList":"[{\"name\":\"콩송편\",\"amount\":\"3\",\"unit\":\"개\"},{\"name\":\"쑥가래떡\",\"amount\":\"2\",\"unit\":\"접시\"}]","buyerPhoneNumber":"9876","hide":false},{"buyerName":"홍","deliveryTime":"2018-03-19T20:00:20.699Z","recipientAddress":"도로명 주소 선택","recipientAddressDetail":"11층","recipientName":"박","payment":"unpaid","memo":"오로오로","paymentMethod":"card","carrier":null,"recipientPhoneNumber":"8888","price":"44444","id":26,"menuList":"[{\"name\":\"현미쑥가래떡\",\"amount\":\"5\",\"unit\":\"접시\"}]","buyerPhoneNumber":"99999","hide":false},{"buyerName":"홍길동","deliveryTime":"2018-03-19T14:09:50.634","recipientAddress":"도로명 주소 선택","recipientAddressDetail":"ㅊ층수","recipientName":"박철수","payment":"unpaid","memo":"메모","paymentMethod":"card","carrier":null,"recipientPhoneNumber":"888888","price":"40000","id":30,"menuList":"[{\"name\":\"콩송편\",\"amount\":\"6\",\"unit\":\"접시\"}]","buyerPhoneNumber":"99999","hide":false},{"buyerName":"홍","deliveryTime":"2018-03-19T23:48:14.440Z","recipientAddress":"도로명 주소 선택","recipientAddressDetail":"11층","recipientName":"벅","payment":"unpaid","memo":"ㅎㅎㅎㅎ","paymentMethod":"card","carrier":null,"recipientPhoneNumber":"888888","price":"555555","id":28,"menuList":"[{\"name\":\"콩송편\",\"amount\":\"5\",\"unit\":\"접시\"}]","buyerPhoneNumber":"9999","hide":false}]
+   this.orderList.forEach(order=>{
+    let menuList=order.menuList;
+    order.menuList=JSON.parse(menuList);
+  })
+*/
+/*
+  this.platform.ready().then(() => {
+ 
+  let body ={deliveryDate: this.deliveryTime.substring(0,10)};
+  let url = "https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate";
+  console.log("body:"+JSON.stringify(body));
+  this.http.post(url, body, {}).then((res:any)=>{
+    let response=JSON.parse(res.data);
+    console.log("res:"+JSON.stringify(response));
+    if(response.result=="success"){
+      response.orders.forEach(order=>{
+             let menuList=order.menuList;
+             order.menuList=JSON.parse(menuList);
+        })
+        this.orderList=response.orders;
+        console.log("orderList:"+JSON.stringify(this.orderList));
+    }else{
+      console.log("res.result is failure");
+    }
+  })
+  
+  let body ={deliveryDate: this.deliveryTime.substring(0,10)};
+  let url = "https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate";
+  console.log("body:"+JSON.stringify(body));
+  this.http.post(url, body).subscribe((response:any)=>{
+    if(response.result=="success"){
+      response.orders.forEach(order=>{
+             let menuList=order.menuList;
+             order.menuList=JSON.parse(menuList);
+        })
+        this.orderList=response.orders;
+        console.log("orderList:"+JSON.stringify(this.orderList));
+    }else{
+      console.log("res.result is failure");
+    }
+  })
 
+});*/
+    console.log('ionViewDidLoad Page3Page');
+  
+  }
 
 //////////////////////////        BUTTON FLAG       ////////////////////////////////
   orderButtonColor = "#508AE4";
@@ -209,6 +475,9 @@ export class HomePage {
     this.deliverButtonFlag = true;
     this.produceButtonFlag = true;
     this.orderButtonFlag = false;
+
+    console.log("                   Here is Order Section!                   ");
+    console.log("orderButton-orderList: " + JSON.stringify(this.orderList));
   }
 
   deliverButton() {
@@ -219,8 +488,9 @@ export class HomePage {
     this.orderButtonFlag = true;
     this.produceButtonFlag = true;
     this.deliverButtonFlag = false;
-
-
+   
+    console.log("                    Here is Deliver Section!                   ");
+    console.log("deliverButton-orderList:"+JSON.stringify(this.orderList));
   }
 
   produceButton() {
@@ -231,28 +501,125 @@ export class HomePage {
     this.orderButtonFlag = true;
     this.deliverButtonFlag = true;
     this.produceButtonFlag = false;
+
+    console.log("                     Here is Produce Section!                     ");
+    console.log("produceButton-orderList")
   }
-  /*checkInput(){
-    console.log(this.myDate);
-    var date=new Date(this.myDate);
-    console.log("month: "+date.getMonth()+ "  date: "+date.getDate()+"  hour: "+date.getHours())
-  }*/
 
 
+
+  ////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////                              ////////////////////////////////
+  //////////////////////////         ORDER SECTION        //////////////////////////////// 
+  //////////////////////////                              ////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  
   save(){
-    let order={deliverTime: this.deliverTime, recipientAddress: this.recipientAddress, 
+    /*if(this.recipientAddress == "도로명 주소 선택"){
+      let alert = this.alertCtrl.create({
+        title: '도로명 주소를 선택하세요.',
+        buttons: ['확인']
+      });
+      alert.present();
+      return ;
+    }*/
+
+    if(!this.recipientAddressDetail){
+      let alert = this.alertCtrl.create({
+        title:'상세주소를 입력하세요.',
+        buttons: ['확인']
+      });
+      alert.present();
+      return ;
+    }
+
+    if(!this.recipientName){
+      let alert = this.alertCtrl.create({
+        title: '받는사람 이름을 입력하세요.',
+        buttons: ['확인']
+      });
+      alert.present();
+      return ;
+    }
+
+    if(!this.recipientPhoneNumber){
+      let alert = this.alertCtrl.create({
+        title: '받는사람 전화번호를 입력하세요.',
+        buttons: ['확인']
+      });
+      alert.present();
+      return ;
+    }
+
+    if(!this.buyerName){
+      let alert = this.alertCtrl.create({
+        title: '구매자 이름을 입력하세요.',
+        buttons: ['확인']
+      });
+      alert.present();
+      return ;
+    }
+   
+    if(!this.buyerPhoneNumber){
+      let alert = this.alertCtrl.create({
+        title: '구매자 전화번호를 입력하세요.',
+        buttons: ['확인']
+      });
+      alert.present();
+      return ;
+    }
+
+    if(this.dduckAddedList.length==0){
+      let alert = this.alertCtrl.create({
+        title: '떡 종류를 선택하세요. (떡 종류 / 수량 / 단위 선택 후 떡 추가 버튼 누르기)',
+        buttons: ['확인']
+      });
+      alert.present();
+      return ;
+    }
+
+    if(this.price == null){
+      let alert = this.alertCtrl.create({
+        title: '가격을 입력하세요.',
+        buttons: ['확인']
+      });
+      alert.present();
+      return ;
+    }
+
+    if(!this.paymentMethod){
+      let alert = this.alertCtrl.create({
+        title: '결제 수단을 선택하세요.',
+        buttons: ['확인']
+      });
+      alert.present();
+      return ;
+    }
+
+    if(!this.payment){
+      let alert = this.alertCtrl.create({
+        title: '결제 방법을 선택하세요.',
+        buttons: ['확인']
+      });
+      alert.present();
+      return ;
+    }
+
+    let order={deliveryTime: this.deliveryTime, recipientAddress: this.recipientAddress, 
       recipientAddressDetail: this.recipientAddressDetail, recipientName: this.recipientName, 
       recipientPhoneNumber: this.recipientPhoneNumber, buyerName: this.buyerName, 
-      buyerPhoneNumber: this.buyerPhoneNumber, dduckAddedList: this.dduckAddedList, 
-      memo: this.memo, price: this.price, paymentOptions: this.paymentOptions, 
-      paymentPlan: this.paymentPlan, advancedPayment: this.advancedPayment, balancePayment:this.price-this.advancedPayment}
-      
-    this.orderList.push(order);
-    console.log("orderList:"+JSON.stringify(this.orderList));
+      buyerPhoneNumber: this.buyerPhoneNumber, menuList:JSON.stringify(this.dduckAddedList), 
+      memo: this.memo, price: this.price, paymentMethod: this.paymentMethod, payment: this.payment
+    }
+
     
-    //Initialize
-    this.deliverTime=this.deliverTime;
-   /* this.recipientAddress="도로명 주소 선택";
+     // menuList:JSON.stringify([{name:"백설기", amount:2,unit:"말"},{name:"호박떡", amount:1,unit:"말"} ]), 
+    //this.orderList.push(order);
+    //console.log("orderList:"+JSON.stringify(this.orderList));
+    
+    //Initialize Input order
+    this.deliveryTime=this.deliveryTime;
+    this.recipientAddress="도로명 주소 선택";
     this.recipientAddressDetail="";
     this.recipientName="";
     this.recipientPhoneNumber="";
@@ -261,57 +628,117 @@ export class HomePage {
     this.dduckAddedList=[];
     this.memo="";
     this.price=null;
-    this.paymentOptions="";
-    this.paymentPlan="";
-    this.advancedPayment=null;
-    this.balancePayment=null;
+    this.paymentMethod="";
+    this.payment="";
     this.dduckName="";
     this.dduckAmount=null;
     this.dduckUnit="";
-*/
+
+    let body = {order:order};
     //When ORDER SAVE Button Clicked, Request server (JSON Format)  
-    let body= {deliverTime:this.deliverTime, recipientAddress:this.recipientAddress,
-    recipientAddressDetail:this.recipientAddressDetail, recipientName:this.recipientName,
-    recipientPhoneNumber:this.recipientPhoneNumber, buyerName:this.buyerName,
-    buyerPhoneNumber:this.buyerPhoneNumber, dduckAddedList:this.dduckAddedList,
-    memo:this.memo, price:this.price, paymentOptions:this.paymentOptions,paymentPlan:this.paymentPlan,
-    advancedPayment:this.advancedPayment, balancePayment:this.balancePayment};
+   // let order = {deliveryTime:this.deliveryTime, recipientAddress:this.recipientAddress,
+   // recipientAddressDetail:this.recipientAddressDetail, recipientName:this.recipientName,
+   // recipientPhoneNumber:this.recipientPhoneNumber, buyerName:this.buyerName,
+   // buyerPhoneNumber:this.buyerPhoneNumber, dduckAddedList:this.dduckAddedList,
+   // memo:this.memo, price:this.price, paymentMethod:this.paymentMethod, payment:this.payment
+    //orderIndex: this.orderIndex, deliveryMan: this.deliveryMan
+  //};
 
-
-    let url="https://8hiphr7dz1.execute-api.ap-northeast-2.amazonaws.com/test"; // for android,ios  
+    let url="https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/addOrder"; // for android,ios  
     //let url="http://localhost:8100/login"; // for ionic server
-    let headers = new HttpHeaders({'Content-Type': 'application/json'});
-
-    this.http.post(url,body, {headers:headers}).subscribe((res:any)=>{               
-                console.log("res:"+JSON.stringify(res));
-                let response=res;            
+    this.http.setDataSerializer("json"); 
+    this.http.post(url,body, {"Content-Type":"application/json"}).then((res:any)=>{
+                console.log("You Clicked the saving order");               
+                let response=JSON.parse(res.data);            
                 if(response.result=="success"){
-                    console.log("Save Success");
-                    //this.navCtrl.setRoot(HomePage);
+                    console.log("Order Save Success");
+                    let body ={deliveryDate: this.deliveryTime.substring(0,10)};
+                    url = "https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate";
+                    this.http.post(url, body, {"Content-Type":"application/json"}).then((res:any)=>{
+                      res = JSON.parse(res.data);
+                      if(res.result=="success"){
+                        this.ngZone.run(()=>{
+                          res.orders.forEach(order=>{ 
+                             order.menuList=JSON.parse(order.menuList);
+                           });
+                          this.orderList=res.orders;
+                        })
+                      }else{
+                        console.log("Order that you saved is delivered to server & DB successfully but showing of that save order is failure");
+                      }
+                    })
                 }else{
                     let alert = this.alertCtrl.create({
-                                title: '로그인에 실패했습니다.',
+                                title: '주문 저장에 실패했습니다.',
                                 buttons: ['OK']
                             });
                     alert.present();
                 }  
             },(err)=>{
-                console.log("post-err:"+JSON.stringify(err));
+                console.log("order save post-err:"+JSON.stringify(err));
             });
+            
+          
   }
 
   dduckAdd(){
-    let dduckAdded={dduckName: this.dduckName, dduckAmount:this.dduckAmount, dduckUnit: this.dduckUnit}
+    let dduckAdded={name: this.dduckName, amount:this.dduckAmount, unit: this.dduckUnit}
     this.dduckAddedList.push(dduckAdded);
-    //this.dduckName="";
-    //this.dduckAmount=null;
-    //this.dduckUnit="";
+    this.dduckName="";
+    this.dduckAmount=null;
+    this.dduckUnit="";
   }
   
   dduckminus(dduckSelect){
     this.dduckAddedList.splice(dduckSelect, 1);
   }
 
+  confirmHideOrder(id){
+    console.log("confirmHide Order ID: " + JSON.stringify(id));
+    let alert = this.alertCtrl.create({
+      title: '해당 주문을 삭제하시겠습니까?',
+      buttons:[
+        {
+          text: '삭제',
+          handler: () =>{
+            console.log("That order is moved to trash Page");
+            this.hideOrder(id);
+          }
+        },
+
+        {
+          text: '취소',
+          handler: () =>{
+            console.log("cancel that order moved");
+            return;
+          }
+        }
+      ]
+    })
+  }
+
+  hideOrder(id){ //delete order == move order to trash page == hide order from user
+      let body = id;
+      this.http.setDataSerializer("json"); 
+      this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/hideOrder",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+        console.log("res:"+JSON.stringify(res));
+        let response=JSON.parse(res.data);
+        if(response.result=="success"){
+          response.orders.forEach(order=>{
+            let menuList = order.menuList;
+            order.menuList = JSON.parse(menuList);
+          })
+          this.orderList = response.orders;
+          console.log("orderList: " + JSON.stringify(this.orderList));
+        }
+    },(err)=>{
+        console.log("err:"+JSON.stringify(err));
+    });
+  }
+
+  modifyOrder(){ //modify order
+    
+  }
 
   //print function
   print(){
@@ -321,7 +748,7 @@ export class HomePage {
      
     let options: PrintOptions = {
         name: 'MyDocument',
-        printerId: 'printer007',
+       // printerId: 'printer007',
         duplex: true,
         landscape: true,
         grayscale: true
@@ -349,6 +776,7 @@ export class HomePage {
         this.browserRef=this.iab.create(localfile,"_blank" ,'toolbarposition=top,location=no,presentationstyle=formsheet,closebuttoncaption=종료');
 
         this.browserRef.on("loadstart").subscribe((e) =>{
+          console.log("e.url:"+e.url);
           if (e.url.startsWith(this.redirectUrl)) {
             let url=decodeURI(e.url);
             let address=url.substring(this.redirectUrl.length+1);
@@ -366,25 +794,65 @@ export class HomePage {
 
   }
 
-
-  //////////////////////////        DELIVER SECTION       //////////////////////////////// 
-  
-  showlist(){
-    console.log("ORDER CONTENT: " + JSON.stringify(this.orderList))
+  swipeCategory(event){
+    //console.log("event.direction:"+event.direction);
+    if(event.direction == 2){ //Direction left
+      console.log("Item swiped left to delete")
+      
+    }
+    else if(event.direction == 4){
+      console.log("Item swiped right to modify");
+    }
   }
+
+ 
+
+  ////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////                              ////////////////////////////////
+  //////////////////////////        DELIVER SECTION       //////////////////////////////// 
+  //////////////////////////                              ////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  
 
   deliverManManage(){ //Deliver Personnel Page Navigate
     
   }
 
+  selectDeliveryMan(order){ //When user choose delivery Man with order
+
+    console.log("chosen delivery Man Name: " + JSON.stringify(order.carrier));
+  
+    let body = {orderid:order.id, carrier:order.carrier};
+      this.http.setDataSerializer("json"); 
+      this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/assignCarrier",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+        console.log("res:"+JSON.stringify(res));
+        let response=JSON.parse(res.data);
+        console.log("response: " + JSON.stringify(response));
+        if(response.result=="success"){
+          console.log("setting carrier with this order is success: " + JSON.stringify(order.carrier));
+        }
+    },(err)=>{
+        console.log("err:"+JSON.stringify(err));
+    });
+  }
+
+
+
+
+
+  
 
 
 
 
 
 
-
-
+  ////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////                              ////////////////////////////////
+  //////////////////////////        PRODUCE SECTION       //////////////////////////////// 
+  //////////////////////////                              ////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  
 
 
 

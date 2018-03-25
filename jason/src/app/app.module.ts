@@ -11,6 +11,7 @@ import {Page3PageModule} from '../pages/page3/page3.module';
 import { Printer, PrintOptions } from '@ionic-native/printer'
 import { InAppBrowser } from '@ionic-native/in-app-browser'
 import { HttpClientModule } from '@angular/common/http';
+import {HTTP} from '@ionic-native/http'
 
 @NgModule({
   declarations: [
@@ -18,6 +19,7 @@ import { HttpClientModule } from '@angular/common/http';
     HomePage
   ],
   imports: [
+    
     HttpClientModule,
     BrowserModule,
     Page2PageModule,
@@ -39,6 +41,7 @@ import { HttpClientModule } from '@angular/common/http';
     HomePage
   ],
   providers: [
+    HTTP,
     InAppBrowser,
     Printer,
     StatusBar,
