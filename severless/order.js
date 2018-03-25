@@ -6,6 +6,7 @@ var AWS = require("aws-sdk");
 var dynamoDB = require("./dynamo");
 var atomicCounter = require('./atomic-counter');
 var carrier = require('./carrier');
+var sms = require('./sms');
 
 AWS.config.loadFromPath('./dynamo.config.json');
 AWS.config.update({region:'ap-northeast-2'});
@@ -15,11 +16,14 @@ router.addOrder=function (param){
         //console.log("param:"+JSON.stringify(param));
         let order=param.order;
         //console.log("addOrder-order:"+JSON.stringify(order));
+        var currTime = new Date();
+        console.log("currTime:"+currTime.toISOString());
         atomicCounter.increment( "order" ).then(id=>{
                 let params={
                     TableName:"order",
                     Item:{
                         "id":id,
+                        "orderedTime": currTime.toISOString(),
                         "deliveryTime":order.deliveryTime,
                         "recipientAddress":order.recipientAddress,
                         "recipientAddressDetail":order.recipientAddressDetail,
@@ -45,6 +49,16 @@ router.addOrder=function (param){
                     // send push message into others for ordr list update
                     // 모든 db update에 대해 push 메시지가 전달되어야 한다.  
                     resolve(id);
+                    /* sms.notifyOrder requires below fields
+                    let order={
+                        menuList:[{category:'맵떡',name:'이티',amount:1,unit:'kg'},{category:'찰떡',name:'단호박',amount:30,unit:"개"}],
+                        price: 57000,
+                        deliveryFee:6000,
+                        totalPrice: 63000,
+                        deliveryTime:"2018-03-21T09:00:01.553Z"
+                    }
+                    */
+                    sms.notifyOrder(order);
                 },err=>{
                     reject(err);
                 });
@@ -209,14 +223,14 @@ router.showOrder=function (param){
 router.assignCarrier=function (param){
     return new Promise((resolve,reject)=>{  
         // 배달부 목록에 있다면 지정하고 없을 경우 에러로 "invalidCarrier"를 return한다.          
-        if(!param.carrier || !param.id ){
+        if(!param.carrier || !param.orderid ){
             reject("invalidParam");
         }else{
                 carrier.getCarrier(param.carrier).then(value=>{
                         var params = {
                             TableName:"order",
                             Key:{
-                                "id": param.id
+                                "id": param.orderid
                             },
                             ConditionExpression : "attribute_exists(#id)",
                             ExpressionAttributeNames: {

@@ -4,22 +4,48 @@ var bodyParser = require('body-parser')
 
 const express = require('express')
 const app = express()
+
+var cors = require('cors');
 var order= require('./order');
 var menu = require('./menu');
 var carrier = require('./carrier');
-
+var bankda = require('./bankda');
+var device = require('./device');
 var atomicCounter = require('./atomic-counter');
 
 //var bankda = JSON.parse(require('fs').readFileSync('./bankda.json', 'utf8'));
 
+//app.use(cors());
 app.use(bodyParser.json());
 app.all('*',function(req,res,next){
+/*    
+      let names=Object.keys(req); 
+      names.forEach(name=>{
+          console.log("name:"+name);
+      })
+      //console.log("req.url:"+req.url+"req.body:"+JSON.stringify(req.body));
+
+      if(req.hasOwnProperty("_events"))
+            console.log("events:"+JSON.stringify(req._events));
+      console.log("originalUrl:"+req.originalUrl);
+      if(typeof req.route ==="object")
+            console.log("route:"+JSON.stringify(req.route));
+      console.log("domain:"+req.domain); //null
+      console.log("method:"+req.method); //GET
+      if(typeof req.params ==="object" )
+        console.log("params:"+JSON.stringify(req.params));
       console.log("req.url:"+req.url);
-      next();
+*/
+      if(req.url=="/"){ // anyother way to recognize timer events.
+            console.log("call bankda");
+            //res.json({result:"success"});
+            bankda.bankda(res);
+      }else      
+            next();
 });
 
 app.post('/addOrder',(req,res) =>{
-        console.log("addOrder:",req.body);
+        console.log("addOrder:",JSON.stringify(req.body));
         order.addOrder(req.body).then(value=>{
             console.log("value:"+value);
             res.json({result:"success",id:value});
@@ -29,7 +55,7 @@ app.post('/addOrder',(req,res) =>{
 });
 
 app.post('/getOrderWithDeliveryDate',(req,res) =>{
-        console.log("getOrderWithDeliveryDate:"+req.body);
+        console.log("getOrderWithDeliveryDate:"+JSON.stringify(req.body));
         order.getOrderWithDeliveryDate(req.body).then(value=>{
             res.json({result:"success",orders:value});
         },err=>{
@@ -150,5 +176,16 @@ app.post('/getCarriers',(req,res) =>{
             res.json({result:"failure",error:JSON.stringify(err)});
         });
 });
+
+app.post('/registerDeviceRegistrationId',(req,res) =>{
+        console.log("registerDeviceRegistrationId:",req.body);
+        carrier.putRegistrationId(req.body).then(value=>{
+            console.log("value:"+value);
+            res.json({result:"success"});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
+
 module.exports = app
 

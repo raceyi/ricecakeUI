@@ -1,6 +1,6 @@
 let express = require('express');
 let router = express.Router();
-
+let device = require('./device');
 var AWS = require("aws-sdk");
 
 AWS.config.loadFromPath('./dynamo.config.json');
@@ -11,6 +11,9 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 //sync,await를 사용하자. 순서를 구현하는데 있어서...
 //https://tutorialzine.com/2017/07/javascript-async-await-explained
 
+// send push message
+// pushId, 자기 registrationId면 무시하도록 한다.
+
 router.dynamoInsertItem=function(params){ 
     return new Promise((resolve,reject)=>{
         docClient.put(params, function(err, data) {
@@ -19,7 +22,14 @@ router.dynamoInsertItem=function(params){
                 reject(err);
             } else {
                 console.log("Added item:", JSON.stringify(data, null, 2));
-                resolve(data);
+                //resolve(data);
+                if(params.TableName!="devices"){
+                    device.notifyAll(params.TableName).then(()=>{
+                        resolve(data);
+                    },err=>{
+                        resolve(data);
+                    });
+                }
             }
         });   
     }); 
@@ -47,7 +57,14 @@ router.dynamoUpdateItem=function(params){
                 reject(err);
             } else {
                 console.log("item:", JSON.stringify(data, null, 2));
-                resolve(data);
+                //resolve(data);
+                if(params.TableName!="devices"){
+                    device.notifyAll(params.TableName).then(()=>{
+                        resolve(data);
+                    },err=>{
+                        resolve(data);
+                    });
+                }
             }
         });   
     }); 
@@ -61,7 +78,14 @@ router.dynamoDeleteItem=function (params){
                 reject(err);
             } else {
                 console.log("item:", JSON.stringify(data, null, 2));
-                resolve(data);
+                //resolve(data);
+                if(params.TableName!="devices"){
+                    device.notifyAll(params.TableName).then(()=>{
+                        resolve(data);
+                    },err=>{
+                        resolve(data);
+                    });
+                }               
             }
         });   
     }); 
