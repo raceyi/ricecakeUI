@@ -5,7 +5,7 @@ var https = require('https');
 
 var sms=require('./sms.config');
 
-console.log("sms:"+JSON.stringify(sms));
+//console.log("sms:"+JSON.stringify(sms));
 
 sendLMS=function(data){
    console.log("comes sendLMS : "+JSON.stringify(data));

@@ -84,11 +84,11 @@ updateLastBKCode=function(){
                             var params = {
                                 TableName:"AtomicCounters",
                                 Key:{
-                                    "id": "lastValue"
+                                    "id": "last_bkcode"
                                 }, 
-                                ConditionExpression : "attribute_exists(#id)",
+                                ConditionExpression : "attribute_exists(#lastValue)",
                                 ExpressionAttributeNames: {
-                                    "#id":"id"
+                                    "#lastValue":"lastValue"
                                 },
                                 UpdateExpression: "set lastValue = :lastValue",
                                 ExpressionAttributeValues:{
@@ -256,6 +256,12 @@ addTransactionRecord=function(record,next){
                             }
                         });
                     }
+                }else{ // no order, just update bkcode
+                        updateLastBKCode().then(()=>{
+                            next(null);
+                        },err=>{
+                            next(err);
+                        });
                 } 
             },(err)=>{
                 console.log("scanOrders "+JSON.stringify(err));
@@ -314,7 +320,7 @@ check=function(response){
             result += iconv.decode(chunk,"euc-kr");
         });
         res.on('end', function () {
-            //result = fs.readFileSync('bankda.txt', 'utf8');
+            //result = fs.readFileSync('bankda.txt', 'utf8'); //just for testing
             console.log(result);            
             parser.parseString(result, function (err, obj) {
                 console.log("obj:"+JSON.stringify(obj.bankda.account[0].accinfo));

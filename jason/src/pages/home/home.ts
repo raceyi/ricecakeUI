@@ -52,6 +52,7 @@ export class HomePage {
   dduckAddedList=[];
   menus=[];
   carriers=[];
+  categorySelected:number=-1;
 
   //get address variable
   display: string="order";
@@ -79,7 +80,18 @@ export class HomePage {
       
     platform.ready().then(() => {
       console.log("Platform ready comes at homePage");
+     /////////////////////////////////////////////////
+      this.printer.isAvailable().then((avail)=>{
+          console.log("avail:"+avail);
+          this.printer.check().then((output)=>{
+            console.log("output:"+JSON.stringify(output));
+          },err=>{
 
+          });
+      }, (err)=>{
+          console.log("err:"+JSON.stringify(err));
+      });
+      //////////////////////////////////////////////////
       let body ={deliveryDate: this.deliveryTime.substring(0,10)};    ///// Does it work?
       this.http.setDataSerializer("json"); 
       this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate",body,{"Content-Type":"application/json"}).then((res:any)=>{              
@@ -106,8 +118,49 @@ export class HomePage {
         console.log("res:"+JSON.stringify(res));
         let response=JSON.parse(res.data);
         console.log("response: " + JSON.stringify(response));
+        let menus=response.menus;
+        menus.sort(function(a,b){
+              if (a.category < b.category) return -1;
+              if (a.category > b.category) return 1;
+              if(a.menu<b.menu) return -1;
+              if(a.menu>b.menu) return 1;
+              return 0;
+        });
+        console.log("sorted menus:"+JSON.stringify(menus));
+        let categories=[];
+        menus.forEach(menu=>{
+            if(categories.indexOf(menu.category)==-1){
+              categories.push(menu.category);
+            }
+        })
+        let menuInfos=[];
+        categories.forEach(category=>{
+            menuInfos.push({category:category,menus:[]});
+        })
+        console.log("menuInfos-1:"+JSON.stringify(menuInfos));
+        menus.forEach(menu=>{
+             let menuString=menu.menu;
+             /*
+             if(menu.menu.indexOf("[")==0){
+                let menuObjs=JSON.parse(name);
+                console.log("menuObj:"+JSON.stringify(menuObjs));
+                let menuString="";
+                menuObjs.forEach(menuObj=>{
+                   let key:any=Object.keys(menuObj);
+                   menuString+=key+menuObj[key]+" ";
+                });
+             }
+             console.log("menuString:"+menuString);
+             */
+             if(menu.category=="십리향1송이")
+                menuInfos[categories.indexOf(menu.category)].menus.push("모듬찰떡1 단호박소담1 완두시루떡1");
+             else    
+                menuInfos[categories.indexOf(menu.category)].menus.push(menu.menu);
+        })     
+        
         if(response.result=="success"){
-          this.menus = response.menus;
+          //this.menus = response.menus;
+          this.menus = menuInfos;
           console.log("menus: " + JSON.stringify(this.menus));
         }
     },(err)=>{
@@ -743,12 +796,168 @@ export class HomePage {
   //print function
   print(){
     
-    var page = '<h1>Hello Document</h1>';
+    var page;
 
-     
+    if(!this.deliverButtonFlag){
+      console.log("deliver page printout");
+      page="<html>\
+<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\
+      <H1> 배달자:홍길동 배달수: 5개 (2018년 3월 22일 목요일)</H1>\
+  <H1>1/5</H1>\
+  <table style=\"width:100%;border-collapse:collapse;\">\
+  <tr>\
+    <td style=\"border: solid 1px; font-size:0.8em;\" colspan=\"4\">배달지:경기 고양시 덕양구 호수로 3(토당동,덕양상가) 그레이스 6층</td>\
+  </tr>\
+  <tr>\
+      <td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">배달요청시간</td>\
+      <td width=\"35%\"style=\"border: solid 1px; font-size:0.8em;\">11시 50분 </td>\
+      <td width=\"10%\" style=\"border: solid 1px; font-size:0.8em;\">수신자</td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\">이경주 010-1232-4567 </td>\
+  </tr>\
+  <tr>\
+      <td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">주문금액</td>\
+      <td width=\"35%\"style=\"border: solid 1px; font-size:0.8em;\">30,000원(배달료 0원) </td>\
+      <td width=\"10%\" style=\"border: solid 1px; font-size:0.8em;\">결제</td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\">현금(완납)</td>\
+  </tr>\
+  <tr>\
+      <td width=\"20%\" style=\"border: solid 1px; font-size:0.8em;\">주문자 </td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\" colspan=\"3\">김영희 010-1232-4567 <span>(접수:2018년 1월 25일 15시 30분)</span> </td>\
+  </tr>\
+  <tr>\
+    <td style=\"border: solid 1px; font-size:0.8em;\" width=\"100%\" colspan=\"4\">\
+      멥떡-가래떡 2kg<br>\
+      시루떡-찹쌀 0.5말\
+    </td>\
+  </tr> \
+  <tr>\
+    <td style=\"border: solid 1px; font-size:0.8em;\" width=\"100%\" colspan=\"4\">\
+      이쁘게 포장해주세요.\
+    </td>\
+  </tr> \
+  </table>\
+  <br>\
+  <H1>2/5</H1>\
+    <table style=\"width:100%;border-collapse:collapse;\">\
+  <tr>\
+    <td style=\"border: solid 1px; font-size:0.8em;\" colspan=\"4\">배달지:경기 고양시 덕양구 호수로 3(토당동,덕양상가) 그레이스 6층</td>\
+  </tr>\
+  <tr>\
+      <td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">배달요청시간</td>\
+      <td width=\"35%\"style=\"border: solid 1px; font-size:0.8em;\">11시 50분 </td>\
+      <td width=\"10%\" style=\"border: solid 1px; font-size:0.8em;\">수신자</td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\">이경주 010-1232-4567 </td>\
+  </tr>\
+  <tr>\
+      <td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">주문금액</td>\
+      <td width=\"35%\"style=\"border: solid 1px; font-size:0.8em;\">30,000원(배달료 0원) </td>\
+      <td width=\"10%\" style=\"border: solid 1px; font-size:0.8em;\">결제</td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\">현금(완납)</td>\
+  </tr>\
+  <tr>\
+      <td width=\"20%\" style=\"border: solid 1px; font-size:0.8em;\">주문자 </td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\" colspan=\"3\">김영희 010-1232-4567 <span>(접수:2018년 1월 25일 15시 30분)</span> </td>\
+  </tr>\
+  <tr>\
+    <td style=\"border: solid 1px; font-size:0.8em;\" width=\"100%\" colspan=\"4\">\
+      멥떡-가래떡 2kg<br>\
+      시루떡-찹쌀 0.5말\
+    </td>\
+  </tr> \
+  <tr>\
+    <td style=\"border: solid 1px; font-size:0.8em;\" width=\"100%\" colspan=\"4\">\
+      이쁘게 포장해주세요.\
+    </td>\
+  </tr> \
+  </table>";
+    } 
+    if(!this.orderButtonFlag){
+      console.log("order page printout");
+      page="<html>\
+<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\
+  <H1> 배달일: 2018년 3월 22일 목요일 주문수:5개 </H1>\
+  <H1>1/5</H1>\
+  <table style=\"width:100%;border-collapse:collapse;\">\
+  <tr>\
+    <td style=\"border: solid 1px; font-size:0.8em;\" colspan=\"4\">배달지:경기 고양시 덕양구 호수로 3(토당동,덕양상가) 그레이스 6층</td>\
+  </tr>\
+  <tr>\
+      <td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">배달요청시간</td>\
+      <td width=\"35%\"style=\"border: solid 1px; font-size:0.8em;\">11시 50분 </td>\
+      <td width=\"10%\" style=\"border: solid 1px; font-size:0.8em;\">수신자</td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\">이경주 010-1232-4567 </td>\
+  </tr>\
+  <tr>\
+      <td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">주문금액</td>\
+      <td width=\"35%\"style=\"border: solid 1px; font-size:0.8em;\">30,000원(배달료 0원) </td>\
+      <td width=\"10%\" style=\"border: solid 1px; font-size:0.8em;\">결제</td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\">현금(완납)</td>\
+  </tr>\
+  <tr>\
+      <td width=\"20%\" style=\"border: solid 1px; font-size:0.8em;\">주문자 </td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\" colspan=\"3\">김영희 010-1232-4567 <span>(접수:2018년 1월 25일 15시 30분)</span> </td>\
+  </tr>\
+  <tr>\
+      <td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">배달자</td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\" colspan=\"3\">미정 </td>\
+  </tr>\
+  <tr>\
+    <td style=\"border: solid 1px; font-size:0.8em;\" width=\"100%\" colspan=\"4\">\
+      멥떡-가래떡 2kg<br>\
+      시루떡-찹쌀 0.5말\
+    </td>\
+  </tr> \
+  <tr>\
+    <td style=\"border: solid 1px; font-size:0.8em;\" width=\"100%\" colspan=\"4\">\
+      이쁘게 포장해주세요.\
+    </td>\
+  </tr> \
+  </table>\
+  <br>\
+  <H1>2/5</H1>\
+    <table style=\"width:100%;border-collapse:collapse;\">\
+  <tr>\
+    <td style=\"border: solid 1px; font-size:0.8em;\" colspan=\"4\">배달지:경기 고양시 덕양구 호수로 3(토당동,덕양상가) 그레이스 6층</td>\
+  </tr>\
+  <tr>\
+      <td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">배달요청시간</td>\
+      <td width=\"35%\"style=\"border: solid 1px; font-size:0.8em;\">11시 50분 </td>\
+      <td width=\"10%\" style=\"border: solid 1px; font-size:0.8em;\">수신자</td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\">이경주 010-1232-4567 </td>\
+  </tr>\
+  <tr>\
+      <td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">주문금액</td>\
+      <td width=\"35%\"style=\"border: solid 1px; font-size:0.8em;\">30,000원(배달료 0원) </td>\
+      <td width=\"10%\" style=\"border: solid 1px; font-size:0.8em;\">결제</td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\">현금(완납)</td>\
+  </tr>\
+  <tr>\
+      <td width=\"20%\" style=\"border: solid 1px; font-size:0.8em;\">주문자 </td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\" colspan=\"3\">김영희 010-1232-4567 <span>(접수:2018년 1월 25일 15시 30분)</span> </td>\
+  </tr>\
+  <tr>\
+      <td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">배달자</td>\
+      <td style=\"border: solid 1px; font-size:0.8em;\" colspan=\"3\">미정 </td>\
+  </tr>\
+  <tr>\
+    <td style=\"border: solid 1px; font-size:0.8em;\" width=\"100%\" colspan=\"4\">\
+      멥떡-가래떡 2kg<br>\
+      시루떡-찹쌀 0.5말\
+    </td>\
+  </tr> \
+  <tr>\
+    <td style=\"border: solid 1px; font-size:0.8em;\" width=\"100%\" colspan=\"4\">\
+      이쁘게 포장해주세요.\
+    </td>\
+  </tr> \
+  </table>";
+    } 
+
+
+    console.log("print--- ")
+
     let options: PrintOptions = {
         name: 'MyDocument',
-       // printerId: 'printer007',
         duplex: true,
         landscape: true,
         grayscale: true
@@ -838,7 +1047,12 @@ export class HomePage {
 
 
 
-
+  selectCategory(){
+    console.log("selectCategory:"+this.categorySelected);
+    if(this.menus[this.categorySelected].menus.length==1){
+          this.dduckName=this.menus[this.categorySelected].menus[0];
+    }
+  }
 
   
 

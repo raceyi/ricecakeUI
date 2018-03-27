@@ -8,7 +8,7 @@ var AWS = require("aws-sdk");
 AWS.config.loadFromPath('./dynamo.config.json');
 AWS.config.update({region:'ap-northeast-2'});
 
-var config=require("fcm.config");
+var config=require("./fcm.config");
 
 let API_KEY=config.API_KEY;
 
@@ -135,4 +135,5 @@ router.notifyAll=function(tableName){
 }
 
 module.exports = router;
+
 

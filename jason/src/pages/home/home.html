@@ -147,9 +147,11 @@
         </ion-col>
         <ion-col col-3>
           <ion-item>
+            <!--
             <ion-label>떡종류</ion-label>
-            <ion-select interface="action-sheet" [(ngModel)]="dduckName">
-              <ion-option *ngFor="let menu of menus">{{menu.name}}</ion-option>
+            -->
+            <ion-select interface="action-sheet" placeholder="종류" (ionChange)="selectCategory()" [(ngModel)]="categorySelected">
+              <ion-option [value]="i" *ngFor="let menu of menus;let i=index">{{menu.category}}</ion-option>
               <!--<ion-option value="떡국떡">떡국떡</ion-option>
               <ion-option value="바람떡">바람떡</ion-option>
               <ion-option value="찹쌀가루">찹쌀가루</ion-option>
@@ -201,6 +203,11 @@
               <ion-option value="딸기설기">딸기설기</ion-option>
               <ion-option value="멥편">멥편</ion-option>
               <ion-option value="약식">약식</ion-option>-->
+            </ion-select>
+          </ion-item>
+          <ion-item *ngIf="categorySelected!=-1"> 
+            <ion-select interface="action-sheet" placeholder="이름" [(ngModel)]="dduckName">
+              <ion-option *ngFor="let menu of menus[categorySelected].menus,let i=index">{{menu}}</ion-option>
             </ion-select>
           </ion-item>
         </ion-col>
