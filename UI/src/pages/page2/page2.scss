@@ -1,0 +1,34 @@
+page-page2 {
+
+      .administrator-page-center-label{
+        text-align: center;
+        font-size: 4rem;
+        font-weight: bold;
+      }
+
+      .adminPage-top-icon{
+        font-size: 4rem;
+      }
+
+      .administrator-input-password{
+        text-align: center;
+        .text-input{
+          background-color: aliceblue;
+          background: aliceblue;
+          text-align: center;
+          width: min-content;
+          height: 4vh;
+          border-style: solid;
+          border-bottom-style: solid;
+          border-bottom-color: black;
+          border-width: 0.2rem;
+        }
+      }
+
+      .log-in-button{
+        text-align: center;
+        .button-ios{
+          font-size: 4rem;
+        }
+      }
+}
