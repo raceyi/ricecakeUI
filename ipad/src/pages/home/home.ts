@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { NavController,AlertController } from 'ionic-angular';
 import * as moment from 'moment';
 
 @Component({
@@ -25,7 +25,7 @@ export class HomePage {
         }
     ];
 
-  menus=[
+  menus:any=[
         {
             "category": "미니설기",
             "menu": "100"
@@ -213,10 +213,17 @@ export class HomePage {
   newDeliveryMethod:string;
   newPayment:string;
   newCarrier:string;
+  categorySelected:number=-1;
+  unit:string;
+  amount:number;
+  menuIndex:number;
+  menuList=[];
   //기존 주문 수정 패라미터
+  orderList=[];
 
   newOrderInputShown:boolean=false;
-  constructor(public navCtrl: NavController) {
+  constructor(public navCtrl: NavController,    
+              public alertCtrl:AlertController) {
       let now=new Date().getTime();
       this.setDeliveryDate(now);
       console.log("deliveryDate:"+this.deliveryDate);
@@ -240,21 +247,26 @@ export class HomePage {
         })
         let menuInfos=[];
         categories.forEach(category=>{
-            menuInfos.push({category:category,menus:[]});
+            menuInfos.push({category:category,menus:[],menuStrings:[]});
         })
         menus.forEach(menu=>{
              let menuString=menu.menu;
              if(menu.menu.indexOf("[")==0){  
                 let menuObjs=JSON.parse(menu.menu);
                 console.log("menuObj:"+JSON.stringify(menuObjs));
-                let menuString="";
+                menuString="";
                 menuObjs.forEach(menuObj=>{
                    let key:any=Object.keys(menuObj);
                    menuString+=key+menuObj[key]+" ";
                 });
-                console.log("menuString:"+menuString);
              }
+                console.log("menuString:"+menuString);
+
                 menuInfos[categories.indexOf(menu.category)].menus.push(menu.menu);
+                menuInfos[categories.indexOf(menu.category)].menuStrings.push(menuString);
+                console.log("index:"+categories.indexOf(menu.category));
+                console.log(JSON.stringify(menuInfos[categories.indexOf(menu.category)].menus));
+
         })     
         
           this.menus = menuInfos;
@@ -424,6 +436,10 @@ resetNewOrder(){
     this.newPrice=undefined;
     this.newDeliveryMethod=undefined;
     this.newPayment=undefined;
+
+    this.categorySelected=-1;
+    this.unit=undefined;
+    this.amount=undefined;
 }
 
   newOrder(){
@@ -498,6 +514,68 @@ resetNewOrder(){
     this.newAddressInputType=type;
     this.newRecipientAddress="도로명 주소 선택";
   }
+
+
+  selectCategory(){
+    if(this.categorySelected==-1){
+      console.log("categorySelected is -1. How can it happen?");
+      return;
+    }
+    console.log("selectCategory:"+this.categorySelected);
+    if(this.menus[this.categorySelected].menus.length==1){
+          this.menuIndex=0;
+    }
+  }
+
+  addMenu(){
+    if(this.categorySelected==-1 ){
+            let alert = this.alertCtrl.create({
+              title: '종류를 선택해 주시기 바랍니다.',
+              buttons: ['확인']
+            });
+            alert.present();
+        return;
+    }    
+    if(this.menuIndex==-1 ){
+            let alert = this.alertCtrl.create({
+              title: '메뉴를 선택해 주시기 바랍니다.',
+              buttons: ['확인']
+            });
+            alert.present();
+        return;
+    }    
+    if(this.amount==undefined || this.amount==0){
+            let alert = this.alertCtrl.create({
+              title: '수량을 선택해 주시기 바랍니다.',
+              buttons: ['확인']
+            });
+            alert.present();
+        return;
+    }
+    if(this.unit==undefined || this.unit.length==0){
+            let alert = this.alertCtrl.create({
+              title: '단위를 선택해 주시기 바랍니다.',
+              buttons: ['확인']
+            });
+            alert.present();
+        return;
+    }
+    
+    let menu={category:this.menus[this.categorySelected].category,
+              menuString:this.menus[this.categorySelected].menuStrings[this.menuIndex],
+              menu:this.menus[this.categorySelected].menus[this.menuIndex], 
+              amount:this.amount, unit: this.unit}
+    this.menuList.push(menu);              
+    console.log("menu:"+JSON.stringify(menu));          
+    this.categorySelected=-1;
+    this.unit="";
+    this.amount=0;
+    this.menuIndex=-1;
+  }
+
+ removeMenu(i){
+    this.menuList.splice(i,1);
+ }
 
   save(){
 

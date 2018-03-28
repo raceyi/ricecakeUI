@@ -13,7 +13,7 @@ page-home {
 
         .day{
             font-size: 3rem;
-            padding-top: 12px;
+            padding-top: 12px !important;
         }
         .item-datetime-inner{
             margin: auto;
@@ -59,7 +59,7 @@ page-home {
         ion-textarea{
             color: black;
             border:solid 1px lightgray;
-            height: 8vh;
+            height: 5vh;
         }  
 
         .save-button{
@@ -78,8 +78,20 @@ page-home {
         .carrier-select{
             padding-left:20px;
         }
+
+        .add-button{
+            .label-ios{
+                margin:0px;
+            }
+        }
     }
 
+    ion-select{
+        max-width:100%;
+    }
+    .select-ios{
+        padding:0px;
+    }
     .no-item-border-bottom.item-ios.item-block .item-inner{
             border-bottom: 0px !important;
     }
