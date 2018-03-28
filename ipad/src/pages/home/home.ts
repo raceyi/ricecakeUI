@@ -13,7 +13,191 @@ export class HomePage {
   deliveryDate; //배달일을 지정함 
   deliveyDay;   //배달일의 요일을 지정함. 월요일,화요일,...일요일
 
-   carriers=["이경주","이현주","이영섭"];
+   carriers=[
+        {
+            "name": "박서준"
+        },
+        {
+            "name": "정유미"
+        },
+        {
+            "name": "이서진"
+        }
+    ];
+
+  menus=[
+        {
+            "category": "미니설기",
+            "menu": "100"
+        },
+        {
+            "category": "미니설기",
+            "menu": "무지"
+        },
+        {
+            "category": "미니설기",
+            "menu": "첫돌"
+        },
+        {
+            "category": "미니설기",
+            "menu": "하트"
+        },
+        {
+            "category": "멥떡",
+            "menu": "4색 송편"
+        },
+        {
+            "category": "멥떡",
+            "menu": "가래떡"
+        },
+        {
+            "category": "멥떡",
+            "menu": "꿀떡"
+        },
+        {
+            "category": "멥떡",
+            "menu": "녹두호박설기"
+        },
+        {
+            "category": "멥떡",
+            "menu": "단호박 소담"
+        },
+        {
+            "category": "멥떡",
+            "menu": "딸기 설기"
+        },
+        {
+            "category": "멥떡",
+            "menu": "떡국떡"
+        },
+        {
+            "category": "멥떡",
+            "menu": "무지개 설기"
+        },
+        {
+            "category": "멥떡",
+            "menu": "바람떡"
+        },
+        {
+            "category": "멥떡",
+            "menu": "밤콩설기"
+        },
+        {
+            "category": "멥떡",
+            "menu": "백설기"
+        },
+        {
+            "category": "멥떡",
+            "menu": "쑥밤콩설기"
+        },
+        {
+            "category": "멥떡",
+            "menu": "절편"
+        },
+        {
+            "category": "십리향1송이",
+            "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
+        },
+        {
+            "category": "제사편",
+            "menu": "거피"
+        },
+        {
+            "category": "제사편",
+            "menu": "녹두"
+        },
+        {
+            "category": "제사편",
+            "menu": "콩"
+        },
+        {
+            "category": "제사편",
+            "menu": "콩 흑임자"
+        },
+        {
+            "category": "제사편",
+            "menu": "흑임자"
+        },
+        {
+            "category": "찰떡",
+            "menu": "고구마단호박찰떡"
+        },
+        {
+            "category": "찰떡",
+            "menu": "고물 인절미"
+        },
+        {
+            "category": "찰떡",
+            "menu": "모듬영양찰떡"
+        },
+        {
+            "category": "찰떡",
+            "menu": "수수떡"
+        },
+        {
+            "category": "찰떡",
+            "menu": "약식"
+        },
+        {
+            "category": "찰떡",
+            "menu": "완두시루떡"
+        },
+        {
+            "category": "찰떡",
+            "menu": "이티떡"
+        },
+        {
+            "category": "찰떡",
+            "menu": "인절미"
+        },
+        {
+            "category": "찰떡",
+            "menu": "콩영양찰떡"
+        },
+        {
+            "category": "찰떡",
+            "menu": "팥시루떡"
+        },
+        {
+            "category": "멥편",
+            "menu": "거피팥"
+        },
+        {
+            "category": "멥편",
+            "menu": "녹두"
+        },
+        {
+            "category": "멥편",
+            "menu": "콩"
+        },
+        {
+            "category": "멥편",
+            "menu": "팥"
+        },
+        {
+            "category": "답례떡",
+            "menu": "매화2송이"
+        },
+        {
+            "category": "답례떡",
+            "menu": "매화3송이"
+        },
+        {
+            "category": "답례떡",
+            "menu": "매화5송이"
+        },
+        {
+            "category": "떡케이크",
+            "menu": "밤콩백설기케이크"
+        },
+        {
+            "category": "떡케이크",
+            "menu": "백설기케이크"
+        }
+    ];
+
+
+
   //새주문 입력 패라미터
   newDeliveryTime; //새주문 입력시 배달시간
   newRecipientAddress: string="도로명 주소 선택";
@@ -36,6 +220,45 @@ export class HomePage {
       let now=new Date().getTime();
       this.setDeliveryDate(now);
       console.log("deliveryDate:"+this.deliveryDate);
+      this.convertMenuInfo(this.menus);
+  }
+
+  convertMenuInfo(menus){
+        menus.sort(function(a,b){
+              if (a.category < b.category) return -1;
+              if (a.category > b.category) return 1;
+              if(a.menu<b.menu) return -1;
+              if(a.menu>b.menu) return 1;
+              return 0;
+        });
+        console.log("sorted menus:"+JSON.stringify(menus));
+        let categories=[];
+        menus.forEach(menu=>{
+            if(categories.indexOf(menu.category)==-1){
+              categories.push(menu.category);
+            }
+        })
+        let menuInfos=[];
+        categories.forEach(category=>{
+            menuInfos.push({category:category,menus:[]});
+        })
+        menus.forEach(menu=>{
+             let menuString=menu.menu;
+             if(menu.menu.indexOf("[")==0){  
+                let menuObjs=JSON.parse(menu.menu);
+                console.log("menuObj:"+JSON.stringify(menuObjs));
+                let menuString="";
+                menuObjs.forEach(menuObj=>{
+                   let key:any=Object.keys(menuObj);
+                   menuString+=key+menuObj[key]+" ";
+                });
+                console.log("menuString:"+menuString);
+             }
+                menuInfos[categories.indexOf(menu.category)].menus.push(menu.menu);
+        })     
+        
+          this.menus = menuInfos;
+          console.log("menus: " + JSON.stringify(this.menus));
   }
 
   getDayInKorean(day){
