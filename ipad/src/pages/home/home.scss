@@ -1,0 +1,83 @@
+page-home {
+
+    .delivery-date{
+        .icon-md-datetime-left{
+            font-size: 6rem;
+            text-align: right;
+        }
+
+        .icon-md-datetime-right{
+            font-size: 6rem;
+            text-align: left;
+        }
+
+        .day{
+            font-size: 3rem;
+            padding-top: 12px;
+        }
+        .item-datetime-inner{
+            margin: auto;
+        }
+
+        .main-datetime-text{
+            text-align: center;
+            font-size: 30px;
+        }
+
+        .item-ios.item-block .item-inner{
+            border-bottom:0px;
+        }
+
+        ion-row{
+            padding-left:30px;
+        }
+    }
+
+    .order-input-section{
+        border-color: #9acd32;
+        border-style: solid;
+        border-bottom-style: solid;
+        border-bottom-width: 3px;
+        .main-datetime-text{
+            text-align: center;
+            font-size: 30px;
+        }
+        .timeonly-text{
+            text-align: center;
+            font-size: 15px;
+        }
+        .getJusoButton{
+            span{
+                font-size: 1.8rem !important;
+            }
+        }
+        .payment-select{
+            max-width:100%;
+            padding:0px;
+        }
+
+        ion-textarea{
+            color: black;
+            border:solid 1px lightgray;
+            height: 8vh;
+        }  
+
+        .save-button{
+            padding:0px;
+            .label-ios{
+                margin:0px;
+                padding:0px;
+            }
+            .item-button{
+                font-size:1.8rem;
+                height:35px;
+                border-radius: 3px;
+            }
+        } 
+    }
+
+    .no-item-border-bottom.item-ios.item-block .item-inner{
+            border-bottom: 0px !important;
+    }
+
+}
