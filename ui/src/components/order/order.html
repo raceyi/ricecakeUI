@@ -1,8 +1,9 @@
 <!-- Generated template for the OrderComponent component -->
+<!--
     <ion-row>
       <ion-col text-right>  <button ion-button (click)="orderCancel()">입력취소</button></ion-col>
     </ion-row>
-
+-->
     <ion-grid class="order-input-section" no-padding>
       <ion-row>
         <ion-col col-9>
@@ -86,7 +87,7 @@
               <ion-col col-1 text-right>{{menu.amount}}</ion-col>
               <ion-col col-1 text-left>{{menu.unit}}</ion-col>
               <ion-col col-1>
-                <button ion-button clear (click)="removeMenu(i)">
+                <button ion-button no-padding no-margin clear style="height:15px;" (click)="removeMenu(i)">
                   <ion-icon name="close-circle"></ion-icon>
                 </button>
               </ion-col>
@@ -185,16 +186,25 @@
             <ion-row>
               <ion-col col-8>
               <ion-item class="no-item-border-bottom">
-                <ion-select class="payment-select" placeholder="결제방법" interface="popover" [(ngModel)]="order.payment">
+                <ion-select class="payment-select" placeholder="결제방법" interface="popover" [(ngModel)]="order.paymentOption">
                   <ion-option value="cash-pre">현금-선불</ion-option>
-                  <ion-option value="cash-after">현금-후불</ion-option>                  
+                  <ion-option value="cash-after">현금-후불</ion-option>
+                  <ion-option value="cash-paid">현금-완납</ion-option>                 
                   <ion-option value="card-pre">카드-선불</ion-option>
-                  <ion-option value="card-paid">카드-후불</ion-option>
+                  <ion-option value="card-after">카드-후불</ion-option>
+                  <ion-option value="card-paid">카드-완납</ion-option>
                 </ion-select>  
               </ion-item> 
               </ion-col>
               <ion-col col-4>
               </ion-col>           
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                 <ion-item text-right class="save-button no-item-border-bottom">
+                    <button ion-button no-padding no-margin style="background-color:darkgray;" (click)="orderCancel()">입력취소</button>
+                 </ion-item>
+              </ion-col>
             </ion-row>
         </ion-col>
       </ion-row>

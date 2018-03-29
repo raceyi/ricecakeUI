@@ -45,8 +45,25 @@ export class OrderComponent {
 
   orderCancel(){ //initialize and hide orderArea
     console.log("orderCancel comes");
-    this.output.emit();
 
+    let confirm = this.alertCtrl.create({
+      title: '입력을 취소합니다',
+      buttons: [
+        {
+          text: '네',
+          handler: () => {
+            this.output.emit();
+            return;
+          }
+        },
+        {
+          text: '아니오',
+          handler: () => {
+          }
+        }
+      ]
+    });
+    confirm.present();
   }
 
   receiverSameChange(){
@@ -207,7 +224,7 @@ autoHypenPhone(str){
 
     if(this.order.addressInputType=="unknown"){
       let alert = this.alertCtrl.create({
-        title: '주소를 입력하세요.',
+        title: '주소 형식을 선택해주세요.',
         buttons: ['확인']
       });
       alert.present();
@@ -304,16 +321,31 @@ autoHypenPhone(str){
       return ;
     }
 
-    switch(this.order.payment){
-      case "cash-pre":   this.order.payMethod="cash"; this.order.payment="unpaid-pre";break;
-      case "cash-after": this.order.payMethod="cash"; this.order.payment="unpaid-after";break;
-      case "card-pre":   this.order.payMethod="card"; this.order.payment="unpaid-pre";break;
-      case "card-paid":  this.order.payMethod="card"; this.order.payment="unpaid-after";break;
+    switch(this.order.paymentOption){
+      case "cash-pre":   this.order.paymentMethod="cash"; this.order.payment="unpaid-pre";break;
+      case "cash-after": this.order.paymentMethod="cash"; this.order.payment="unpaid-after";break;
+      case "cash-paid": this.order.paymentMethod="cash"; this.order.payment="paid";break;      
+      case "card-pre":   this.order.paymentMethod="card"; this.order.payment="unpaid-pre";break;
+      case "card-after":  this.order.paymentMethod="card"; this.order.payment="unpaid-after";break;
+      case "card-paid":  this.order.paymentMethod="card"; this.order.payment="paid";break;
     }
     let deliveryTime:string=this.order.deliveryTime;
     deliveryTime=deliveryTime.substr(0,16)+":00.000Z"; //dynamoDB format으로 변경한다.
     console.log("deliveryTime:"+deliveryTime);
     this.order.deliveryTime=deliveryTime;
+
+    this.order.price=parseInt(this.order.price);
+    if(this.order.deliveryFee){
+        this.order.deliveryFee=parseInt(this.order.deliveryFee);      
+        this.order.totalPrice=this.order.price+this.order.deliveryFee;
+    }else{
+        this.order.deliveryFee=0;
+        this.order.totalPrice=this.order.price;
+    }
+    if(!this.order.recipientAddressDetail || this.order.addressInputType=="manual"){
+        this.order.recipientAddressDetail="   "; //initialize it with blank string.
+    }
+    console.log("total:"+this.order.totalPrice+" price:"+this.order.price+" deliveryFee:"+this.order.deliveryFee);
     this.output.emit(this.order);
   }
 
