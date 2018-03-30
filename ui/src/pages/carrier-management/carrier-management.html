@@ -1,0 +1,33 @@
+<!--
+  Generated template for the CarrierManagementPage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+
+  <ion-navbar>
+    <ion-title>배달인원관리</ion-title>
+  </ion-navbar>
+</ion-header>
+<ion-content padding>
+   <ion-list>
+     <ion-row>
+     <ion-col>
+
+     </ion-col>
+     <ion-col>
+
+     </ion-col>  
+     <ion-item *ngFor="let carrier of storageProvider.carriers;let i=index;">
+        {{carrier.name}}   <button ion-button (click)="removeCarrier()" > </button>
+     </ion-item>
+     </ion-row>
+     <ion-item>
+       <button ion-button (click)="addCarrier()"><ion-icon name="md-add"></ion-icon> </button>
+     </ion-item>
+     <ion-item>
+       <ion-input type="text"></ion-input>
+     </ion-item>
+   </ion-list>
+</ion-content>
