@@ -1,0 +1,61 @@
+<!-- Generated template for the UnassignedCarrierOrderComponent component -->
+    <ion-grid class="orderlist-section">
+          <ion-row>
+            <ion-col col-5 style="color:darkgray;" no-padding>
+              접수일시:{{order.orderedTimeString}}  
+            </ion-col>
+            <ion-col col-6 text-left no-margin no-padding>
+              구매자:{{ order.buyerName}} ({{order.buyerPhoneNumber}})
+            </ion-col>
+            <ion-col text-right col-1  no-margin no-padding>
+            </ion-col>            
+          </ion-row>
+          <ion-row>
+            <ion-col col-2 no-margin no-padding >
+                    {{order.deliveryTime.slice(11,13) + "시 " + order.deliveryTime.slice(14,16) + "분"}}
+            </ion-col>
+            <ion-col *ngIf="order.recipientAddressDetail==undefined || order.recipientAddressDetail==null || order.recipientAddressDetail.trim().length==0" col-10 no-margin no-padding>
+                     {{order.recipientAddress}} 
+            </ion-col>               
+            <ion-col *ngIf="order.recipientAddressDetail!=undefined && order.recipientAddressDetail!=null && order.recipientAddressDetail.trim().length>0" col-10 no-margin no-padding>
+                     {{order.recipientAddress}} {{order.recipientAddressDetail}}
+            </ion-col>               
+          </ion-row>
+          <ion-row>
+            <ion-col col-2 no-margin no-padding >
+              {{order.deliveryMethod}}
+            </ion-col>
+            <ion-col no-margin no-padding>
+            {{order.recipientName}}  {{order.recipientPhoneNumber}}  
+            </ion-col>
+            <ion-col *ngIf="order.deliveryFee==undefined || order.deliveryFee==null" no-margin no-padding>
+              {{order.totalPrice.toLocaleString()}}원 {{order.paymentString}}
+            </ion-col>
+            <ion-col *ngIf="order.deliveryFee!=undefined && order.deliveryFee!=null && order.deliveryFee>0" no-margin no-padding>
+              {{order.totalPrice.toLocaleString()}}원(배송비{{order.deliveryFee.toLocaleString()}} 포함) {{order.paymentString}}
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col col-2 no-margin no-padding>
+              <ion-row>
+                  <ion-item class="no-item-border-bottom">
+                      <ion-select class="payment-select carrier-select" placeholder="배달자" [(ngModel)]="order.carrier">
+                        <ion-option *ngFor="let carrier of storageProvider.carriers" [value]="carrier.name" >{{carrier.name}}</ion-option>
+                      </ion-select>
+                  </ion-item>
+              </ion-row>
+              <ion-row>
+                  <button ion-button full no-padding no-margin style="width:60px;height:20px;" (click)="assingCarrier(order)" > 저장</button>                
+              </ion-row>
+            </ion-col>
+            <ion-col col-10 no-margin no-padding>
+                    <ion-row *ngFor="let menu of order.menuList">
+                                {{menu.category}}-{{menu.menuString}} &nbsp;&nbsp;
+                                {{menu.amount}} {{menu.unit}}
+                    </ion-row>
+                    <ion-row *ngIf="order.memo!=undefined && order.memo!=null" style="border:solid 0.5px;">
+                       {{order.memo}}
+                    </ion-row>
+            </ion-col>
+          </ion-row>
+      </ion-grid>

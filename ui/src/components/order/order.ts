@@ -1,4 +1,4 @@
-import { Component,Input,NgZone,Output,EventEmitter } from '@angular/core';
+import { Component,Input,NgZone,Output,EventEmitter,OnInit } from '@angular/core';
 import { NavController,AlertController } from 'ionic-angular';
 import * as moment from 'moment';
 
@@ -14,7 +14,7 @@ var gComponent;
   selector: 'order',
   templateUrl: 'order.html'
 })
-export class OrderComponent {
+export class OrderComponent implements OnInit {
  @Input('order') order:any;
  @Input('menus') menus:any;
 
@@ -25,6 +25,9 @@ export class OrderComponent {
   amount:number;
   menuIndex:number=-1;
 
+  paymentOption;  // ion-select가 custom component에서 초기화가 안된다. 왜그럴까? 
+  deliveryMethod;
+
   browserRef;
   done:boolean=false;
   redirectUrl="http://www.takit.biz";
@@ -32,6 +35,13 @@ export class OrderComponent {
   constructor(public alertCtrl:AlertController
               ,private ngZone:NgZone) {
     gComponent=this;
+  }
+
+  ngOnInit() { 
+    console.log('component initialized. order:'+JSON.stringify(this.order)); 
+    this.paymentOption=this.order.paymentOption; //workaround solution. 왜 ion-select의 ngModel값이 초기화가 안될까?
+    this.deliveryMethod=this.order.deliveryMethod;
+    console.log("this.deliveryMethod:"+this.deliveryMethod);
   }
 
   getJuso(){
@@ -303,7 +313,7 @@ autoHypenPhone(str){
       return ;
     }
 
-    if(!this.order.deliveryMethod){
+    if(!this.deliveryMethod){
       let alert = this.alertCtrl.create({
         title: '배송방법을 선택하세요.',
         buttons: ['확인']
@@ -312,7 +322,7 @@ autoHypenPhone(str){
       return ;
     }
 
-    if(!this.order.payment){
+    if(!this.paymentOption){
       let alert = this.alertCtrl.create({
         title: '결제 수단/방법을 선택하세요.',
         buttons: ['확인']
@@ -320,14 +330,18 @@ autoHypenPhone(str){
       alert.present();
       return ;
     }
+    console.log("paymentOption:"+this.order.paymentOption);
+    
+    this.order.paymentOption=this.paymentOption;//workaround solution
+    this.order.deliveryMethod=this.deliveryMethod;//workaround solution
 
     switch(this.order.paymentOption){
-      case "cash-pre":   this.order.paymentMethod="cash"; this.order.payment="unpaid-pre";break;
-      case "cash-after": this.order.paymentMethod="cash"; this.order.payment="unpaid-after";break;
-      case "cash-paid": this.order.paymentMethod="cash"; this.order.payment="paid";break;      
-      case "card-pre":   this.order.paymentMethod="card"; this.order.payment="unpaid-pre";break;
-      case "card-after":  this.order.paymentMethod="card"; this.order.payment="unpaid-after";break;
-      case "card-paid":  this.order.paymentMethod="card"; this.order.payment="paid";break;
+      case "cash-pre":   this.order.paymentMethod="cash"; this.order.payment="unpaid-pre"; this.order.paymentString="현금-선불"; break;
+      case "cash-after": this.order.paymentMethod="cash"; this.order.payment="unpaid-after";this.order.paymentString="현금-후불";break;
+      case "cash-paid": this.order.paymentMethod="cash"; this.order.payment="paid";this.order.paymentString="현금-완납";break;      
+      case "card-pre":   this.order.paymentMethod="card"; this.order.payment="unpaid-pre";this.order.paymentString="카드-선불";break;
+      case "card-after":  this.order.paymentMethod="card"; this.order.payment="unpaid-after";this.order.paymentString="카드-후불";break;
+      case "card-paid":  this.order.paymentMethod="card"; this.order.payment="paid";this.order.paymentString="카드-완납";break;
     }
     let deliveryTime:string=this.order.deliveryTime;
     deliveryTime=deliveryTime.substr(0,16)+":00.000Z"; //dynamoDB format으로 변경한다.
@@ -349,4 +363,10 @@ autoHypenPhone(str){
     this.output.emit(this.order);
   }
 
+/*
+  updatePaymentOption(value){
+    console.log("updatePaymentOption:"+value);
+    this.paymentOption=value; //왜 order.paymentOption에 값이 저장되지 않을까?
+  }
+*/  
 }

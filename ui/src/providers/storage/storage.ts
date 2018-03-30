@@ -221,7 +221,7 @@ export class StorageProvider {
                     "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
                 }
             ],
-            "deliveryMethod": "배송",
+            "deliveryMethod": "배달",
             "buyerPhoneNumber": "010-2722-8226",
             "hide": false
         },
@@ -249,7 +249,7 @@ export class StorageProvider {
                     "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
                 }
             ],
-            "deliveryMethod": "배송",
+            "deliveryMethod": "배달",
             "buyerPhoneNumber": "010-2722-8226",
             "hide": false
         },
@@ -277,7 +277,7 @@ export class StorageProvider {
                     "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
                 }
             ],
-            "deliveryMethod": "배송",
+            "deliveryMethod": "배달",
             "buyerPhoneNumber": "010-2722-8226",
             "hide": false
         },
@@ -289,7 +289,7 @@ export class StorageProvider {
             "recipientAddress": "xxxxx",
             "orderedTime": "2018-03-29T10:33:11.721Z",
             "recipientName": "이경주",
-            "payment": "unpaid-pre",
+            "payment": "paid",
             "memo": "맛있게....",
             "paymentMethod": "cash",
             "carrier": null,
@@ -305,7 +305,7 @@ export class StorageProvider {
                     "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
                 }
             ],
-            "deliveryMethod": "배송",
+            "deliveryMethod": "배달",
             "buyerPhoneNumber": "010-2722-8226",
             "hide": false
         }
