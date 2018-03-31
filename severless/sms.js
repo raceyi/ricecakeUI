@@ -84,14 +84,16 @@ router.notifyOrder=function(order){
 
   let i;
   for(i=0;i<order.menuList.length;i++){
-      content+= order.menuList[i].category+"-"+order.menuList[i].name+" "+order.menuList[i].amount+order.menuList[i].unit+"\n";
+      content+= order.menuList[i].category+"-"+order.menuList[i].menuString+" "+order.menuList[i].amount+order.menuList[i].unit+"\n";
   }
 
-  content+=order.price.toLocaleString()+"원\n";
+
+  content+=order.price.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+"원\n"; // Why toLocaleString doesn't work?
 
   if(order.deliveryFee && order.deliveryFee>0){
-      content+="택배비:"+order.deliveryFee.toLocaleString()+"원\n";
-      content+="총 "+order.totalPrice.toLocaleString()+"원\n";
+      console.log("order.totalPrice:"+order.totalPrice);
+      content+="택배비:"+order.deliveryFee.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+"원\n";
+      content+="총 "+order.totalPrice.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+"원\n";
   }
 
   let month=parseInt(order.deliveryTime.substr(5,2));
@@ -113,7 +115,7 @@ router.notifyOrder=function(order){
             content: content
           };
 
-  sendLMS(data);
+ // sendLMS(data);
 }
 
 module.exports = router;

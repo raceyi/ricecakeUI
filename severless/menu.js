@@ -74,6 +74,22 @@ router.getMenus=function (param){
                         TableName: "menu"
                     };
                     dynamoDB.dynamoScanItem(params).then((result)=>{
+                        // let sort menus group by category and sort by category & name                        
+                        /*
+// 역순(내림차순;다나가, CBA)으로 소팅하여 출력
+document.write(names.sort(compStringReverse) + '<br />');
+// 주의: compStringReverse 함수 뒤에 ()를 붙이면 안됩니다.
+
+
+
+// 문자열 내림차순 정렬에, 내부적으로 필요한 함수
+// 가나다순 소팅에는 필요없음
+function compStringReverse(a, b) {
+  if (a > b) return -1;
+  if (b > a) return 1;
+  return 0;
+}
+                        */
                         resolve(result.Items);
                     },err=>{
                         reject(err);

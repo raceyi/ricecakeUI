@@ -18,12 +18,13 @@ router.addOrder=function (param){
         //console.log("addOrder-order:"+JSON.stringify(order));
         var currTime = new Date();
         console.log("currTime:"+currTime.toISOString());
+        let localCurrTime= new Date(currTime.getTime()+9*60*60*1000);
         atomicCounter.increment( "order" ).then(id=>{
                 let params={
                     TableName:"order",
                     Item:{
                         "id":id,
-                        "orderedTime": currTime.toISOString(),
+                        "orderedTime": localCurrTime.toISOString(),
                         "deliveryTime":order.deliveryTime,
                         "recipientAddress":order.recipientAddress,
                         "recipientAddressDetail":order.recipientAddressDetail,
@@ -36,6 +37,9 @@ router.addOrder=function (param){
                         "price":order.price,
                         "paymentMethod":order.paymentMethod,//카드,현금
                         "payment":order.payment, //지불 여부
+                        "deliveryMethod":order.deliveryMethod, //배달 방법(냉동,배송,픽업,기타),
+                        "deliveryFee":order.deliveryFee,//
+                        "totalPrice":order.totalPrice,
                         "hide":false,
                         "carrier":null
                     },
@@ -48,17 +52,8 @@ router.addOrder=function (param){
                 dynamoDB.dynamoInsertItem(params).then((value)=>{
                     // send push message into others for ordr list update
                     // 모든 db update에 대해 push 메시지가 전달되어야 한다.  
-                    resolve(id);
-                    /* sms.notifyOrder requires below fields
-                    let order={
-                        menuList:[{category:'맵떡',name:'이티',amount:1,unit:'kg'},{category:'찰떡',name:'단호박',amount:30,unit:"개"}],
-                        price: 57000,
-                        deliveryFee:6000,
-                        totalPrice: 63000,
-                        deliveryTime:"2018-03-21T09:00:01.553Z"
-                    }
-                    */
                     sms.notifyOrder(order);
+                    resolve(id);
                 },err=>{
                     reject(err);
                 });
@@ -133,7 +128,8 @@ router.updateOrder=function (param){
                             recipientAddressDetail=:recipientAddressDetail,buyerName=:buyerName,\
                             recipientName=:recipientName,recipientPhoneNumber=:recipientPhoneNumber,\
                             buyerPhoneNumber=:buyerPhoneNumber,menuList=:menuList,\
-                            memo=:memo,price=:price,paymentMethod=:paymentMethod,payment=:payment",
+                            memo=:memo,price=:price,paymentMethod=:paymentMethod,payment=:payment,\
+                            deliveryMethod=:deliveryMethod,deliveryFee=:deliveryFee,totalPrice=:totalPrice",
             ExpressionAttributeValues:{
                 ":deliveryTime":order.deliveryTime,
                 ":recipientAddress":order.recipientAddress,
@@ -146,11 +142,15 @@ router.updateOrder=function (param){
                 ":memo":order.memo,
                 ":price":order.price,
                 ":paymentMethod":order.paymentMethod,//카드,현금
-                ":payment":order.payment //지불 여부
+                ":payment":order.payment, //지불 여부,
+                ":deliveryMethod":order.deliveryMethod,
+                 ":deliveryFee":order.deliveryFee,
+                 ":totalPrice":order.totalPrice
             },
             ReturnValues:"UPDATED_NEW"
         };
         dynamoDB.dynamoUpdateItem(params).then(result=>{
+                sms.notifyOrder(order);            
                 resolve(result);
         },err=>{
                 if(err.code=="ConditionalCheckFailedException")            
