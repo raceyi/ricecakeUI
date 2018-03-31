@@ -20,3 +20,8 @@ $npm install --save @ionic-native/http
 $ionic cordova plugin rm cordova-plugin-printer
 
 $ionic cordova plugin add https://github.com/katzer/cordova-plugin-printer.git
+
+$npm install --save ionic3-calendar-en
+
+
+

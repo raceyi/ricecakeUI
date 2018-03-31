@@ -16,7 +16,7 @@ import {CarrierManagementPageModule} from '../pages/carrier-management/carrier-m
 import {ManagerEntrancePageModule} from '../pages/manager-entrance/manager-entrance.module';
 import {TrashPageModule} from '../pages/trash/trash.module';
 import {ManagerPageModule} from '../pages/manager/manager.module';
-
+import { CalendarModule } from 'ionic3-calendar-en';
 //import { InAppBrowser } from '@ionic-native/in-app-browser'
 
 @NgModule({
@@ -25,6 +25,7 @@ import {ManagerPageModule} from '../pages/manager/manager.module';
     HomePage
   ],
   imports: [
+    CalendarModule,
     ManagerPageModule,
     ManagerEntrancePageModule,
     TrashPageModule,

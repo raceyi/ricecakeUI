@@ -1,3 +1,32 @@
 page-manager {
+    .toolbar-background-ios {
+         background:white; 
+         border:0px;
+    }
+    .header-ios .toolbar-background-ios, .footer-ios .toolbar-background-ios {
+        border-style: none;
+    }
+    .no-item-border-bottom.item-ios.item-block .item-inner {
+    border-bottom: 0px !important;
+    }
 
+    .list-ios > .item-block:first-child{
+        border-top:0px;
+    }
+
+    .list-ios > .item-block:last-child, .list-ios > .item-wrapper:last-child .item-block{
+        border-bottom: 0px;   
+    }   
+
+    .scroll-menus{
+        height:80vh;
+    }
+
+    .scroll-fix{
+        overflow-y: hidden;
+    }
+
+    .no-scroll >.scroll-content{
+        overflow: hidden;
+    }
 }
