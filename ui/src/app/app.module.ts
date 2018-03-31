@@ -12,6 +12,11 @@ import { ConfigProvider } from '../providers/config/config';
 
 import {ComponentsModule} from '../components/components.module';
 import { HttpClientModule } from '@angular/common/http';
+import {CarrierManagementPageModule} from '../pages/carrier-management/carrier-management.module';
+import {ManagerEntrancePageModule} from '../pages/manager-entrance/manager-entrance.module';
+import {TrashPageModule} from '../pages/trash/trash.module';
+import {ManagerPageModule} from '../pages/manager/manager.module';
+
 //import { InAppBrowser } from '@ionic-native/in-app-browser'
 
 @NgModule({
@@ -20,6 +25,10 @@ import { HttpClientModule } from '@angular/common/http';
     HomePage
   ],
   imports: [
+    ManagerPageModule,
+    ManagerEntrancePageModule,
+    TrashPageModule,
+    CarrierManagementPageModule,
     HttpClientModule,
     ComponentsModule,
     BrowserModule,

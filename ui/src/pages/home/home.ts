@@ -4,6 +4,9 @@ import {StorageProvider} from "../../providers/storage/storage";
 import {ServerProvider} from "../../providers/server/server";
 import {CarrierManagementPage} from "../carrier-management/carrier-management";
 
+import {ManagerEntrancePage} from '../manager-entrance/manager-entrance';
+import {TrashPage} from '../trash/trash';
+
 import * as moment from 'moment';
 
 @Component({
@@ -398,4 +401,14 @@ export class HomePage {
             });
         });
     };
+    ////////////////////////////////////////
+    // move into other pages
+    adminPage(){
+            this.navCtrl.push(ManagerEntrancePage);
+    }
+
+    trashPage(){
+            this.navCtrl.push(TrashPage);
+    }
+
 }

@@ -10,6 +10,7 @@ import {ConfigProvider} from "../config/config";
 @Injectable()
 export class StorageProvider {
   orderList:any=[];
+  trashList:any=[];
 
    carriers=[
         {
@@ -307,10 +308,12 @@ export class StorageProvider {
             ],
             "deliveryMethod": "배달",
             "buyerPhoneNumber": "010-2722-8226",
-            "hide": false
+            "hide": true
         }
     ];
 
+    this.trashList=this.orderList; //just test
+    
     this.convertMenuInfo(this.menus);
     this.convertOrderList(this.orderList);
     this.orderList.sort(function(a,b){

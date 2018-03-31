@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import {ConfigProvider} from "../config/config";
 
 /*
   Generated class for the ServerProvider provider.
@@ -10,8 +11,17 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class ServerProvider {
 
-  constructor(public http: HttpClient) {
+  
+  constructor(public http: HttpClient,public configProvider:ConfigProvider) {
     console.log('Hello ServerProvider Provider');
   }
 
+  getOrders(){
+
+
+  }
+  
+  saveOrder(order){
+    
+  }
 }

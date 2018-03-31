@@ -8,8 +8,12 @@ import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { StorageProvider } from '../providers/storage/storage';
 import { ServerProvider } from '../providers/server/server';
-
+import { ConfigProvider}  from '../providers/config/config';
 import {ComponentsModule} from '../components/components.module';
+
+import { InAppBrowser } from '@ionic-native/in-app-browser'
+import { HttpClientModule } from '@angular/common/http';
+import {HTTP} from '@ionic-native/http'
 
 @NgModule({
   declarations: [
@@ -17,6 +21,7 @@ import {ComponentsModule} from '../components/components.module';
     HomePage
   ],
   imports: [
+    HttpClientModule,
     ComponentsModule,
     BrowserModule,
     IonicModule.forRoot(MyApp)
@@ -27,11 +32,14 @@ import {ComponentsModule} from '../components/components.module';
     HomePage
   ],
   providers: [
+    HTTP,    
+    InAppBrowser,
     StatusBar,
     SplashScreen,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     StorageProvider,
-    ServerProvider
+    ServerProvider,
+    ConfigProvider
   ]
 })
 export class AppModule {}
