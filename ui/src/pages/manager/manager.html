@@ -37,6 +37,14 @@
   </ion-col>
   <ion-col col-6>
     <ion-row>
+      <ion-col>
+              <ion-searchbar (ionInput)="searchSales()" placeholder="주문자 검색" [(ngModel)]="searchKeyWord"></ion-searchbar>
+      </ion-col>
+      <ion-col text-center>
+        <button ion-button (click)="getSales()">계산하기</button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
       <ion-col style="font-size:3vw;" text-right>
         현금(완납):
       </ion-col>
@@ -174,6 +182,8 @@
       <div text-center style="font-size:3vw;">
       이름 
       </div>
+      <div *ngIf=" " >
+      </div>
       <ion-scroll scrollY="true" class="scroll-menus">
       <ion-list>
             <ion-item no-padding no-margin class="no-item-border-bottom" *ngFor="let menu of storageProvider.menus[categorySelected].menuStrings;let i=index;">     
@@ -184,7 +194,7 @@
                   </ion-col>
                 </ion-row>
             </ion-item>
-              <ion-row>
+              <ion-row *ngIf="storageProvider.menus[categorySelected].type=='general'">
                 <ion-col col-8 no-padding no-margin text-left>
                 <ion-item class="no-item-border-bottom">
                 <ion-input type="text" placeholder="이름"  [(ngModel)]="newName"  style="border-bottom:solid 1px;"></ion-input>
@@ -196,6 +206,41 @@
                 </ion-item>
                 </ion-col>
               </ion-row>  
+              <div *ngIf="storageProvider.menus[categorySelected].type=='complex' && storageProvider.menus[categorySelected].menus.length==0">
+                <ion-item class="no-item-border-bottom" *ngFor="let item of newComplexMenuItems;let k=index;">
+                  <ion-row >
+                    <ion-col>
+                        {{item.string}}
+                        <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="removeComplexMenuItems(k)" > <ion-icon style="font-size: 1.5em;" name="md-remove-circle"></ion-icon></button>
+                    </ion-col>
+                  </ion-row> 
+                </ion-item>
+              <ion-row>
+                <ion-col col-6 no-padding no-margin text-left>
+                <ion-item class="no-item-border-bottom">
+                <ion-input type="text" placeholder="이름"  [(ngModel)]="newName"  style="border-bottom:solid 1px;"></ion-input>
+                </ion-item>
+                </ion-col>
+                <ion-col col-2 no-padding no-margin>
+                <ion-item >
+                  <ion-input type="number" placeholder="수량"  text-right [(ngModel)]="newAmount"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col col-2 no-padding no-margin>
+                <ion-item class="no-item-border-bottom">
+                  개 
+                </ion-item>
+              </ion-col> 
+              <ion-col col-2>
+                <ion-item class="no-item-border-bottom">         
+                <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="addComplexMenuItem()" ><b> <ion-icon style="font-size: 1.8em;" name="md-add"></ion-icon></b></button>
+                </ion-item>                  
+              </ion-col>                            
+              </ion-row>
+              <ion-row>
+                <button ion-button (click)="saveComplexMenu()">저장</button>
+              </ion-row>  
+              </div>
       </ion-list>  
       </ion-scroll>
     </ion-col>

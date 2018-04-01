@@ -174,7 +174,16 @@ export class OrderComponent implements OnInit {
             alert.present();
         return;
     }
-    
+    if(this.menus[this.categorySelected].menuStrings[this.menuIndex]!=this.menus[this.categorySelected].menus[this.menuIndex]){
+          if(this.unit!="개"){
+              let alert = this.alertCtrl.create({
+                title: '복합 메뉴의 단위는 개만 선택가능합니다.',
+                buttons: ['확인']
+              });
+              alert.present();
+          }
+        return;      
+    }    
     let menu={category:this.menus[this.categorySelected].category,
               menuString:this.menus[this.categorySelected].menuStrings[this.menuIndex],
               menu:this.menus[this.categorySelected].menus[this.menuIndex], 

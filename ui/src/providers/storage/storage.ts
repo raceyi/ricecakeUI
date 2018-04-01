@@ -345,7 +345,9 @@ export class StorageProvider {
         })
         menus.forEach(menu=>{
              let menuString=menu.menu;
-             if(menu.menu.indexOf("[")==0){  
+             let type="general";
+             if(menu.menu.indexOf("[")==0){
+                type="complex";  
                 let menuObjs=JSON.parse(menu.menu);
                 console.log("menuObj:"+JSON.stringify(menuObjs));
                 menuString="";
@@ -355,7 +357,7 @@ export class StorageProvider {
                 });
              }
                 console.log("menuString:"+menuString);
-
+                menuInfos[categories.indexOf(menu.category)].type=type;
                 menuInfos[categories.indexOf(menu.category)].menus.push(menu.menu);
                 menuInfos[categories.indexOf(menu.category)].menuStrings.push(menuString);
                 console.log("index:"+categories.indexOf(menu.category));
