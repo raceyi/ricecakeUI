@@ -55,7 +55,7 @@
                   <button *ngIf="modification" ion-button full no-padding no-margin style="width:60px;height:20px;" (click)="saveCarrier(order)"> 저장</button>                                                 
               </ion-row>
             </ion-col>
-            <ion-col col-10 no-margin no-padding>
+            <ion-col col-10 no-margin no-padding class="menu-style">
                     <ion-row *ngFor="let menu of order.menuList">
                                 {{menu.category}}-{{menu.menuString}} &nbsp;&nbsp;
                                 {{menu.amount}} {{menu.unit}}

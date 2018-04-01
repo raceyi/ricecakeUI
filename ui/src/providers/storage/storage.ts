@@ -243,11 +243,11 @@ export class StorageProvider {
             "id": 66,
             "menuList": [
                 {
-                    "menuString": "모듬찰떡1 단호박소담1 완두시루떡1 ",
-                    "amount": "1",
+                    "menuString": "단호박소담 ",
+                    "amount": "8",
                     "unit": "개",
-                    "category": "십리향1송이",
-                    "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
+                    "category": "맵떡",
+                    "menu": "단호박소담"
                 }
             ],
             "deliveryMethod": "배달",

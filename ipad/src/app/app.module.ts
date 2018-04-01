@@ -17,6 +17,12 @@ import {HTTP} from '@ionic-native/http'
 import {Push,PushObject,PushOptions} from '@ionic-native/push';
 import { BackgroundMode } from '@ionic-native/background-mode';
 
+import {CarrierManagementPageModule} from '../pages/carrier-management/carrier-management.module';
+import {ManagerEntrancePageModule} from '../pages/manager-entrance/manager-entrance.module';
+import {TrashPageModule} from '../pages/trash/trash.module';
+import {ManagerPageModule} from '../pages/manager/manager.module';
+import { CalendarModule } from 'ionic3-calendar-en';
+
 import {MyErrorHandler} from '../classes/my-error-handler';
 
 @NgModule({
@@ -25,6 +31,11 @@ import {MyErrorHandler} from '../classes/my-error-handler';
     HomePage
   ],
   imports: [
+    CalendarModule,
+    ManagerPageModule,
+    ManagerEntrancePageModule,
+    TrashPageModule,
+    CarrierManagementPageModule,    
     HttpClientModule,
     ComponentsModule,
     BrowserModule,

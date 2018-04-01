@@ -15,7 +15,7 @@ var gComponent;
   templateUrl: 'order.html'
 })
 export class OrderComponent implements OnInit {
- @Input('order') order:any;
+ @Input('order') orderIn:any;
  @Input('menus') menus:any;
 
  @Output("output") output= new EventEmitter();
@@ -27,8 +27,9 @@ export class OrderComponent implements OnInit {
 
   paymentOption;  // ion-select가 custom component에서 초기화가 안된다. 왜그럴까? 
   deliveryMethod;
-
   deliveryTimeUpdate; //왜 ngModel이 동작하지 않는가???
+  addressInputType;
+  order;
 
   browserRef;
   done:boolean=false;
@@ -40,6 +41,9 @@ export class OrderComponent implements OnInit {
   }
 
   ngOnInit() { 
+   this.order = Object.assign({}, this.orderIn); // copy object. Very important!!!! 아주 중요하다. 입력값은 사용하지 않는다.
+
+   this.addressInputType=this.order.addressInputType;
     console.log('component initialized. order:'+JSON.stringify(this.order)); 
     this.paymentOption=this.order.paymentOption; //workaround solution. 왜 ion-select의 ngModel값이 초기화가 안될까?
     this.deliveryMethod=this.order.deliveryMethod;
@@ -53,7 +57,7 @@ export class OrderComponent implements OnInit {
 
   manualInput(){
     this.order.addressInputType="manual";
-    this.order.recipientAddress=""
+    this.order.recipientAddress="";
   }
 
   orderCancel(){ //initialize and hide orderArea
@@ -128,8 +132,9 @@ export class OrderComponent implements OnInit {
   }
 
   changeAddressInputType(type){
-    this.order.addressInputType=type;
-    this.order.recipientAddress="도로명 주소 선택";
+      this.order.addressInputType=type;
+      this.order.recipientAddress="도로명 주소 선택123";
+      console.log("!!!!this.order.addressInputType:"+this.order.addressInputType);
   }
 
 
@@ -184,8 +189,8 @@ export class OrderComponent implements OnInit {
                 buttons: ['확인']
               });
               alert.present();
+              return;      
           }
-        return;      
     }    
     let menu={category:this.menus[this.categorySelected].category,
               menuString:this.menus[this.categorySelected].menuStrings[this.menuIndex],
@@ -244,7 +249,7 @@ autoHypenPhone(str){
 
   save(){
 
-    if(this.order.addressInputType=="unknown"){
+    if(this.addressInputType=="unknown"){
       let alert = this.alertCtrl.create({
         title: '주소 형식을 선택해주세요.',
         buttons: ['확인']
@@ -253,7 +258,7 @@ autoHypenPhone(str){
       return ;
     }
 
-    if(this.order.addressInputType=="auto" && (!this.order.recipientAddressDetail || this.order.recipientAddressDetail.trim().length==0)){
+    if(this.addressInputType=="auto" && (!this.order.recipientAddressDetail || this.order.recipientAddressDetail.trim().length==0)){
       let alert = this.alertCtrl.create({
         title:'상세주소를 입력하세요.',
         buttons: ['확인']
@@ -262,7 +267,7 @@ autoHypenPhone(str){
       return ;
     }
 
-    if(this.order.addressInputType=="manual" && (!this.order.recipientAddress || this.order.recipientAddress.trim().length==0)){
+    if(this.addressInputType=="manual" && (!this.order.recipientAddress || this.order.recipientAddress.trim().length==0)){
       let alert = this.alertCtrl.create({
         title:'주소를 입력하세요.',
         buttons: ['확인']
@@ -374,7 +379,7 @@ autoHypenPhone(str){
         this.order.deliveryFee=0;
         this.order.totalPrice=this.order.price;
     }
-    if(!this.order.recipientAddressDetail || this.order.addressInputType=="manual"){
+    if(!this.order.recipientAddressDetail || this.addressInputType=="manual"){
         this.order.recipientAddressDetail="   "; //initialize it with blank string.
     }
     console.log("total:"+this.order.totalPrice+" price:"+this.order.price+" deliveryFee:"+this.order.deliveryFee);

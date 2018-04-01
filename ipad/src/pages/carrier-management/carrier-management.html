@@ -1,33 +1,35 @@
-<!--
-  Generated template for the CarrierManagementPage page.
-
-  See http://ionicframework.com/docs/components/#navigation for more info on
-  Ionic pages and navigation.
--->
 <ion-header>
 
-  <ion-navbar>
+  <ion-navbar hideBackButton>
     <ion-title>배달인원관리</ion-title>
+    <ion-buttons end>
+      <button ion-button style="font-size:4vw;" color="black" (click)="close()"><ion-icon  large name="md-close"></ion-icon></button>
+    </ion-buttons>
   </ion-navbar>
 </ion-header>
 <ion-content padding>
    <ion-list>
-     <ion-row>
-     <ion-col>
-
-     </ion-col>
-     <ion-col>
-
-     </ion-col>  
-     <ion-item *ngFor="let carrier of storageProvider.carriers;let i=index;">
-        {{carrier.name}}   <button ion-button (click)="removeCarrier()" > </button>
-     </ion-item>
-     </ion-row>
-     <ion-item>
-       <button ion-button (click)="addCarrier()"><ion-icon name="md-add"></ion-icon> </button>
-     </ion-item>
-     <ion-item>
-       <ion-input type="text"></ion-input>
-     </ion-item>
+        <ion-item no-padding no-margin class="no-item-border-bottom" *ngFor="let carrier of storageProvider.carriers;let i=index;">     
+            <ion-row>
+              <ion-col no-padding no-margin text-center>
+                    {{carrier.name}} <button style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="removeCarrier(carrier.name)" > <ion-icon style="font-size: 1.5em;" name="md-remove-circle"></ion-icon></button>
+              </ion-col>
+            </ion-row>
+        </ion-item>
+          <ion-row>
+            <ion-col col-5></ion-col>
+            <ion-col col-2 no-padding no-margin text-right>
+            <ion-item class="no-item-border-bottom">
+            <ion-input type="text" placeholder="이름" style="border-bottom:solid 1px;"></ion-input>
+            </ion-item>
+            </ion-col>
+            <ion-col col-1 no-padding no-margin text-left>                    
+            <ion-item class="no-item-border-bottom">         
+            <button style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="addCarrier()" ><b> <ion-icon style="font-size: 1.8em;" name="md-add"></ion-icon></b></button>
+            </ion-item>
+            </ion-col>
+            <ion-col col-4>
+            </ion-col>        
+          </ion-row>  
    </ion-list>
 </ion-content>

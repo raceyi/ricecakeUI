@@ -3,7 +3,7 @@ import { IonicPage, NavController,AlertController, NavParams } from 'ionic-angul
 import {StorageProvider} from "../../providers/storage/storage";
 
 /**
- * Generated class for the CarrierManagementPage page.
+ * Generated class for the TrashPage page.
  *
  * See https://ionicframework.com/docs/components/#navigation for more info on
  * Ionic pages and navigation.
@@ -11,28 +11,30 @@ import {StorageProvider} from "../../providers/storage/storage";
 
 @IonicPage()
 @Component({
-  selector: 'page-carrier-management',
-  templateUrl: 'carrier-management.html',
+  selector: 'page-trash',
+  templateUrl: 'trash.html',
 })
-export class CarrierManagementPage {
+export class TrashPage {
 
-  constructor(public navCtrl: NavController, 
-              public navParams: NavParams,
-              public alertCtrl:AlertController,
-              public storageProvider:StorageProvider) {
+  constructor(public navCtrl: NavController, public navParams: NavParams,
+              public alertCtrl:AlertController,public storageProvider:StorageProvider) {
   }
 
   ionViewDidLoad() {
-    console.log('ionViewDidLoad CarrierManagementPage');
+    console.log('ionViewDidLoad TrashPage');
   }
 
   close(){
-    this.navCtrl.pop();
+      this.navCtrl.pop();
   }
 
-  removeCarrier(name){
+  recovery(order){
+    this.storageProvider.showOrder(order.id);
+  }
+
+  removeAll(){
       let alert = this.alertCtrl.create({
-        title: name+'님을 삭제하시겠습니까?',
+        title: '휴지통을 정말 비우시겠습니까?',
         buttons: [
                 {
                   text: '아니오',
@@ -44,14 +46,12 @@ export class CarrierManagementPage {
                   text: '네',
                   handler: () => {
                     console.log('agree clicked');
+                    this.storageProvider.deleteOrders();
                     return;
                   }
                 }]
       });
       alert.present();
-  }
 
-  addCarrier(){
-    
   }
 }

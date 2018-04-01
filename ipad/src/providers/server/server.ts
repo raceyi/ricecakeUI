@@ -42,6 +42,30 @@ export class ServerProvider {
       });
   }
   
+  getOrdersInTrash(){
+      return new Promise((resolve,reject)=>{
+          let body ={registrationId:this.registrationId};    
+          this.http.setDataSerializer("json"); 
+
+          this.http.post(this.configProvider.serverAddress+"/getOrdersWithHide",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+              console.log("res:"+JSON.stringify(res));
+              let response=JSON.parse(res.data);
+              console.log("getOrdersWithHide response: " + JSON.stringify(response));
+              if(response.result=="success"){
+                    resolve(response.orders);
+              }else{
+                    if(response.error)
+                      reject(response.error);
+                    else
+                      reject("unknown error in server");
+              }
+          },(err)=>{
+                console.log("err:"+JSON.stringify(err));
+                reject(err);
+          });
+      });
+  }
+
   saveOrder(order){
       return new Promise((resolve,reject)=>{    
           let body = {order:order,registrationId:this.registrationId};
@@ -52,6 +76,7 @@ export class ServerProvider {
                       console.log("Order Save Success");
                       resolve();
                   }else{
+                    console.log("error:"+JSON.stringify(response));
                     if(response.error)
                       reject(response.error);
                     else

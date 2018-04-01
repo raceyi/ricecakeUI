@@ -372,12 +372,13 @@ export class HomePage {
     /////////////////////////////////////////////////////////
     //   Produce section - begin
     addMenuInList(menu, deliveryTime, amount) {
+        console.log("addMenuInList:.. menu:"+JSON.stringify(menu));
         console.log("menu.menu:" + menu.menu);
         var hhmm = deliveryTime.slice(11, 13) + "시 " + deliveryTime.slice(14, 16) + "분";
         var min = parseInt(deliveryTime.slice(11, 13)) * 60 + parseInt(deliveryTime.slice(14, 16));
         var index = this.produceList.findIndex(function (val) {
             console.log("val.menu:" + JSON.stringify(val));
-            if (val.menu[0] == menu.menu)
+            if (val.menu == menu.menu) //Please update this....
                 return true;
             else
                 return false;
@@ -393,28 +394,29 @@ export class HomePage {
     };
     
     configureProduceSection() {
-        var _this = this;
         this.produceList = []; //[{menu:"단호박소담",amount:[{amount:"1kg",time:"03:00"}]}]
-        this.storageProvider.orderList.forEach(function (order) {
-            order.menuList.forEach(function (menu) {
+        this.storageProvider.orderList.forEach( (order)=> {
+            console.log("order.menuList: "+JSON.stringify(order.menuList));
+            order.menuList.forEach( (menu) =>{
                 if (menu.menu.indexOf("[") == 0) {
                     var menuObjs = JSON.parse(menu.menu);
                     menuObjs.forEach(function (menuObj) {
                         var key :any= Object.keys(menuObj);
-                        var menuInput = { menu: key, unit: menu.unit };
+                        var menuInput = { menu: key[0], unit: menu.unit };
                         var amount = Number(menuObj[key]) * Number(menu.amount);
                         console.log("amount:" + amount);
-                        _this.addMenuInList(menuInput, order.deliveryTime, amount);
+                        gHomePage.addMenuInList(menuInput, order.deliveryTime, amount);
                     });
                 }
                 else {
-                    _this.addMenuInList(menu, order.deliveryTime, menu.amount);
+                    console.log("menu.menu:"+menu.menu);
+                    gHomePage.addMenuInList(menu, order.deliveryTime, menu.amount); //Please update it!!!
                 }
             });
         });
         console.log("produceList:" + JSON.stringify(this.produceList));
         //humm sort each menu with deliveryTime(?)   
-        this.produceList.forEach(function (menu) {
+        this.produceList.forEach((menu)=> {
             menu.amount.sort(function (a, b) {
                 if (a.min < b.min)
                     return -1;

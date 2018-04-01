@@ -10,7 +10,9 @@
             <ion-row>
               <ion-col col-3 no-padding no-margin>
                 <ion-item>
-                  <ion-datetime class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="HH mm" placeholder="배달시간" [(ngModel)]="order.deliveryTime"></ion-datetime>
+                  ...
+                  <ion-datetime *ngIf="order.id" class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="YYYY MM DD HH mm" placeholder="배달시간" [(ngModel)]="deliveryTimeUpdate"></ion-datetime>
+                  <ion-datetime *ngIf="!order.id" class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="  HH mm" placeholder="배달시간" [(ngModel)]="order.deliveryTime"></ion-datetime>
                 </ion-item>
               </ion-col>
               <ion-col col-9 *ngIf="order.addressInputType=='unknown'">
