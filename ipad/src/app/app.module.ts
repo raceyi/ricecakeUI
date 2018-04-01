@@ -14,6 +14,10 @@ import {ComponentsModule} from '../components/components.module';
 import { InAppBrowser } from '@ionic-native/in-app-browser'
 import { HttpClientModule } from '@angular/common/http';
 import {HTTP} from '@ionic-native/http'
+import {Push,PushObject,PushOptions} from '@ionic-native/push';
+import { BackgroundMode } from '@ionic-native/background-mode';
+
+import {MyErrorHandler} from '../classes/my-error-handler';
 
 @NgModule({
   declarations: [
@@ -32,11 +36,13 @@ import {HTTP} from '@ionic-native/http'
     HomePage
   ],
   providers: [
+    BackgroundMode,
+    Push,
     HTTP,    
     InAppBrowser,
     StatusBar,
     SplashScreen,
-    {provide: ErrorHandler, useClass: IonicErrorHandler},
+    {provide: ErrorHandler, useClass: MyErrorHandler},
     StorageProvider,
     ServerProvider,
     ConfigProvider

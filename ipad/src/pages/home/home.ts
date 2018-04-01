@@ -3,6 +3,8 @@ import { NavController,AlertController,Platform } from 'ionic-angular';
 import {StorageProvider} from "../../providers/storage/storage";
 import {ServerProvider} from "../../providers/server/server";
 import {CarrierManagementPage} from "../carrier-management/carrier-management";
+import {Push,PushObject,PushOptions} from '@ionic-native/push';
+import { BackgroundMode } from '@ionic-native/background-mode';
 
 import * as moment from 'moment';
 var gPage;
@@ -12,6 +14,9 @@ var gPage;
   templateUrl: 'home.html'
 })
 export class HomePage {
+    pushNotification:PushObject;
+    registrationId;
+
     section:string;
     assignOrderList;
     unassingOrderDeliveryList;
@@ -20,8 +25,8 @@ export class HomePage {
     unassingOrderEtcList;
     produceList;
 
-    deliveryDate;
-    deliveyDay;
+//    deliveryDate;
+//    deliveyDay;
 
     newOrderInputShown;
     
@@ -34,6 +39,8 @@ export class HomePage {
     redirectUrl="http://www.takit.biz";
 
      constructor(public navCtrl:NavController, public alertCtrl:AlertController,
+                 private push: Push,private backgroundMode:BackgroundMode,
+                 private platform: Platform,
                  public serverProvider:ServerProvider, public storageProvider:StorageProvider) {
         this.section = "order";
         /////////////////////////////
@@ -51,23 +58,43 @@ export class HomePage {
         // 생산 섹션 변수들 -end
         //////////////////////////////
         this.newOrderInputShown = false;
-        var now = new Date().getTime();
-        this.setDeliveryDate(now);
-        console.log("deliveryDate:" + this.deliveryDate);
+
         this.reconfigureDeliverySection();
     }
     
-    getDayInKorean(day) {
-        switch (day) {
-            case 0: return "일요일";
-            case 1: return "월요일";
-            case 2: return "화요일";
-            case 3: return "수요일";
-            case 4: return "목요일";
-            case 5: return "금요일";
-            case 6: return "토요일";
-        }
-    };
+    ionViewDidLoad() {
+        console.log('ionViewDidLoad');
+
+        this.platform.ready().then(() => {
+            this.backgroundMode.enable(); 
+            const options:PushOptions ={
+                ios:{
+                    fcmSandbox:'true', //development ,'false':production 
+                    alert:'true',
+                    badge:'true',
+                    sound:'true'
+                }
+            };
+
+            this.pushNotification=this.push.init(options);
+
+            this.pushNotification.on('registration').subscribe((response:any)=>{
+              console.log("registration..."+response.registrationId);
+              this.serverProvider.registrationId=response.registrationId;
+            });
+
+            this.pushNotification.on('notification').subscribe((data:any)=>{
+                console.log("notification comes:"+JSON.stringify(data));
+            });
+
+            this.pushNotification.on('error').subscribe((e:any)=>{
+                console.log(e.message);
+            });
+
+        });
+    }
+
+
     
     getISO8601Format(milliseconds) {
         var d = new Date(milliseconds);
@@ -78,21 +105,7 @@ export class HomePage {
         return d.getFullYear() + '-' + (mm) + '-' + dd + 'T' + hh + ":" + min + moment().format("Z");
     };
     
-    setDeliveryDate(milliseconds) {
-        var d = new Date(milliseconds);
-        var mm = d.getMonth() < 9 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1); // getMonth() is zero-based
-        var dd = d.getDate() < 10 ? "0" + d.getDate() : d.getDate();
-        var hh = d.getHours() < 10 ? "0" + d.getHours() : d.getHours();
-        var min = d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes();
-        var dString = d.getFullYear() + '-' + (mm) + '-' + dd + 'T' + hh + ":" + min + moment().format("Z");
-        this.deliveryDate = dString;
-        this.deliveyDay = this.getDayInKorean(d.getDay());
-    };
 
-    updateDeliveryDay() {
-        var d = new Date(this.deliveryDate);
-        this.deliveyDay = this.getDayInKorean(d.getDay());
-    };
 
     orderSection() {
         this.section = 'order';
@@ -170,39 +183,6 @@ export class HomePage {
         return dString;
     };
     
-    orderGoYesterday() {
-        var yesterday = new Date(this.deliveryDate).getTime() - 24 * 60 * 60 * 1000;
-        console.log("order move yesterday:" + this.getISOtime(yesterday));
-        this.setDeliveryDate(yesterday);
-        var body = { deliveryDate: this.getISOtime(yesterday).substring(0, 10) };
-        console.log("body: " + JSON.stringify(body));
-        /*
-            this.http.setDataSerializer("json");
-            this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate",body,{"Content-Type":"application/json"}).then((res:any)=>{
-              console.log("res:"+JSON.stringify(res));
-              let response=JSON.parse(res.data);
-              if(response.result=="success"){
-                    this.setDeliveryDate(yesterday);
-                    response.orders.forEach(order=>{
-                      let menuList = order.menuList;
-                      order.menuList = JSON.parse(menuList);
-                    })
-                    this.orderList = response.orders;
-                    console.log("orderList: " + JSON.stringify(this.orderList));
-              }
-          },(err)=>{
-              console.log("err:"+JSON.stringify(err));
-          });
-    */
-    };
-    
-    orderGoTomorrow() {
-        var tomorrow = new Date(this.deliveryDate).getTime() + 24 * 60 * 60 * 1000;
-        console.log("order move tomorrow:" + this.getISOtime(tomorrow));
-        this.setDeliveryDate(tomorrow);
-        var body = { deliveryDate: this.getISOtime(tomorrow).substring(0, 10) };
-        console.log("body: " + JSON.stringify(body));
-    };
     
     /////////////////////////////////////////////////////////
     configureOrderInput(order) {
@@ -254,8 +234,8 @@ export class HomePage {
             order.menuList = [];
         }
         if (order.deliveryTime == undefined) {
-            console.log("deliveryDate:" + this.deliveryDate);
-            var deliveryDate = new Date(this.deliveryDate);
+            console.log("deliveryDate:" + this.storageProvider.deliveryDate);
+            var deliveryDate = new Date(this.storageProvider.deliveryDate);
             deliveryDate.setHours(0);
             deliveryDate.setMinutes(0);
             deliveryDate.setSeconds(0);

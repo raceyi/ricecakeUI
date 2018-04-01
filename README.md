@@ -23,5 +23,12 @@ $ionic cordova plugin add https://github.com/katzer/cordova-plugin-printer.git
 
 $npm install --save ionic3-calendar-en
 
+$ionic cordova plugin add phonegap-plugin-push
+
+$npm install --save @ionic-native/push
+
+$ionic cordova plugin add cordova-plugin-background-mode
+
+$npm install --save @ionic-native/background-mode
 
 

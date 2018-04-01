@@ -1,6 +1,10 @@
+import { NavController,AlertController,Platform } from 'ionic-angular';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {ConfigProvider} from "../config/config";
+import {ServerProvider} from "../../providers/server/server";
+import * as moment from 'moment';
+
 /*
   Generated class for the StorageProvider provider.
 
@@ -10,317 +14,126 @@ import {ConfigProvider} from "../config/config";
 @Injectable()
 export class StorageProvider {
   orderList:any=[];
+  carriers=[];
+  menus=[];
 
-   carriers=[
-        {
-            "name": "박서준"
-        },
-        {
-            "name": "정유미"
-        },
-        {
-            "name": "이서진"
-        }
-    ];
-
-  menus:any=[
-        {
-            "category": "미니설기",
-            "menu": "100"
-        },
-        {
-            "category": "미니설기",
-            "menu": "무지"
-        },
-        {
-            "category": "미니설기",
-            "menu": "첫돌"
-        },
-        {
-            "category": "미니설기",
-            "menu": "하트"
-        },
-        {
-            "category": "멥떡",
-            "menu": "4색 송편"
-        },
-        {
-            "category": "멥떡",
-            "menu": "가래떡"
-        },
-        {
-            "category": "멥떡",
-            "menu": "꿀떡"
-        },
-        {
-            "category": "멥떡",
-            "menu": "녹두호박설기"
-        },
-        {
-            "category": "멥떡",
-            "menu": "단호박소담"
-        },
-        {
-            "category": "멥떡",
-            "menu": "딸기 설기"
-        },
-        {
-            "category": "멥떡",
-            "menu": "떡국떡"
-        },
-        {
-            "category": "멥떡",
-            "menu": "무지개 설기"
-        },
-        {
-            "category": "멥떡",
-            "menu": "바람떡"
-        },
-        {
-            "category": "멥떡",
-            "menu": "밤콩설기"
-        },
-        {
-            "category": "멥떡",
-            "menu": "백설기"
-        },
-        {
-            "category": "멥떡",
-            "menu": "쑥밤콩설기"
-        },
-        {
-            "category": "멥떡",
-            "menu": "절편"
-        },
-        {
-            "category": "십리향1송이",
-            "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
-        },
-        {
-            "category": "제사편",
-            "menu": "거피"
-        },
-        {
-            "category": "제사편",
-            "menu": "녹두"
-        },
-        {
-            "category": "제사편",
-            "menu": "콩"
-        },
-        {
-            "category": "제사편",
-            "menu": "콩 흑임자"
-        },
-        {
-            "category": "제사편",
-            "menu": "흑임자"
-        },
-        {
-            "category": "찰떡",
-            "menu": "고구마단호박찰떡"
-        },
-        {
-            "category": "찰떡",
-            "menu": "고물 인절미"
-        },
-        {
-            "category": "찰떡",
-            "menu": "모듬영양찰떡"
-        },
-        {
-            "category": "찰떡",
-            "menu": "수수떡"
-        },
-        {
-            "category": "찰떡",
-            "menu": "약식"
-        },
-        {
-            "category": "찰떡",
-            "menu": "완두시루떡"
-        },
-        {
-            "category": "찰떡",
-            "menu": "이티떡"
-        },
-        {
-            "category": "찰떡",
-            "menu": "인절미"
-        },
-        {
-            "category": "찰떡",
-            "menu": "콩영양찰떡"
-        },
-        {
-            "category": "찰떡",
-            "menu": "팥시루떡"
-        },
-        {
-            "category": "멥편",
-            "menu": "거피팥"
-        },
-        {
-            "category": "멥편",
-            "menu": "녹두"
-        },
-        {
-            "category": "멥편",
-            "menu": "콩"
-        },
-        {
-            "category": "멥편",
-            "menu": "팥"
-        },
-        {
-            "category": "답례떡",
-            "menu": "매화2송이"
-        },
-        {
-            "category": "답례떡",
-            "menu": "매화3송이"
-        },
-        {
-            "category": "답례떡",
-            "menu": "매화5송이"
-        },
-        {
-            "category": "떡케이크",
-            "menu": "밤콩백설기케이크"
-        },
-        {
-            "category": "떡케이크",
-            "menu": "백설기케이크"
-        }
-    ];
-
-  constructor(public http: HttpClient,public configProvider:ConfigProvider) {
+  deliveryDate;
+  deliveyDay;
+  
+  constructor(public http: HttpClient,
+              private platform: Platform,  
+              public serverProvider:ServerProvider,
+              public configProvider:ConfigProvider) {
     console.log('Hello StorageProvider Provider');
-    this.orderList=   [
-        {
-            "buyerName": "이경주",
-            "totalPrice": 34000,
-            "deliveryFee": 4000,
-            "deliveryTime": "2018-03-29T03:00:00.000Z",
-            "recipientAddress": "xxxxx",
-            "orderedTime": "2018-03-29T10:33:13.985Z",
-            "recipientName": "이경주",
-            "payment": "unpaid-pre",
-            "memo": "맛있게....",
-            "paymentMethod": "cash",
-            "carrier": null,
-            "recipientPhoneNumber": "010-2722-8226",
-            "price": 30000,
-            "id": 69,
-            "menuList": [
-                {
-                    "menuString": "모듬찰떡1 단호박소담1 완두시루떡1 ",
-                    "amount": "1",
-                    "unit": "개",
-                    "category": "십리향1송이",
-                    "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
-                }
-            ],
-            "deliveryMethod": "배달",
-            "buyerPhoneNumber": "010-2722-8226",
-            "hide": false
-        },
-        {
-            "buyerName": "이경주",
-            "totalPrice": 34000,
-            "deliveryFee": 4000,
-            "deliveryTime": "2018-03-29T03:00:00.000Z",
-            "recipientAddress": "xxxxx",
-            "orderedTime": "2018-03-29T10:32:34.440Z",
-            "recipientName": "이경주",
-            "payment": "unpaid-pre",
-            "memo": "맛있게....",
-            "paymentMethod": "cash",
-            "carrier": null,
-            "recipientPhoneNumber": "010-2722-8226",
-            "price": 30000,
-            "id": 66,
-            "menuList": [
-                {
-                    "menuString": "모듬찰떡1 단호박소담1 완두시루떡1 ",
-                    "amount": "1",
-                    "unit": "개",
-                    "category": "십리향1송이",
-                    "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
-                }
-            ],
-            "deliveryMethod": "배달",
-            "buyerPhoneNumber": "010-2722-8226",
-            "hide": false
-        },
-        {
-            "buyerName": "이경주",
-            "totalPrice": 34000,
-            "deliveryFee": 4000,
-            "deliveryTime": "2018-03-29T03:00:00.000Z",
-            "recipientAddress": "xxxxx",
-            "orderedTime": "2018-03-29T10:33:12.849Z",
-            "recipientName": "이경주",
-            "payment": "unpaid-pre",
-            "memo": "맛있게....",
-            "paymentMethod": "cash",
-            "carrier": null,
-            "recipientPhoneNumber": "010-2722-8226",
-            "price": 30000,
-            "id": 68,
-            "menuList": [
-                {
-                    "menuString": "모듬찰떡1 단호박소담1 완두시루떡1 ",
-                    "amount": "1",
-                    "unit": "개",
-                    "category": "십리향1송이",
-                    "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
-                }
-            ],
-            "deliveryMethod": "배달",
-            "buyerPhoneNumber": "010-2722-8226",
-            "hide": false
-        },
-        {
-            "buyerName": "이경주",
-            "totalPrice": 34000,
-            "deliveryFee": 4000,
-            "deliveryTime": "2018-03-29T03:00:00.000Z",
-            "recipientAddress": "xxxxx",
-            "orderedTime": "2018-03-29T10:33:11.721Z",
-            "recipientName": "이경주",
-            "payment": "paid",
-            "memo": "맛있게....",
-            "paymentMethod": "cash",
-            "carrier": null,
-            "recipientPhoneNumber": "010-2722-8226",
-            "price": 30000,
-            "id": 67,
-            "menuList": [
-                {
-                    "menuString": "모듬찰떡1 단호박소담1 완두시루떡1 ",
-                    "amount": "1",
-                    "unit": "개",
-                    "category": "십리향1송이",
-                    "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
-                }
-            ],
-            "deliveryMethod": "배달",
-            "buyerPhoneNumber": "010-2722-8226",
-            "hide": false
-        }
-    ];
 
-    this.convertMenuInfo(this.menus);
-    this.convertOrderList(this.orderList);
-    this.orderList.sort(function(a,b){
-            if (a.id < b.id) return -1;
-            if (a.id > b.id) return 1;
-            return 0;
-    } );
-    console.log("orderList.length:"+this.orderList.length);
+    this.platform.ready().then(() => {
+            this.refresh();
+    });
+    var now = new Date().getTime();
+    this.setDeliveryDate(now);
+    console.log("deliveryDate:" + this.deliveryDate);
   }
   
+  refresh(){ // 서버로 부터 최신 정보를 가져온다.
+          this.serverProvider.getCarriers().then((carriers:any)=>{
+                this.carriers=carriers;
+            },err=>{
+                
+            })
+            this.serverProvider.getMenus().then((menus)=>{
+                this.convertMenuInfo(menus);
+            },err=>{
+
+            })
+            this.serverProvider.getOrders(this.deliveryDate.substr(0,10)).then((orders)=>{
+                this.convertOrderList(this.orderList);
+                this.orderList.sort(function(a,b){
+                        if (a.id < b.id) return -1;
+                        if (a.id > b.id) return 1;
+                        return 0;
+                } );
+                console.log("orderList.length:"+this.orderList.length);
+            },err=>{
+
+            });
+  }
+
+
+      getDayInKorean(day) {
+        switch (day) {
+            case 0: return "일요일";
+            case 1: return "월요일";
+            case 2: return "화요일";
+            case 3: return "수요일";
+            case 4: return "목요일";
+            case 5: return "금요일";
+            case 6: return "토요일";
+        }
+    };
+
+      setDeliveryDate(milliseconds) {
+        var d = new Date(milliseconds);
+        var mm = d.getMonth() < 9 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1); // getMonth() is zero-based
+        var dd = d.getDate() < 10 ? "0" + d.getDate() : d.getDate();
+        var hh = d.getHours() < 10 ? "0" + d.getHours() : d.getHours();
+        var min = d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes();
+        var dString = d.getFullYear() + '-' + (mm) + '-' + dd + 'T' + hh + ":" + min + moment().format("Z");
+        this.deliveryDate = dString;
+        this.deliveyDay = this.getDayInKorean(d.getDay());
+    };
+
+    updateDeliveryDay() {
+        var d = new Date(this.deliveryDate);
+        this.deliveyDay = this.getDayInKorean(d.getDay());
+    };
+
+    getISOtime(time) {
+        var d = new Date(time);
+        var sss = d.getMilliseconds();
+        var ss = d.getSeconds() < 10 ? "0" + (d.getSeconds()) : (d.getSeconds());
+        var mm = d.getMonth() < 9 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
+        var dd = d.getDate() < 10 ? "0" + d.getDate() : d.getDate();
+        var hh = d.getHours() < 10 ? "0" + d.getHours() : d.getHours();
+        var min = d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes();
+        var dString = d.getFullYear() + '-' + (mm) + '-' + (dd) + 'T' + hh + ":" + min + ":" + ss + "." + sss;
+        return dString;
+    };
+
+    orderGoYesterday() {
+        var yesterday = new Date(this.deliveryDate).getTime() - 24 * 60 * 60 * 1000;
+        console.log("order move yesterday:" + this.getISOtime(yesterday));
+        this.setDeliveryDate(yesterday);
+        var body = { deliveryDate: this.getISOtime(yesterday).substring(0, 10) };
+        console.log("body: " + JSON.stringify(body));
+        /*
+            this.http.setDataSerializer("json");
+            this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate",body,{"Content-Type":"application/json"}).then((res:any)=>{
+              console.log("res:"+JSON.stringify(res));
+              let response=JSON.parse(res.data);
+              if(response.result=="success"){
+                    this.setDeliveryDate(yesterday);
+                    response.orders.forEach(order=>{
+                      let menuList = order.menuList;
+                      order.menuList = JSON.parse(menuList);
+                    })
+                    this.orderList = response.orders;
+                    console.log("orderList: " + JSON.stringify(this.orderList));
+              }
+          },(err)=>{
+              console.log("err:"+JSON.stringify(err));
+          });
+    */
+    };
+    
+    orderGoTomorrow() {
+        var tomorrow = new Date(this.deliveryDate).getTime() + 24 * 60 * 60 * 1000;
+        console.log("order move tomorrow:" + this.getISOtime(tomorrow));
+        this.setDeliveryDate(tomorrow);
+        var body = { deliveryDate: this.getISOtime(tomorrow).substring(0, 10) };
+        console.log("body: " + JSON.stringify(body));
+    };
+
+
     convertMenuInfo(menus){
         menus.sort(function(a,b){
               if (a.category < b.category) return -1;
