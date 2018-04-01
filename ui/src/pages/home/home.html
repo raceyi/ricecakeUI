@@ -46,17 +46,25 @@
 
 <div [hidden]="section!='order'">
       <div style="width:30%;margin:auto;">
-              <ion-searchbar (ionInput)="searchOrderItems()" placeholder="주문자,전화번호 검색" [(ngModel)]="searchKeyWord"></ion-searchbar>
+              <ion-searchbar placeholder="주문자 이름,전화번호 검색" (input)="inputSearchKeyWord()" [(ngModel)]="searchKeyWord"></ion-searchbar>
       </div>
-      <ion-row>
-              <ion-col *ngIf="!newOrderInputShown" text-right><button ion-button (click)="createNewOrder()">주문생성</button></ion-col>
-      </ion-row>
-      <order *ngIf="newOrderInputShown" [order]="newOrder" [menus]="storageProvider.menus" (output)="saveOrder($event)"></order>
-      
-      <div *ngFor="let order of storageProvider.orderList;let i=index;">
-        <existing-order *ngIf="!order.modification" [order]="order" (output)="modifyOrder($event)"></existing-order>        
-        <order *ngIf="order.modification" [order]="configureOrderInput(order)" [menus]="storageProvider.menus" (output)="saveOrder($event,order)"></order>        
-    </div>
+      <div *ngIf="!searchKeyWord || searchKeyWord.trim().length==0">
+            <ion-row>
+                    <ion-col *ngIf="!newOrderInputShown" text-right><button ion-button (click)="createNewOrder()">주문생성</button></ion-col>
+            </ion-row>
+            <order *ngIf="newOrderInputShown" [order]="newOrder" [menus]="storageProvider.menus" (output)="saveOrder($event)"></order>
+            
+            <div *ngFor="let order of storageProvider.orderList;let i=index;">
+                <existing-order *ngIf="!order.modification" [order]="order" (output)="modifyOrder($event)"></existing-order>        
+                <order *ngIf="order.modification" [order]="configureOrderInput(order)" [menus]="storageProvider.menus" (output)="saveOrder($event,order)"></order>        
+            </div>
+      </div>
+      <div *ngIf="searchKeyWord && searchKeyWord.trim().length>0">
+              <div *ngFor="let order of filter;let i=index;">
+                <existing-order *ngIf="!order.modification" [order]="order" (output)="modifyOrder($event)"></existing-order>        
+                <order *ngIf="order.modification" [order]="configureOrderInput(order)" [menus]="storageProvider.menus" (output)="saveOrder($event,order)"></order>        
+            </div>        
+      </div>
 </div>
 
 <div [hidden]="section!='delivery'">

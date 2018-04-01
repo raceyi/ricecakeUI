@@ -10,8 +10,8 @@ import { ManagerPage } from '../pages/manager/manager';
   templateUrl: 'app.html'
 })
 export class MyApp {
-  //rootPage:any = HomePage;
-  rootPage:any = ManagerPage;
+  rootPage:any = HomePage;
+  //rootPage:any = ManagerPage;
   constructor(platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen) {
     platform.ready().then(() => {
       // Okay, so the platform is ready and our plugins are available.

@@ -8,6 +8,7 @@ import {ManagerEntrancePage} from '../manager-entrance/manager-entrance';
 import {TrashPage} from '../trash/trash';
 
 import * as moment from 'moment';
+var gHomePage;
 
 @Component({
   selector: 'page-home',
@@ -20,6 +21,7 @@ export class HomePage {
     unassingOrderPickupList;
     unassingOrderFrozenList;
     unassingOrderEtcList;
+    filter=[];
     produceList;
 
     deliveryDate;
@@ -31,6 +33,7 @@ export class HomePage {
     newOrder;
 
      constructor(public navCtrl:NavController, public alertCtrl:AlertController, public serverProvider:ServerProvider, public storageProvider:StorageProvider) {
+        gHomePage=this;
         this.section = "order";
         /////////////////////////////
         // 배달 섹션 변수들 -begin
@@ -104,13 +107,6 @@ export class HomePage {
         this.configureProduceSection();
     };
 
-    searchOrderItems() {
-        var searchKeyword = this.searchKeyWord.trim();
-        if ('0' <= searchKeyword[0] && searchKeyword[0] <= '9') {
-            this.searchKeyWord = this.autoHypenPhone(searchKeyword); // look for phone number
-        }
-    };
-    
     autoHypenPhone(str) {
         str = str.replace(/[^0-9]/g, '');
         var tmp = '';
@@ -273,20 +269,47 @@ export class HomePage {
         if (order == undefined && existing == undefined) {
             console.log("cancel order creation");
             this.newOrderInputShown = false;
+            return;
         }
         else if (order == undefined && existing) {
             console.log("cancel order modification");
             existing.modification = false;
+            return;
         }
-        else if (order.id == undefined) {
+
+        if (order.id == undefined) {
             console.log("order creation " + JSON.stringify(order));
             //save order in DB by calling server API. 
             this.newOrderInputShown = false;
         }
         else {
+            console.log(" "+order.deliveryTimeUpdate+" "+order.deliveryTime);
+            order.deliveryTime=order.deliveryTimeUpdate;
+            // please update DB here
             console.log("order modification");
             //update order List in DB by calling server API.
-            existing.modification = false; //unnecessary code
+            existing.modification = false; 
+            if(order.diffDate){
+                    let alert = this.alertCtrl.create({
+                        title:  order.deliveryTime.substr(0,10)+'으로 배달일을 이동하시겠습니까?',
+                        buttons: [
+                                {
+                                text: '아니오',
+                                handler: () => {
+                                    return;
+                                }
+                                },
+                                {
+                                text: '네',
+                                handler: () => {
+                                    console.log('agree clicked');
+                                    //배달일 수정하기
+                                    return;
+                                }
+                                }]
+                    });
+                    alert.present();                                    
+            }   
         }
     };
     
@@ -411,4 +434,26 @@ export class HomePage {
             this.navCtrl.push(TrashPage);
     }
 
+    inputSearchKeyWord(){
+        console.log("inputSearchKeyWord:"+this.searchKeyWord);
+
+        if(!this.searchKeyWord) return;
+
+        var searchKeyWord = this.searchKeyWord.trim();
+        if ('0' <= searchKeyWord[0] && searchKeyWord[0] <= '9') {
+            this.searchKeyWord = this.autoHypenPhone(searchKeyWord); // look for phone number
+        }
+
+        this.filter=this.storageProvider.orderList.filter(function(value){
+            if('0'<=gHomePage.searchKeyWord[0] && gHomePage.searchKeyWord[0]<='9'){ //check digit
+                    console.log(" "+value.buyerPhoneNumber+" "+gHomePage.searchKeyWord);
+                    console.log(value.buyerPhoneNumber.startsWith(gHomePage.searchKeyWord));
+                    return value.buyerPhoneNumber.startsWith(gHomePage.searchKeyWord);
+            }else{
+                    console.log(" "+value.buyerName+" "+gHomePage.searchKeyWord); 
+                    console.log(value.buyerName.startsWith(gHomePage.searchKeyWord));               
+                    return value.buyerName.startsWith(gHomePage.searchKeyWord);                
+            }
+        });
+    }
 }

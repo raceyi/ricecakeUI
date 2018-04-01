@@ -28,6 +28,8 @@ export class OrderComponent implements OnInit {
   paymentOption;  // ion-select가 custom component에서 초기화가 안된다. 왜그럴까? 
   deliveryMethod;
 
+  deliveryTimeUpdate; //왜 ngModel이 동작하지 않는가???
+
   browserRef;
   done:boolean=false;
   redirectUrl="http://www.takit.biz";
@@ -41,6 +43,7 @@ export class OrderComponent implements OnInit {
     console.log('component initialized. order:'+JSON.stringify(this.order)); 
     this.paymentOption=this.order.paymentOption; //workaround solution. 왜 ion-select의 ngModel값이 초기화가 안될까?
     this.deliveryMethod=this.order.deliveryMethod;
+    this.deliveryTimeUpdate=this.order.deliveryTime;
     console.log("this.deliveryMethod:"+this.deliveryMethod);
   }
 
@@ -339,10 +342,10 @@ autoHypenPhone(str){
       alert.present();
       return ;
     }
-    console.log("paymentOption:"+this.order.paymentOption);
     
     this.order.paymentOption=this.paymentOption;//workaround solution
     this.order.deliveryMethod=this.deliveryMethod;//workaround solution
+    this.order.deliveryTimeUpdate=this.deliveryTimeUpdate //workaround solution. Why? 뭔가를 더 해줘야 하는가?
 
     switch(this.order.paymentOption){
       case "cash-pre":   this.order.paymentMethod="cash"; this.order.payment="unpaid-pre"; this.order.paymentString="현금-선불"; break;
@@ -356,7 +359,13 @@ autoHypenPhone(str){
     deliveryTime=deliveryTime.substr(0,16)+":00.000Z"; //dynamoDB format으로 변경한다.
     console.log("deliveryTime:"+deliveryTime);
     this.order.deliveryTime=deliveryTime;
-
+    if(this.order.id){
+        if(this.deliveryTimeUpdate.substr(0,10)!=this.order.deliveryTime.substr(0,10)){
+            this.order.diffDate=true;          
+        }else
+            this.order.diffDate=false;
+        this.order.deliveryTimeUpdate=this.deliveryTimeUpdate.substr(0,16)+":00.000Z"; //dynamoDB format으로 변경한다.
+    }
     this.order.price=parseInt(this.order.price);
     if(this.order.deliveryFee){
         this.order.deliveryFee=parseInt(this.order.deliveryFee);      
