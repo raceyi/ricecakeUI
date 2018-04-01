@@ -29,7 +29,7 @@
                   <ion-col no-margin no-padding>
                         {{order.recipientName}}  {{order.recipientPhoneNumber}}  
                   </ion-col>
-                  <ion-col *ngIf="order.deliveryFee==undefined || order.deliveryFee==null" no-margin no-padding>
+                  <ion-col *ngIf="order.deliveryFee==undefined || order.deliveryFee==null || order.deliveryFee==0" no-margin no-padding>
                         {{order.totalPrice.toLocaleString()}}원 {{order.paymentString}}
                   </ion-col>
                   <ion-col *ngIf="order.deliveryFee!=undefined && order.deliveryFee!=null && order.deliveryFee>0" no-margin no-padding>

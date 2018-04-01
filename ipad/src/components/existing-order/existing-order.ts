@@ -18,7 +18,12 @@ export class ExistingOrderComponent {
     console.log('Hello ExistingOrderComponent Component');
   }
 
+  ngOnInit() { 
+    console.log('ExistingOrderComponent Component '+JSON.stringify(this.order));  
+}
+
   modifyOrder(order) {
+      console.log("modifyOrder comes");
       this.output.emit({operation:"modify",order:this.order});
   };
 

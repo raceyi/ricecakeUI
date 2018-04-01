@@ -57,7 +57,7 @@
               </ion-col>
               <ion-col col-3>
                     <ion-item class="no-item-border-bottom">
-                      <ion-select class="payment-select" placeholder="배송방법" interface="popover" [(ngModel)]="deliveryMethod">
+                      <ion-select class="payment-select" placeholder="배송방법" interface="popover" [(ngModel)]="order.deliveryMethod">
                         <ion-option value="픽업">픽업</ion-option>
                         <ion-option value="배달">배달</ion-option>                  
                         <ion-option value="냉동">냉동</ion-option>
@@ -188,7 +188,7 @@
             <ion-row>
               <ion-col col-8>
               <ion-item class="no-item-border-bottom">
-                <ion-select class="payment-select" placeholder="결제방법" interface="popover" [(ngModel)]="paymentOption">
+                <ion-select class="payment-select" placeholder="결제방법" interface="popover" [(ngModel)]="order.paymentOption">
                   <ion-option value="cash-pre" >현금-선불</ion-option>
                   <ion-option value="cash-after">현금-후불</ion-option>
                   <ion-option value="cash-paid">현금-완납</ion-option>                 

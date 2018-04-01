@@ -11,11 +11,17 @@ import { Component,Input,Output,EventEmitter } from '@angular/core';
   templateUrl: 'trash-order.html'
 })
 export class TrashOrderComponent {
- @Input('order') order:any;
+ @Input('order') orderIn:any;
  @Output("output") output= new EventEmitter();
 
+  order;
+  
   constructor() {
     console.log('Hello TrashOrderComponent Component');
+  }
+
+  ngOnInit() { 
+    this.order = Object.assign({}, this.orderIn); // copy object. Very important!!!! 아주 중요하다. 입력값은 사용하지 않는다.
   }
 
   recovery(){

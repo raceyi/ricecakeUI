@@ -12,13 +12,19 @@ import {StorageProvider} from '../../providers/storage/storage';
   templateUrl: 'carrier-order.html'
 })
 export class CarrierOrderComponent {
- @Input('order') order:any;
+ @Input('order') orderIn:any;
  @Output("output") output= new EventEmitter();
+ 
+ order;
  
  carrier:string; //carrier update
   modification:boolean=false;
   constructor(public alertCtrl:AlertController,public storageProvider:StorageProvider) {
     console.log('Hello CarrierOrderComponent Component');
+  }
+
+  ngOnInit() { 
+    this.order = Object.assign({}, this.orderIn); // copy object. Very important!!!! 아주 중요하다. 입력값은 사용하지 않는다.
   }
 
   modifyCarrier(){

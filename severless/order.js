@@ -1,7 +1,7 @@
-
 let express = require('express');
 let router = express.Router();
 
+let async = require('async');
 var AWS = require("aws-sdk");
 var dynamoDB = require("./dynamo");
 var atomicCounter = require('./atomic-counter');
@@ -52,8 +52,12 @@ router.addOrder=function (param){
                 dynamoDB.dynamoInsertItem(params).then((value)=>{
                     // send push message into others for ordr list update
                     // 모든 db update에 대해 push 메시지가 전달되어야 한다.  
-                    sms.notifyOrder(order);
-                    resolve(id);
+                    sms.notifyOrder(order).then(()=>{
+                        resolve(id);
+                    },err=>{
+                        console.log("notifyOrder err:"+JSON.stringify(err));
+                        reject(err);
+                    });
                 },err=>{
                     reject(err);
                 });
@@ -69,13 +73,15 @@ router.getOrderWithDeliveryDate=function (param){
         console.log("start:"+start+" end:"+end);
         let params = {
             TableName: "order",
-            FilterExpression: "#deliveryTime between :start and :end",
+            FilterExpression: "(#deliveryTime between :start and :end) AND (#hide=:hide)",
             ExpressionAttributeNames: {
                 "#deliveryTime": "deliveryTime",
+                "#hide":"hide"
             },
             ExpressionAttributeValues: {
                 ":start": start,
-                ":end": end 
+                ":end": end ,
+                ":hide":false
             }
         };
         console.log("getOrderWithDeliveryDate-params:"+JSON.stringify(params));        
@@ -87,27 +93,53 @@ router.getOrderWithDeliveryDate=function (param){
     });
 }
 
-router.deleteOrder=function(param){
-    return new Promise((resolve,reject)=>{        
-        let id=param.id;
-        var params = {
-            TableName:"order",
-            Key:{
-                "id":id
-            },
-            ConditionExpression : "attribute_exists(#id)",
+router.getOrdersWithHide=function(param){
+    return new Promise((resolve,reject)=>{    
+        let params = {
+            TableName: "order",
+            FilterExpression: "#hide=:hide",
             ExpressionAttributeNames: {
-                "#id":"id"
+                "#hide":"hide"
+            },
+            ExpressionAttributeValues: {
+                ":hide":true
             }
         };
-        console.log("deleteOrder-params:"+JSON.stringify(params));                
-        dynamoDB.dynamoDeleteItem(params).then((result)=>{
-            resolve(result);
+        console.log("getOrderWithDeliveryDate-params:"+JSON.stringify(params));        
+        dynamoDB.dynamoScanItem(params).then((result)=>{
+            resolve(result.Items);
         },(err)=>{
-                if(err.code=="ConditionalCheckFailedException")            
-                    reject("invalidOrderId");
-                else
-                    reject(err);
+            reject(err);
+        });
+    });
+}
+
+deleteOrder=function(order,next){
+    var params = {
+        TableName:"order",
+        Key:{
+            "id": order.id
+        }
+    };
+    console.log("deleteOrders-params:"+JSON.stringify(params));                
+    dynamoDB.dynamoDeleteItem(params).then((result)=>{
+            next(null,result);
+    },(err)=>{
+            next(err);
+    });
+}
+
+router.deleteOrders=function(param){
+    return new Promise((resolve,reject)=>{  
+        router.getOrdersWithHide().then((orders)=>{
+                        async.map(orders,deleteOrder,function(err,eachResult){
+                            if(err){
+                                //humm.. Can it happen?
+                                reject(err);
+                            }else{
+                                resolve();
+                            }
+                        });
         });
     });
 }
@@ -150,8 +182,12 @@ router.updateOrder=function (param){
             ReturnValues:"UPDATED_NEW"
         };
         dynamoDB.dynamoUpdateItem(params).then(result=>{
-                sms.notifyOrder(order);            
-                resolve(result);
+                sms.notifyOrder(order).then(()=>{
+                    resolve(result);
+                },err=>{
+                    console.log("notifyOrder err:"+JSON.stringify(err));                    
+                    reject(err); //hum...
+                });            
         },err=>{
                 if(err.code=="ConditionalCheckFailedException")            
                     reject("invalidOrderId");

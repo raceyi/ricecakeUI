@@ -50,6 +50,7 @@ app.post('/addOrder',(req,res) =>{
             console.log("value:"+value);
             res.json({result:"success",id:value});
         },err=>{
+            console.log("addOrder err:"+JSON.stringify(err));
             res.json({result:"failure",error:JSON.stringify(err)});
         });
 });
@@ -63,9 +64,17 @@ app.post('/getOrderWithDeliveryDate',(req,res) =>{
         })
 });
 
-app.post('/deleteOrder',(req,res) =>{
-        console.log("deleteOrder:",req.body);
-        order.deleteOrder(req.body).then(value=>{
+app.post('/getOrdersWithHide',(req,res) =>{
+        order.getOrdersWithHide(req.body).then(value=>{
+            res.json({result:"success",orders:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        })
+});
+
+app.post('/deleteOrders',(req,res) =>{
+        console.log("deleteOrders:",req.body);
+        order.deleteOrders(req.body).then(value=>{
             res.json({result:"success"});
         },err=>{
             res.json({result:"failure",error:JSON.stringify(err)});

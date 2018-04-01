@@ -402,7 +402,7 @@ export class StorageProvider {
     /////////////////////////////////////////////////////////
     //   Produce section - begin
     addMenuInList(menu, deliveryTime, amount) {
-        console.log("menu.menu:" + menu.menu);
+        console.log("menu.menu:" + JSON.stringify(menu.menu));
         var hhmm = deliveryTime.slice(11, 13) + "시 " + deliveryTime.slice(14, 16) + "분";
         var min = parseInt(deliveryTime.slice(11, 13)) * 60 + parseInt(deliveryTime.slice(14, 16));
         var index = this.produceList.findIndex(function (val) {
@@ -432,7 +432,7 @@ export class StorageProvider {
                     var menuObjs = JSON.parse(menu.menu);
                     menuObjs.forEach( (menuObj)=> {
                         var key :any= Object.keys(menuObj);
-                        var menuInput = { menu: key, unit: menu.unit };
+                        var menuInput = { menu: key[0], unit: menu.unit };
                         var amount = Number(menuObj[key]) * Number(menu.amount);
                         console.log("amount:" + amount);
                         this.addMenuInList(menuInput, order.deliveryTime, amount);

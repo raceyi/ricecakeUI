@@ -177,6 +177,10 @@ export class HomePage {
             deliveryDate.setSeconds(0);
             deliveryDate.setMilliseconds(0);
             order.deliveryTime = this.getISO8601Format(deliveryDate.getTime()); //새주문 입력시 배달시간
+            console.log("new order deliveryTime:"+order.deliveryTime);
+        }else{
+            order.deliveryTime= order.deliveryTime; 
+            console.log("deliveryTime is "+order.deliveryTime+" in modification");
         }
         return order;
     };
@@ -217,7 +221,7 @@ export class HomePage {
                     this.storageProvider.newOrderInputShown=false;
                 }else if(typeof err==="string" ){
                     let alert = this.alertCtrl.create({
-                        title: '문자발송에 실패했습니다.',
+                        title: '주문 생성에 실패했습니다.',
                         subTitle:err,
                         buttons: ['확인']
                     });
@@ -233,8 +237,6 @@ export class HomePage {
             });
         }
         else {
-            console.log(" "+order.deliveryTimeUpdate+" "+order.deliveryTime);
-            order.deliveryTime=order.deliveryTimeUpdate;
             // please update DB here
             console.log("order modification");
             //update order List in DB by calling server API.
@@ -255,6 +257,8 @@ export class HomePage {
                                         handler: () => {
                                             console.log('agree clicked');
                                             //배달일 수정하기
+                                            this.storageProvider.setDeliveryDate(order.deliveryTime);
+                                            this.storageProvider.refresh();
                                             return;
                                         }
                                         }]
@@ -264,19 +268,43 @@ export class HomePage {
             },err=>{
                 if(typeof err==="string" && err.indexOf("SMS-")>=0){
                     existing.modification = false;
-                    let alert = this.alertCtrl.create({
-                        title: '문자발송에 실패했습니다.',
-                        buttons: ['확인']
-                    });
-                    alert.present();
+                    if(order.diffDate){
+                            let alert = this.alertCtrl.create({
+                                title:  order.deliveryTime.substr(0,10)+'으로 배달일을 이동하시겠습니까?',
+                                subTitle:"문자발송에 실패했습니다",
+                                buttons: [
+                                        {
+                                        text: '아니오',
+                                        handler: () => {
+                                            return;
+                                        }
+                                        },
+                                        {
+                                        text: '네',
+                                        handler: () => {
+                                            console.log('agree clicked');
+                                            //배달일 수정하기
+                                            this.storageProvider.setDeliveryDate(order.deliveryTime);
+                                            this.storageProvider.refresh();
+                                            return;
+                                        }
+                                        }]
+                            });
+                            alert.present();                                    
+                    }else{
+                        let alert = this.alertCtrl.create({
+                            title: '문자발송에 실패했습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();
+                    }
                 }else if(typeof err==="string" ){
                     let alert = this.alertCtrl.create({
-                        title: '문자발송에 실패했습니다.',
+                        title: '주문 생성에 실패했습니다.',
                         subTitle:err,
                         buttons: ['확인']
                     });
                     alert.present();
-
                 }else{
                     let alert = this.alertCtrl.create({
                         title: '주문 변경에 실패했습니다.',
@@ -287,7 +315,7 @@ export class HomePage {
             });
         }
     };
-    
+
     modifyOrder(input) {
         if(input.operation=="delete"){
             this.storageProvider.hideOrder(input.order.id);
@@ -351,6 +379,6 @@ export class HomePage {
     }
 
     print(){
-        
+
     }
 }

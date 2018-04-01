@@ -26,9 +26,10 @@ export class OrderComponent implements OnInit {
   amount:number;
   menuIndex:number=-1;
 
-  paymentOption;  // ion-select가 custom component에서 초기화가 안된다. 왜그럴까? 
-  deliveryMethod;
-  deliveryTimeUpdate; //왜 ngModel이 동작하지 않는가???
+  //paymentOption;  // ion-select가 custom component에서 초기화가 안된다. 왜그럴까? 
+  //deliveryMethod;
+  
+  deliveryTimeUpdate; // 수정일 경우 다른 날짜인지를 판별하기 위해 필요함.
 
   order;
 
@@ -45,12 +46,12 @@ export class OrderComponent implements OnInit {
 
   ngOnInit() { 
     this.order = Object.assign({}, this.orderIn); // copy object. Very important!!!! 아주 중요하다. 입력값은 사용하지 않는다.
-
-    console.log('component initialized. order:'+JSON.stringify(this.order)); 
-    this.paymentOption=this.order.paymentOption; //workaround solution. 왜 ion-select의 ngModel값이 초기화가 안될까?
-    this.deliveryMethod=this.order.deliveryMethod;
     this.deliveryTimeUpdate=this.order.deliveryTime;
-    console.log("this.deliveryMethod:"+this.deliveryMethod);
+    
+    console.log('component initialized. order:'+JSON.stringify(this.order)); 
+   // this.paymentOption=this.order.paymentOption; //workaround solution. 왜 ion-select의 ngModel값이 초기화가 안될까?
+   // this.deliveryMethod=this.order.deliveryMethod;
+   // console.log("this.deliveryMethod:"+this.deliveryMethod);
   }
 
   getJuso(){
@@ -331,7 +332,7 @@ autoHypenPhone(str){
       return ;
     }
 
-    if(!this.deliveryMethod){
+    if(!this.order.deliveryMethod){
       let alert = this.alertCtrl.create({
         title: '배송방법을 선택하세요.',
         buttons: ['확인']
@@ -340,7 +341,7 @@ autoHypenPhone(str){
       return ;
     }
 
-    if(!this.paymentOption){
+    if(!this.order.paymentOption){
       let alert = this.alertCtrl.create({
         title: '결제 수단/방법을 선택하세요.',
         buttons: ['확인']
@@ -349,9 +350,8 @@ autoHypenPhone(str){
       return ;
     }
     
-    this.order.paymentOption=this.paymentOption;//workaround solution
-    this.order.deliveryMethod=this.deliveryMethod;//workaround solution
-    this.order.deliveryTimeUpdate=this.deliveryTimeUpdate //workaround solution. Why? 뭔가를 더 해줘야 하는가?
+    //this.order.paymentOption=this.paymentOption;//workaround solution
+    //this.order.deliveryMethod=this.deliveryMethod;//workaround solution
 
     switch(this.order.paymentOption){
       case "cash-pre":   this.order.paymentMethod="cash"; this.order.payment="unpaid-pre"; this.order.paymentString="현금-선불"; break;
@@ -361,16 +361,12 @@ autoHypenPhone(str){
       case "card-after":  this.order.paymentMethod="card"; this.order.payment="unpaid-after";this.order.paymentString="카드-후불";break;
       case "card-paid":  this.order.paymentMethod="card"; this.order.payment="paid";this.order.paymentString="카드-완납";break;
     }
-    let deliveryTime:string=this.order.deliveryTime;
-    deliveryTime=deliveryTime.substr(0,16)+":00.000Z"; //dynamoDB format으로 변경한다.
-    console.log("deliveryTime:"+deliveryTime);
-    this.order.deliveryTime=deliveryTime;
     if(this.order.id){
         if(this.deliveryTimeUpdate.substr(0,10)!=this.order.deliveryTime.substr(0,10)){
             this.order.diffDate=true;          
         }else
             this.order.diffDate=false;
-        this.order.deliveryTimeUpdate=this.deliveryTimeUpdate.substr(0,16)+":00.000Z"; //dynamoDB format으로 변경한다.
+        this.order.deliveryTime=this.deliveryTimeUpdate; 
     }
     this.order.price=parseInt(this.order.price);
     if(this.order.deliveryFee){

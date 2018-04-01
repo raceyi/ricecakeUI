@@ -66,8 +66,11 @@ export class ServerProvider {
       });
   }
 
-  saveOrder(order){
+  saveOrder(orderIn){
       return new Promise((resolve,reject)=>{    
+          let order= Object.assign({}, orderIn); 
+          order.deliveryTime=order.deliveryTime.substr(0,16)+":00.000Z"; //dynamoDB format으로 변경한다.
+          console.log("deliveryTime:"+order.deliveryTime);
           let body = {order:order,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
           this.http.post(this.configProvider.serverAddress+"/addOrder",body, {"Content-Type":"application/json"}).then((res:any)=>{
@@ -90,8 +93,13 @@ export class ServerProvider {
   }
 
 
-  updateOrder(order){
-      return new Promise((resolve,reject)=>{    
+  updateOrder(orderIn){
+      return new Promise((resolve,reject)=>{  
+          
+          let order= Object.assign({}, orderIn); 
+          order.deliveryTime=order.deliveryTime.substr(0,16)+":00.000Z"; //dynamoDB format으로 변경한다.
+          console.log("deliveryTime:"+order.deliveryTime);
+
           let body = {order:order,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
           this.http.post(this.configProvider.serverAddress+"/updateOrder",body, {"Content-Type":"application/json"}).then((res:any)=>{
