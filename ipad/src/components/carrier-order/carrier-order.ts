@@ -16,7 +16,7 @@ export class CarrierOrderComponent {
  @Output("output") output= new EventEmitter();
  
  order;
- 
+
  carrier:string; //carrier update
   modification:boolean=false;
   constructor(public alertCtrl:AlertController,public storageProvider:StorageProvider) {
@@ -25,6 +25,7 @@ export class CarrierOrderComponent {
 
   ngOnInit() { 
     this.order = Object.assign({}, this.orderIn); // copy object. Very important!!!! 아주 중요하다. 입력값은 사용하지 않는다.
+    this.carrier=this.order.carrier;
   }
 
   modifyCarrier(){

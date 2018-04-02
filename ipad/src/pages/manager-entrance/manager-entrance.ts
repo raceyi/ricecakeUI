@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams,AlertController } from 'ionic-angular';
 import {ManagerPage} from '../manager/manager';
+import {ServerProvider} from "../../providers/server/server";
+
 /**
  * Generated class for the ManagerEntrancePage page.
  *
@@ -22,6 +24,7 @@ export class ManagerEntrancePage {
 
   constructor(public navCtrl: NavController, 
               public alertCtrl:AlertController,
+              public serverProvider:ServerProvider,
               public navParams: NavParams) {
   }
 
@@ -54,18 +57,38 @@ export class ManagerEntrancePage {
                 this.passwordInput[this.cursor]=val.toString();  
                 this.password[this.cursor++]=val.toString();
             }
-            console.log("this.password:"+this.password);
+            console.log("this.password:"+this.passwordInput);
         }
         if(this.cursor==this.passwordLength){
+              console.log("this.password:"+this.passwordInput);
+              let pin="";
+              pin=pin.concat(this.passwordInput[0],this.passwordInput[1],this.passwordInput[2],
+                    this.passwordInput[3]);
+              console.log("pin:"+pin);
               //Please check if password is correct or not by calling server API
-              this.navCtrl.push(ManagerPage);
-              /*
-              let alert = this.alertCtrl.create({
-                  title: '비밀번호가 일치하지 않습니다.',
-                  buttons: ['확인']
-                });
-                alert.present();
-                */
+              this.serverProvider.checkPIN(pin).then(()=>{
+                    let viewsNum=this.navCtrl.getViews().length;
+                    console.log(" index:"+(viewsNum-1));
+                    this.navCtrl.insert((viewsNum-1), ManagerPage).then(()=>{
+                        this.navCtrl.pop();
+                    },err=>{
+                    });
+              },err=>{
+                    if(typeof err==="string" && err.indexOf("invalidPIN")>=0){
+                        let alert = this.alertCtrl.create({
+                            title: '비밀번호가 일치하지 않습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();
+                    }else if(typeof err==="string" ){
+                    let alert = this.alertCtrl.create({
+                        title: '관리자 화면 전환에 실패했습니다.',
+                        subTitle:err,
+                        buttons: ['확인']
+                    });
+                    alert.present();
+                    }
+              });
         }
   }
 

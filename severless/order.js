@@ -147,22 +147,17 @@ router.deleteOrders=function(param){
 router.updateOrder=function (param){
     return new Promise((resolve,reject)=>{        
         let order=param.order;
-        var params = {
-            TableName:"order",
-            Key:{
-                "id": order.id
-            },
-            ConditionExpression : "attribute_exists(#id)",
-            ExpressionAttributeNames: {
-                "#id":"id"
-            },
-            UpdateExpression: "set deliveryTime = :deliveryTime, recipientAddress=:recipientAddress,\
+        let updateExpression;
+        let expressionAttributeValues;
+
+        if(order.memo){
+            updateExpression= "set deliveryTime = :deliveryTime, recipientAddress=:recipientAddress,\
                             recipientAddressDetail=:recipientAddressDetail,buyerName=:buyerName,\
                             recipientName=:recipientName,recipientPhoneNumber=:recipientPhoneNumber,\
                             buyerPhoneNumber=:buyerPhoneNumber,menuList=:menuList,\
                             memo=:memo,price=:price,paymentMethod=:paymentMethod,payment=:payment,\
-                            deliveryMethod=:deliveryMethod,deliveryFee=:deliveryFee,totalPrice=:totalPrice",
-            ExpressionAttributeValues:{
+                            deliveryMethod=:deliveryMethod,deliveryFee=:deliveryFee,totalPrice=:totalPrice";
+            expressionAttributeValues={
                 ":deliveryTime":order.deliveryTime,
                 ":recipientAddress":order.recipientAddress,
                 ":recipientAddressDetail":order.recipientAddressDetail,
@@ -178,7 +173,42 @@ router.updateOrder=function (param){
                 ":deliveryMethod":order.deliveryMethod,
                  ":deliveryFee":order.deliveryFee,
                  ":totalPrice":order.totalPrice
+            };               
+        }else{
+            updateExpression= "set deliveryTime = :deliveryTime, recipientAddress=:recipientAddress,\
+                            recipientAddressDetail=:recipientAddressDetail,buyerName=:buyerName,\
+                            recipientName=:recipientName,recipientPhoneNumber=:recipientPhoneNumber,\
+                            buyerPhoneNumber=:buyerPhoneNumber,menuList=:menuList,\
+                            price=:price,paymentMethod=:paymentMethod,payment=:payment,\
+                            deliveryMethod=:deliveryMethod,deliveryFee=:deliveryFee,totalPrice=:totalPrice";            
+            expressionAttributeValues={
+                ":deliveryTime":order.deliveryTime,
+                ":recipientAddress":order.recipientAddress,
+                ":recipientAddressDetail":order.recipientAddressDetail,
+                ":buyerName":order.buyerName,
+                ":recipientName":order.recipientName,
+                ":recipientPhoneNumber":order.recipientPhoneNumber,
+                ":buyerPhoneNumber":order.buyerPhoneNumber,
+                ":menuList":order.menuList,
+                ":price":order.price,
+                ":paymentMethod":order.paymentMethod,//카드,현금
+                ":payment":order.payment, //지불 여부,
+                ":deliveryMethod":order.deliveryMethod,
+                 ":deliveryFee":order.deliveryFee,
+                 ":totalPrice":order.totalPrice
+            };               
+        }
+        var params = {
+            TableName:"order",
+            Key:{
+                "id": order.id
             },
+            ConditionExpression : "attribute_exists(#id)",
+            ExpressionAttributeNames: {
+                "#id":"id"
+            },
+            UpdateExpression:updateExpression,
+            ExpressionAttributeValues:expressionAttributeValues,
             ReturnValues:"UPDATED_NEW"
         };
         dynamoDB.dynamoUpdateItem(params).then(result=>{

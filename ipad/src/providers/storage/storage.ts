@@ -186,21 +186,24 @@ export class StorageProvider {
         })
         let menuInfos=[];
         categories.forEach(category=>{
-            menuInfos.push({category:category,menus:[],menuStrings:[]});
+            menuInfos.push({category:category,type:"general",menus:[],menuStrings:[]});
         })
         menus.forEach(menu=>{
              let menuString=menu.menu;
+             let type="general";
              if(menu.menu.indexOf("[")==0){  
                 let menuObjs=JSON.parse(menu.menu);
                 console.log("menuObj:"+JSON.stringify(menuObjs));
                 menuString="";
                 menuObjs.forEach(menuObj=>{
                    let key:any=Object.keys(menuObj);
-                   menuString+=key+menuObj[key]+" ";
+                   menuString+=key+"("+menuObj[key]+") ";
                 });
+                type="complex";
              }
                 console.log("menuString:"+menuString);
 
+                menuInfos[categories.indexOf(menu.category)].type=type;
                 menuInfos[categories.indexOf(menu.category)].menus.push(menu.menu);
                 menuInfos[categories.indexOf(menu.category)].menuStrings.push(menuString);
                 console.log("index:"+categories.indexOf(menu.category));
@@ -339,9 +342,10 @@ export class StorageProvider {
     }
 
     addMenu(category,name){
-        return new Promise((resolve,reject)=>{                                                    
+        return new Promise((resolve,reject)=>{ 
+        console.log("addMenu: category"+category+" name:"+name);                                                   
         this.serverProvider.addMenu(category,name).then(()=>{
-           this.refresh();            
+           this.refresh();             
            resolve(); 
         },(err)=>{
             this.refresh();

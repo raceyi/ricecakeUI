@@ -327,14 +327,58 @@ export class HomePage {
     //   Delivery section - begin
     assingCarrier(order) {
         //please Update carrier, sort order list again
-        if (order.carrier) {
-            this.storageProvider.reconfigureDeliverySection();
-        }
+        this.storageProvider.assignCarrier(order.id,order.carrier).then(()=>{
+
+        },err=>{
+            if(typeof err==="string" && err.indexOf("invalidId")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '존재하지 않는 주문입니다.',
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }else if(typeof err==="string" && err.indexOf("invalidCarrier")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '존재하지 않는 배달원입니다.',
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }else if(typeof err==="string" ){
+                    let alert = this.alertCtrl.create({
+                        title: '배달원 설정에 실패했습니다.',
+                        subTitle:err,
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }
+        })
     };
+
     modifyCarrier(order) {
         //please Update carrier, sort order list again
-        order.carrier = order.updateCarrier;
-        this.storageProvider.reconfigureDeliverySection();
+        this.storageProvider.assignCarrier(order.id,order.updateCarrier).then(()=>{
+
+        },err=>{
+            if(typeof err==="string" && err.indexOf("invalidId")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '존재하지 않는 주문입니다.',
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }else if(typeof err==="string" && err.indexOf("invalidCarrier")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '존재하지 않는 배달원입니다.',
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }else if(typeof err==="string" ){
+                    let alert = this.alertCtrl.create({
+                        title: '배달원 설정에 실패했습니다.',
+                        subTitle:err,
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }
+        })
     };
 
     manageCarrier() {

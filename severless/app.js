@@ -11,6 +11,8 @@ var menu = require('./menu');
 var carrier = require('./carrier');
 var bankda = require('./bankda');
 var device = require('./device');
+var manager =require('./manager');
+
 var atomicCounter = require('./atomic-counter');
 
 //var bankda = JSON.parse(require('fs').readFileSync('./bankda.json', 'utf8'));
@@ -191,6 +193,19 @@ app.post('/registerDeviceRegistrationId',(req,res) =>{
         carrier.putRegistrationId(req.body).then(value=>{
             console.log("value:"+value);
             res.json({result:"success"});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
+
+app.post('/checkPIN',(req,res) =>{
+        console.log("checkPIN:",req.body);
+        manager.checkPIN(req.body).then(pinNumber=>{
+            console.log("value:"+pinNumber);
+            if(req.body.pin!=pinNumber){
+                res.json({result:"failure",error:"invalidPIN"});
+            }else
+                res.json({result:"success"});
         },err=>{
             res.json({result:"failure",error:JSON.stringify(err)});
         });

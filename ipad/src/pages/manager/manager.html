@@ -140,7 +140,7 @@
       <ion-list>
             <ion-item no-padding no-margin class="no-item-border-bottom" *ngFor="let category of storageProvider.menus;let i=index;">     
                 <ion-row>
-                  <ion-col no-padding no-margin text-left>
+                  <ion-col text-wrap no-padding no-margin text-left>
                     <button *ngIf="i!=categorySelected" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="selectCategory(i)" > <ion-icon style="font-size: 1.5em;" name="md-square-outline"></ion-icon></button>
                     <button *ngIf="i==categorySelected" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button> <ion-icon style="font-size: 1.5em;" name="md-checkbox-outline"></ion-icon></button>
                         {{category.category}}  <!-- md-checkbox-outline -->
@@ -188,7 +188,7 @@
       <ion-list>
             <ion-item no-padding no-margin class="no-item-border-bottom" *ngFor="let menu of storageProvider.menus[categorySelected].menuStrings;let i=index;">     
                 <ion-row>
-                  <ion-col no-padding no-margin text-left>
+                  <ion-col text-wrap no-padding no-margin text-left>
                         {{menu}}  
                     <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="removeMenu(menu,i)" > <ion-icon style="font-size: 1.5em;" name="md-remove-circle"></ion-icon></button>
                   </ion-col>

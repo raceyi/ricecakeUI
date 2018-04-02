@@ -101,9 +101,20 @@ export class ManagerPage {
             alert.present();
             return;
   }
-  this.storageProvider.menus[this.categorySelected].menus.push(this.newName);
-  this.storageProvider.menus[this.categorySelected].menuStrings.push(this.newName);                   
-  this.newName="";
+  this.storageProvider.addMenu(this.storageProvider.menus[this.categorySelected].category, this.newName.trim()).then(()=>{
+      this.newName="";
+  },err=>{
+     if(typeof err==="string" && err.indexOf("AlreadyExist")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '이미 존재하는 메뉴입니다.',
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }
+  })
+
+//  this.storageProvider.menus[this.categorySelected].menus.push(this.newName);
+//  this.storageProvider.menus[this.categorySelected].menuStrings.push(this.newName);                   
  }
 
   addComplexMenuItem(){
@@ -124,8 +135,8 @@ export class ManagerPage {
                 return;
       }
       let object={};
-      object[this.newName]=this.newAmount;
-      object["string"]=this.newName+" "+this.newAmount;
+      object[this.newName.trim()]=parseInt(this.newAmount);
+      object["string"]=this.newName.trim()+" "+this.newAmount;
       this.newComplexMenuItems.push(object);
       console.log("newComplexMenuItems:"+JSON.stringify(this.newComplexMenuItems));
       this.newName="";
@@ -153,19 +164,29 @@ export class ManagerPage {
         console.log("obj:"+JSON.stringify(obj));
         menu.push(obj);
     })
-    this.storageProvider.menus[this.categorySelected].menus.push(JSON.stringify(menu));
-    this.storageProvider.menus[this.categorySelected].menuStrings.push( menuString);
+    //this.storageProvider.menus[this.categorySelected].menus.push(JSON.stringify(menu));
+    //this.storageProvider.menus[this.categorySelected].menuStrings.push( menuString);
     console.log("menus:"+JSON.stringify(this.storageProvider.menus));
 
-    this.newName="";    
-    this.newAmount="";
-    this.newComplexMenuItems=[];
+    this.storageProvider.addMenu(this.storageProvider.menus[this.categorySelected].category, JSON.stringify(menu)).then(()=>{
+      this.newName="";    
+      this.newAmount="";
+      this.newComplexMenuItems=[];
+    },err=>{
+                let alert = this.alertCtrl.create({
+                    title: '메뉴 추가에 실패했습니다.',
+                    buttons: ['확인']
+                });
+                alert.present();                
+              
+    })
   }
 
   removeComplexMenuItems(i){
     this.newComplexMenuItems.splice(i,1);    
   }
 
+/*
  removeMenuFunc(menu,i){
     this.storageProvider.menus[this.categorySelected].menus.splice(i,1)
     this.storageProvider.menus[this.categorySelected].menuStrings.splice(i,1);
@@ -174,33 +195,69 @@ export class ManagerPage {
         this.categorySelected=0;
     }
  }
+*/
+
+removeMenuFunc(category,name){
+  this.storageProvider.deleteMenu(category,name).then(()=>{
+
+  },err=>{
+        console.log("deleteMenu err:"+JSON.stringify(err));
+                  let alert = this.alertCtrl.create({
+                      title: '메뉴 삭제에 실패했습니다.',
+                      buttons: ['확인']
+                  });
+                  alert.present();              
+  })  
+}
+
 
  removeMenu(menu,i){
-    if(this.storageProvider.menus[this.categorySelected].type =="complex" ||
-      this.storageProvider.menus[this.categorySelected].menus.length==1){
-                let alert = this.alertCtrl.create({
-                  title: '이름과 함께 종류가 삭제됩니다.',
-                  buttons: [
-                  {
-                    text: '아니오',
-                    handler: () => {
-                      return;
-                    }
-                  },
-                  {
-                    text: '네',
-                    handler: () => {
-                      console.log('agree clicked');
-                      this.removeMenuFunc(menu,i);
-                      return;
-                    }
-                  }]
-                });
-                alert.present();
-                return;
-    }
-    console.log("this.storageProvider.menus[this.categorySelected].length: "+this.storageProvider.menus[this.categorySelected].menus.length);
-    this.removeMenuFunc(menu,i);
+    let alert = this.alertCtrl.create({
+                          title: menu+"를 삭제합니다",
+                          buttons: [
+                          {
+                            text: '아니오',
+                            handler: () => {
+                              return;
+                            }
+                          },
+                          {
+                            text: '네',
+                            handler: () => {
+                                  if(this.storageProvider.menus[this.categorySelected].type =="complex" ||
+                                    this.storageProvider.menus[this.categorySelected].menus.length==1){
+                                              let alert = this.alertCtrl.create({
+                                                title: '이름과 함께 종류가 삭제됩니다.',
+                                                buttons: [
+                                                {
+                                                  text: '아니오',
+                                                  handler: () => {
+                                                    return;
+                                                  }
+                                                },
+                                                {
+                                                  text: '네',
+                                                  handler: () => {
+                                                    console.log('agree clicked');
+                                                    //this.removeMenuFunc(menu,i);
+                                                    if(this.storageProvider.menus[this.categorySelected].type =="complex"){
+                                                        this.removeMenuFunc(this.storageProvider.menus[this.categorySelected].category,
+                                                                              this.storageProvider.menus[this.categorySelected].menus[0]);
+                                                    }else
+                                                        this.removeMenuFunc(this.storageProvider.menus[this.categorySelected].category,menu);
+                                                    return;
+                                                  }
+                                                }]
+                                              });
+                                              alert.present();
+                                              return;
+                                  }
+                                  console.log("this.storageProvider.menus[this.categorySelected].length: "+this.storageProvider.menus[this.categorySelected].menus.length);
+                                  this.removeMenuFunc(this.storageProvider.menus[this.categorySelected].category,menu);
+                                  return;
+                            }
+                          }]});
+      alert.present();                       
  }
 
  removeCategory(category,i){
@@ -217,13 +274,26 @@ export class ManagerPage {
                   {
                     text: '네',
                     handler: () => {
-                      this.storageProvider.menus[this.categorySelected].splice(i,1);
+                      if(this.storageProvider.menus[this.categorySelected].type=="general"){
+                          let index;
+                          let menus=this.storageProvider.menus[this.categorySelected].menus;
+                          let category=this.storageProvider.menus[this.categorySelected].category;
+                          for(index=0;index<menus.length;index++){
+                              this.removeMenuFunc(category,menus[index]);
+                          }
+                      }else{// complex
+                          this.removeMenuFunc(this.storageProvider.menus[this.categorySelected].category,
+                                                this.storageProvider.menus[this.categorySelected].menus[0]);                        
+                      }
+                      this.categorySelected=((this.categorySelected-1)>=0)?(this.categorySelected-1):0;
                       console.log('agree clicked');
-                      return;
                     }
                   }]
         });
         alert.present();
+    }else{
+      //just delete recently added category. just UI display
+      
     }    
  } 
 

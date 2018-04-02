@@ -303,6 +303,7 @@ export class ServerProvider {
   deleteMenu(category,name){
       return new Promise((resolve,reject)=>{    
           let body = {category:category,name:name,registrationId:this.registrationId};
+          console.log("body:"+JSON.stringify(body));
           this.http.setDataSerializer("json"); 
           this.http.post(this.configProvider.serverAddress+"/deleteMenu",body, {"Content-Type":"application/json"}).then((res:any)=>{
                   let response=JSON.parse(res.data);            
@@ -389,5 +390,25 @@ export class ServerProvider {
       });
   }
 
+checkPIN(pin){
+      return new Promise((resolve,reject)=>{    
+          let body = {pin:pin,registrationId:this.registrationId};
+          this.http.setDataSerializer("json"); 
+          this.http.post(this.configProvider.serverAddress+"/checkPIN",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  let response=JSON.parse(res.data);            
+                  if(response.result=="success"){
+                      resolve();
+                  }else{
+                    if(response.error)
+                      reject(response.error);
+                    else
+                      reject("unknown error in server");
+                  }
+          },(err)=>{
+                console.log("err:"+JSON.stringify(err));
+                reject(err);            
+          });            
+      });
+  }
   
 }
