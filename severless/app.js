@@ -211,5 +211,24 @@ app.post('/checkPIN',(req,res) =>{
         });
 });
 
+app.post('/getSalesWithBuyer',(req,res) =>{
+        console.log("getSalesWithBuyer:",req.body);
+        manager.getSalesWithBuyer(req.body).then(value=>{
+            console.log("value:"+value);
+            res.json({result:"success",sales:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
+
+app.post('/getSales',(req,res) =>{
+        console.log("getSales:",req.body);
+        manager.getSales(req.body).then(value=>{
+            console.log("value:"+value);
+            res.json({result:"success",sales:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
 module.exports = app
 

@@ -20,18 +20,26 @@ router.addOrder=function (param){
         console.log("currTime:"+currTime.toISOString());
         let localCurrTime= new Date(currTime.getTime()+9*60*60*1000);
         atomicCounter.increment( "order" ).then(id=>{
+                let recipientAddressDetail=order.recipientAddressDetail;
+                if(!recipientAddressDetail || recipientAddressDetail.length==0)
+                    recipientAddressDetail="  "; //initialize it with blank string...
+                let memo=order.memo
+                if(!memo || memo.length==0){
+                    memo="  ";//initialize it with blank string
+                }
+                    
                 let params={
                     TableName:"order",
                     Item:{
                         "id":id,
                         "orderedTime": localCurrTime.toISOString(),
                         "deliveryTime":order.deliveryTime,
-                        "recipientAddress":order.recipientAddress,
-                        "recipientAddressDetail":order.recipientAddressDetail,
-                        "buyerName":order.buyerName,
-                        "recipientName":order.recipientName,
-                        "recipientPhoneNumber":order.recipientPhoneNumber,
-                        "buyerPhoneNumber":order.buyerPhoneNumber,
+                        "recipientAddress":order.recipientAddress.trim(),
+                        "recipientAddressDetail":recipientAddressDetail,
+                        "buyerName":order.buyerName.trim(),
+                        "recipientName":order.recipientName.trim(),
+                        "recipientPhoneNumber":order.recipientPhoneNumber.trim(),
+                        "buyerPhoneNumber":order.buyerPhoneNumber.trim(),
                         "menuList":order.menuList,
                         "memo":order.memo,
                         "price":order.price,
@@ -149,54 +157,9 @@ router.updateOrder=function (param){
         let order=param.order;
         let updateExpression;
         let expressionAttributeValues;
-
-        if(order.memo){
-            updateExpression= "set deliveryTime = :deliveryTime, recipientAddress=:recipientAddress,\
-                            recipientAddressDetail=:recipientAddressDetail,buyerName=:buyerName,\
-                            recipientName=:recipientName,recipientPhoneNumber=:recipientPhoneNumber,\
-                            buyerPhoneNumber=:buyerPhoneNumber,menuList=:menuList,\
-                            memo=:memo,price=:price,paymentMethod=:paymentMethod,payment=:payment,\
-                            deliveryMethod=:deliveryMethod,deliveryFee=:deliveryFee,totalPrice=:totalPrice";
-            expressionAttributeValues={
-                ":deliveryTime":order.deliveryTime,
-                ":recipientAddress":order.recipientAddress,
-                ":recipientAddressDetail":order.recipientAddressDetail,
-                ":buyerName":order.buyerName,
-                ":recipientName":order.recipientName,
-                ":recipientPhoneNumber":order.recipientPhoneNumber,
-                ":buyerPhoneNumber":order.buyerPhoneNumber,
-                ":menuList":order.menuList,
-                ":memo":order.memo,
-                ":price":order.price,
-                ":paymentMethod":order.paymentMethod,//카드,현금
-                ":payment":order.payment, //지불 여부,
-                ":deliveryMethod":order.deliveryMethod,
-                 ":deliveryFee":order.deliveryFee,
-                 ":totalPrice":order.totalPrice
-            };               
-        }else{
-            updateExpression= "set deliveryTime = :deliveryTime, recipientAddress=:recipientAddress,\
-                            recipientAddressDetail=:recipientAddressDetail,buyerName=:buyerName,\
-                            recipientName=:recipientName,recipientPhoneNumber=:recipientPhoneNumber,\
-                            buyerPhoneNumber=:buyerPhoneNumber,menuList=:menuList,\
-                            price=:price,paymentMethod=:paymentMethod,payment=:payment,\
-                            deliveryMethod=:deliveryMethod,deliveryFee=:deliveryFee,totalPrice=:totalPrice";            
-            expressionAttributeValues={
-                ":deliveryTime":order.deliveryTime,
-                ":recipientAddress":order.recipientAddress,
-                ":recipientAddressDetail":order.recipientAddressDetail,
-                ":buyerName":order.buyerName,
-                ":recipientName":order.recipientName,
-                ":recipientPhoneNumber":order.recipientPhoneNumber,
-                ":buyerPhoneNumber":order.buyerPhoneNumber,
-                ":menuList":order.menuList,
-                ":price":order.price,
-                ":paymentMethod":order.paymentMethod,//카드,현금
-                ":payment":order.payment, //지불 여부,
-                ":deliveryMethod":order.deliveryMethod,
-                 ":deliveryFee":order.deliveryFee,
-                 ":totalPrice":order.totalPrice
-            };               
+        let memo=order.memo
+        if(!memo || memo.length==0){
+            memo="  ";//initialize it with blank string
         }
         var params = {
             TableName:"order",
@@ -207,8 +170,29 @@ router.updateOrder=function (param){
             ExpressionAttributeNames: {
                 "#id":"id"
             },
-            UpdateExpression:updateExpression,
-            ExpressionAttributeValues:expressionAttributeValues,
+            UpdateExpression:"set deliveryTime = :deliveryTime, recipientAddress=:recipientAddress,\
+                            recipientAddressDetail=:recipientAddressDetail,buyerName=:buyerName,\
+                            recipientName=:recipientName,recipientPhoneNumber=:recipientPhoneNumber,\
+                            buyerPhoneNumber=:buyerPhoneNumber,menuList=:menuList,\
+                            memo=:memo,price=:price,paymentMethod=:paymentMethod,payment=:payment,\
+                            deliveryMethod=:deliveryMethod,deliveryFee=:deliveryFee,totalPrice=:totalPrice",
+            ExpressionAttributeValues:{
+                ":deliveryTime":order.deliveryTime,
+                ":recipientAddress":order.recipientAddress,
+                ":recipientAddressDetail":order.recipientAddressDetail,
+                ":buyerName":order.buyerName,
+                ":recipientName":order.recipientName,
+                ":recipientPhoneNumber":order.recipientPhoneNumber,
+                ":buyerPhoneNumber":order.buyerPhoneNumber,
+                ":menuList":order.menuList,
+                ":memo":memo,
+                ":price":order.price,
+                ":paymentMethod":order.paymentMethod,//카드,현금
+                ":payment":order.payment, //지불 여부,
+                ":deliveryMethod":order.deliveryMethod,
+                 ":deliveryFee":order.deliveryFee,
+                 ":totalPrice":order.totalPrice
+            },
             ReturnValues:"UPDATED_NEW"
         };
         dynamoDB.dynamoUpdateItem(params).then(result=>{

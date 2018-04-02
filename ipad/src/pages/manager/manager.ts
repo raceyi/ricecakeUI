@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams ,AlertController} from 'ionic-angular';
+import { IonicPage, NavController, NavParams ,AlertController,Platform} from 'ionic-angular';
 import {StorageProvider} from "../../providers/storage/storage";
+import {ServerProvider} from "../../providers/server/server";
 
 /**
  * Generated class for the ManagerPage page.
@@ -24,18 +25,34 @@ export class ManagerPage {
   newComplexMenuItems=[];
   searchKeyWord;
 
+  startDateIn;  //input format
+  endDateIn;    // input format
+
+  cashPaid:number=0;
+  cashUnpaid:number=0;
+  cardPaid:number=0;
+  cardUnpaid:number=0;
+
+  totalSales:number=0;
+
   constructor(public navCtrl: NavController, 
               public navParams: NavParams,
               public alertCtrl:AlertController,
+              private platform: Platform,
+              public serverProvider:ServerProvider,
               public storageProvider:StorageProvider) {
+                // today
+                let today=new Date();
+                this.startDateIn={year:today.getFullYear(),month:today.getMonth(),date:today.getDate()};
+                this.endDateIn={year:today.getFullYear(),month:today.getMonth(),date:today.getDate()};
 
-          storageProvider.menus.forEach(category=>{
-            console.log("..."+JSON.stringify(category));
-          })
   }
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad ManagerPage');
+    this.platform.ready().then(() => {
+           
+    });
   }
 
   close(){
@@ -51,14 +68,79 @@ export class ManagerPage {
   }
 
   onStartDaySelect(day){
+    console.log("day:"+JSON.stringify(day));
+    this.startDateIn=day;
     console.log("start-day:"+JSON.stringify(day));
-    //day.year
-    //day.month+1
-    //day.date
+    this.updateSales();
+  }
+  
+  peridoCheck(){
+    console.log("startDateIn "+JSON.stringify(this.startDateIn));
+
+//{"year":2018,"month":3,"date":1,"isThisMonth":true,"isToday":false,"isSelect":true,"hasEvent":false}
+
+    var start = new Date(this.startDateIn.year, this.startDateIn.month, this.startDateIn.date, 0, 0, 0, 0);
+    var end = new Date(this.endDateIn.year, this.endDateIn.month, this.endDateIn.date, 0, 0, 0, 0);
+    
+    console.log("start:"+start.getTime()+" end:"+end.getTime());
+
+    if(start.getTime()<=end.getTime())
+        return true;
+     return false;   
+  }
+  
+  formatDate(day){
+    let month=(day.month+1)<=9?"0"+(day.month+1):(day.month+1);
+    let date=(day.date)<=9?"0"+(day.date):day.date;
+    return day.year+"-"+month+"-"+date;
+  }
+
+  updateSales(){
+    if(!this.peridoCheck()){
+            let alert = this.alertCtrl.create({
+              title: '시작일은 종료일보다 빨라야만 합니다.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return;      
+    }
+    let startDate=this.formatDate(this.startDateIn);
+    let endDate=this.formatDate(this.endDateIn);
+    this.serverProvider.getSales(startDate,endDate).then((value:any)=>{
+        console.log("sales:"+JSON.stringify(value));
+        this.cashPaid=value.cashPaid;
+        this.cashUnpaid=value.cashUnpaid;
+        this.cardPaid=value.cardPaid;
+        this.cardUnpaid=value.cardUnpaid;
+        this.totalSales=this.cashPaid+this.cardPaid+this.cashUnpaid+this.cardUnpaid;
+        console.log("totalSales:"+this.totalSales);
+        this.searchKeyWord="";
+    },(err)=>{
+            let alert = this.alertCtrl.create({
+              title: '네트웍 상태를 확인해주시기 바랍니다.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return;
+
+    })
   }
 
   onEndDaySelect(day){
+    this.endDateIn=day;    
     console.log("end-day:"+JSON.stringify(day));
+    this.updateSales();    
+  }
+
+  sum(a,b){
+    let total=0;
+    if(a){
+        total+=parseInt(a);
+    }
+    if(b){
+        total+=parseInt(b);
+    }
+    return total.toLocaleString();
   }
 
  addCategory(){
@@ -112,9 +194,6 @@ export class ManagerPage {
                     alert.present();
             }
   })
-
-//  this.storageProvider.menus[this.categorySelected].menus.push(this.newName);
-//  this.storageProvider.menus[this.categorySelected].menuStrings.push(this.newName);                   
  }
 
   addComplexMenuItem(){
@@ -164,8 +243,6 @@ export class ManagerPage {
         console.log("obj:"+JSON.stringify(obj));
         menu.push(obj);
     })
-    //this.storageProvider.menus[this.categorySelected].menus.push(JSON.stringify(menu));
-    //this.storageProvider.menus[this.categorySelected].menuStrings.push( menuString);
     console.log("menus:"+JSON.stringify(this.storageProvider.menus));
 
     this.storageProvider.addMenu(this.storageProvider.menus[this.categorySelected].category, JSON.stringify(menu)).then(()=>{
@@ -185,17 +262,6 @@ export class ManagerPage {
   removeComplexMenuItems(i){
     this.newComplexMenuItems.splice(i,1);    
   }
-
-/*
- removeMenuFunc(menu,i){
-    this.storageProvider.menus[this.categorySelected].menus.splice(i,1)
-    this.storageProvider.menus[this.categorySelected].menuStrings.splice(i,1);
-    if(this.storageProvider.menus[this.categorySelected].menus.length==0){
-        this.storageProvider.menus.splice(this.categorySelected,1);
-        this.categorySelected=0;
-    }
- }
-*/
 
 removeMenuFunc(category,name){
   this.storageProvider.deleteMenu(category,name).then(()=>{
@@ -308,7 +374,40 @@ removeMenuFunc(category,name){
  }
 
  searchSales(){
+   if(!this.searchKeyWord || this.searchKeyWord.trim().length==0){
+            let alert = this.alertCtrl.create({
+              title: '주문자를 입력해 주시기 바랍니다.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return;      
+   }
+    if(!this.peridoCheck()){
+            let alert = this.alertCtrl.create({
+              title: '시작일은 종료일보다 빨라야만 합니다.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return;      
+    }
+    let startDate=this.formatDate(this.startDateIn);
+    let endDate=this.formatDate(this.endDateIn);
+    this.serverProvider.getSalesWithBuyer(startDate,endDate,this.searchKeyWord.trim()).then((value:any)=>{
+        console.log("sales:"+JSON.stringify(value));
+        this.cashPaid=value.cashPaid;
+        this.cashUnpaid=value.cashUnpaid;
+        this.cardPaid=value.cardPaid;
+        this.cardUnpaid=value.cardUnpaid;
+        this.totalSales=this.cashPaid+this.cardPaid+this.cashUnpaid+this.cardUnpaid;
+    },(err)=>{
+            let alert = this.alertCtrl.create({
+              title: '네트웍 상태를 확인해주시기 바랍니다.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return;
 
+    })
  }
  
 }

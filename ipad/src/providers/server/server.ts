@@ -344,16 +344,16 @@ export class ServerProvider {
           });            
       });            
   }
-  getSales(startDate,endDate){
-        // cashPaid,cardPaid,cardUnpaid,cashUnpaid
+
+  getSalesWithBuyer(startDate,endDate,buyer){
       return new Promise((resolve,reject)=>{    
-          let body = {startDate:startDate,endDate:endDate,registrationId:this.registrationId};
+          let body = {startDate:startDate,endDate:endDate,buyer:buyer.trim(),registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
-          this.http.post(this.configProvider.serverAddress+"/getSales",body, {"Content-Type":"application/json"}).then((res:any)=>{
+          this.http.post(this.configProvider.serverAddress+"/getSalesWithBuyer",body, {"Content-Type":"application/json"}).then((res:any)=>{
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("getSales Success");
-                      resolve();
+                      resolve(response.sales);
                   }else{
                     if(response.error)
                       reject(response.error);
@@ -364,19 +364,18 @@ export class ServerProvider {
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
-      });            
-
+      });
   }
 
-  getSalesWithBuyer(startDate,endDate,buyer){
+  getSales(startDate,endDate){
       return new Promise((resolve,reject)=>{    
-          let body = {startDate:startDate,endDate:endDate,buyer:buyer,registrationId:this.registrationId};
+          let body = {startDate:startDate,endDate:endDate,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
-          this.http.post(this.configProvider.serverAddress+"/getSalesWithBuyer",body, {"Content-Type":"application/json"}).then((res:any)=>{
+          this.http.post(this.configProvider.serverAddress+"/getSales",body, {"Content-Type":"application/json"}).then((res:any)=>{
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("getSales Success");
-                      resolve();
+                      resolve(response.sales);
                   }else{
                     if(response.error)
                       reject(response.error);
@@ -410,5 +409,6 @@ checkPIN(pin){
           });            
       });
   }
+  
   
 }

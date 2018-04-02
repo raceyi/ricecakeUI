@@ -1,11 +1,15 @@
 import { Component } from '@angular/core';
-import { NavController,AlertController } from 'ionic-angular';
+import { NavController,AlertController,Platform } from 'ionic-angular';
 import {StorageProvider} from "../../providers/storage/storage";
 import {ServerProvider} from "../../providers/server/server";
 import {CarrierManagementPage} from "../carrier-management/carrier-management";
 
 import {ManagerEntrancePage} from '../manager-entrance/manager-entrance';
 import {TrashPage} from '../trash/trash';
+
+import { BackgroundMode } from '@ionic-native/background-mode';
+import { Push, PushObject, PushOptions } from '@ionic-native/push';
+
 
 import * as moment from 'moment';
 var gHomePage;
@@ -23,7 +27,13 @@ export class HomePage {
     searchKeyWord;
     newOrder;
 
-     constructor(public navCtrl:NavController, public alertCtrl:AlertController, public serverProvider:ServerProvider, public storageProvider:StorageProvider) {
+     constructor(public navCtrl:NavController, 
+                    public alertCtrl:AlertController, 
+                    private platform: Platform,
+                    private push: Push,
+                    private backgroundMode:BackgroundMode,
+                    public serverProvider:ServerProvider, 
+                    public storageProvider:StorageProvider) {
         gHomePage=this;
         this.section = "order";
         this.storageProvider.newOrderInputShown = false;

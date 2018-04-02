@@ -67,7 +67,7 @@ updatePayment=function(param,next){
             },
             ReturnValues:"UPDATED_NEW"
         };
-        console.log("updatePayment-params:"+JSON.stringify(params));                
+        console.log("!!!!!!!updatePayment-params:"+JSON.stringify(params));                
         dynamoDB.dynamoUpdateItem(params).then(result=>{
                 next(null);
         },err=>{
@@ -160,32 +160,34 @@ addTransactionRecord=function(record,next){
         console.log("addTransactions-params:"+JSON.stringify(params));
         dynamoDB.dynamoInsertItem(params).then((value)=>{
             // send push message into others for ordr list update
-            // 현재부터 48시간(2일)전 까지의 지불되지 않은 주문을 검색한다. 
+            // 현재부터 7일전 까지의 지불되지 않은 주문을 검색한다. 
             var currTime = new Date();
             var currLocalTime=new Date(currTime.getTime()+9*60*60*1000);
             console.log("currTime:"+currLocalTime.toISOString());
-            var startLocalTime=new Date(currLocalTime.getTime()-48*60*60*1000);
+            var startLocalTime=new Date(currLocalTime.getTime()-7*24*60*60*1000);
             let start=startLocalTime.toISOString();
             let end=currLocalTime.toISOString() ;
             let params = {
                 TableName: "order",
-                FilterExpression: "(#orderedTime between :start and :end) AND #buyerName=:buyerName AND #payment=:payment",
+                FilterExpression: "(#orderedTime between :start and :end) AND #buyerName=:buyerName AND #paymentMethod=:cash AND #payment<>:payment)",
                 ExpressionAttributeNames: {
                     "#orderedTime": "orderedTime",
                     "#buyerName":"buyerName",
-                    "#payment":"payment"
+                    "#payment":"payment",
+                    "#paymentMethod":"paymentMethod"
                 },
                 ExpressionAttributeValues: {
                     ":start": start,
                     ":end": end ,
                     ":buyerName": record.$.bkjukyo,
-                    ":payment":"unpaid"
+                    ":payment":"paid",
+                    ":cash":"cash"
                 }
             };
             dynamoDB.dynamoScanItem(params).then((result)=>{
-                //1.48시간이내 동일금액,동일주문자의 주문이 하나만 존재할 경우 해당 주문에 대해 결제한것으로 지정한다.
-                //2.만약 동일인은 있으나 금액이 틀릴경우 48시간 이내 주문금액의 합산금액과 입금액이 일치하는지를 확인한다. 주문 합산금액과 입금액이 동일할경우 결제한것으로 지정한다. 
-                //3.동일이름,동일주문금액의 주문이 두개 이상 존재할 경우 상점주가 확인하도록 한다.
+                //1.7일 이내 동일금액,동일주문자의 주문이 하나만 존재할 경우 해당 주문에 대해 결제한것으로 지정한다.
+                //2.만약 동일인은 있으나 금액이 틀릴경우 7일 이내 주문금액의 합산금액과 입금액이 일치하는지를 확인한다. 주문 합산금액과 입금액이 동일할경우 결제한것으로 지정한다. 
+                //3.동일이름,동일주문금액의 주문이 두개 이상 존재할 경우 상점주가 확인하도록 한다. => !!! ignore this case!!!!
                 //paid,unpaid,ambigious
                 if(result.Items.length==1){   
                     if(result.Items[0].totalPrice==record.$.bkinput){ //case 1
@@ -211,14 +213,16 @@ addTransactionRecord=function(record,next){
                                 next(err);
                             });
                     }    
-                }else if(result.Items.length>1){
-                    let i,sum;
-                    for(i=0;i<result.Items.length;i++)
-                        sum+=parseInt(result.Items[i].totalPrice);
+                }else if(result.Items.length>1){ //case 2, case 3
+                    let i,sum=0;
+                    for(i=0;i<result.Items.length;i++){
+                        if(!result.Items[i].payment.startsWith("paid"))
+                            sum+=parseInt(result.Items[i].totalPrice);
+                    }
                     if(sum==record.$.bkinput){  //case 2
                         let orders=[];
                         result.Items.forEach(item=>{
-                            orders.push({order:item,payment:"paid",bkcode:record.$.bkcode,time:time});
+                                orders.push({order:item,payment:"paid",bkcode:record.$.bkcode,time:time});
                         })
                         async.map(orders,updatePayment,function(err,eachResult){
                             if(err){
@@ -234,11 +238,14 @@ addTransactionRecord=function(record,next){
                                 });
                             }
                         });
-                    }else{ //case 3
+                    }/*else{ //case 3 Just ignore this case!
                         let same=[];
                         result.Items.forEach(item=>{
                             if(item.totalPrice== record.$.bkinput){
-                                same.push({order:item,payment:"ambigious",bkcode:record.$.bkcode,time:time});
+                                let payment=item.payment;
+                                let strs=payment.splits('-');
+                                payment="ambigious-"+strs[1];
+                                same.push({order:item,payment:"ambigious"+item.payment,bkcode:record.$.bkcode,time:time});
                             }
                         });
                         async.map(same,updatePayment,function(err,eachResult){
@@ -255,7 +262,7 @@ addTransactionRecord=function(record,next){
                                 });
                             }
                         });
-                    }
+                    }*/
                 }else{ // no order, just update bkcode
                         updateLastBKCode().then(()=>{
                             next(null);

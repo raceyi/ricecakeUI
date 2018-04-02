@@ -38,10 +38,10 @@
   <ion-col col-6>
     <ion-row>
       <ion-col>
-              <ion-searchbar (ionInput)="searchSales()" placeholder="주문자 검색" [(ngModel)]="searchKeyWord"></ion-searchbar>
+              <ion-searchbar  placeholder="주문자 검색" [(ngModel)]="searchKeyWord"></ion-searchbar>
       </ion-col>
       <ion-col text-center>
-        <button ion-button (click)="getSales()">계산하기</button>
+        <button ion-button (click)="searchSales()">계산하기</button>
       </ion-col>
     </ion-row>
     <ion-row>
@@ -49,7 +49,7 @@
         현금(완납):
       </ion-col>
       <ion-col style="font-size:3vw;" text-right>
-        300,000,000
+        {{cashPaid.toLocaleString()}}
       </ion-col>
     </ion-row>
     <ion-row>
@@ -57,7 +57,7 @@
         카드(완납):
       </ion-col>
       <ion-col style="font-size:3vw;" text-right>
-        300,000,000
+        {{cardPaid.toLocaleString()}}
       </ion-col>
     </ion-row>
     <ion-row>
@@ -65,7 +65,7 @@
         완납:
       </ion-col>
       <ion-col style="font-size:3vw;" text-right>
-        300,000,000
+        <amount-display [amount]="sum(cardPaid,cashPaid)"></amount-display>
       </ion-col>
     </ion-row>
   </ion-col>
@@ -84,7 +84,7 @@
         현금(미납):
       </ion-col>
       <ion-col style="font-size:3vw;" text-right>
-        300,000,000
+        {{cashUnpaid.toLocaleString()}}
       </ion-col>
     </ion-row>
     <ion-row>
@@ -92,7 +92,7 @@
         카드(미납):
       </ion-col>
       <ion-col style="font-size:3vw;" text-right>
-        300,000,000
+        {{cardUnpaid.toLocaleString()}}
       </ion-col>
     </ion-row>
     <ion-row>
@@ -100,7 +100,7 @@
         미납:
       </ion-col>
       <ion-col style="font-size:3vw;" text-right>
-        300,000,000
+        <amount-display [amount]="sum(cardUnpaid,cashUnpaid)"></amount-display>
       </ion-col>
     </ion-row>
   </ion-col>
@@ -119,7 +119,7 @@
         총매출:
       </ion-col>
       <ion-col style="font-size:3vw;" text-right>
-        300,000,000
+        {{totalSales.toLocaleString()}}
       </ion-col>
     </ion-row>
   </ion-col>

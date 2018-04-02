@@ -278,7 +278,7 @@ autoHypenPhone(str){
       return ;
     }
 
-    if(!this.order.recipientName){
+    if(!this.order.recipientName ||(this.order.recipientName.trim().length==0)){
       let alert = this.alertCtrl.create({
         title: '받는사람 이름을 입력하세요.',
         buttons: ['확인']
@@ -287,7 +287,7 @@ autoHypenPhone(str){
       return ;
     }
 
-    if(!this.order.recipientPhoneNumber){
+    if(!this.order.recipientPhoneNumber || this.order.recipientPhoneNumber.trim().length==0){
       let alert = this.alertCtrl.create({
         title: '받는사람 전화번호를 입력하세요.',
         buttons: ['확인']
@@ -296,7 +296,7 @@ autoHypenPhone(str){
       return ;
     }
 
-    if(!this.order.buyerName){
+    if(!this.order.buyerName || this.order.buyerName.trim().length==0){
       let alert = this.alertCtrl.create({
         title: '구매자 이름을 입력하세요.',
         buttons: ['확인']
@@ -305,7 +305,7 @@ autoHypenPhone(str){
       return ;
     }
    
-    if(!this.order.buyerPhoneNumber){
+    if(!this.order.buyerPhoneNumber || this.order.buyerPhoneNumber.trim().length==0){
       let alert = this.alertCtrl.create({
         title: '구매자 전화번호를 입력하세요.',
         buttons: ['확인']
