@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams ,AlertController,Platform} from 'ionic-angular';
 import {StorageProvider} from "../../providers/storage/storage";
 import {ServerProvider} from "../../providers/server/server";
+import { Events } from 'ionic-angular';
 
 /**
  * Generated class for the ManagerPage page.
@@ -39,13 +40,24 @@ export class ManagerPage {
               public navParams: NavParams,
               public alertCtrl:AlertController,
               private platform: Platform,
+              public events: Events,
               public serverProvider:ServerProvider,
               public storageProvider:StorageProvider) {
-                // today
-                let today=new Date();
-                this.startDateIn={year:today.getFullYear(),month:today.getMonth(),date:today.getDate()};
-                this.endDateIn={year:today.getFullYear(),month:today.getMonth(),date:today.getDate()};
+      // today
+      let today=new Date();
+      this.startDateIn={year:today.getFullYear(),month:today.getMonth(),date:today.getDate()};
+      this.endDateIn={year:today.getFullYear(),month:today.getMonth(),date:today.getDate()};
 
+        events.subscribe('update', (tablename) => {
+            console.log("managerPage receive update event");
+            if(this.section=="menu" && tablename=="menu"){
+               let alert = this.alertCtrl.create({
+                          title: '메뉴 정보가 업데이트되었습니다.',
+                          buttons: ['확인']
+                });
+                alert.present();     
+                }
+        });
   }
 
   ionViewDidLoad() {
@@ -55,6 +67,11 @@ export class ManagerPage {
     });
   }
 
+  ionViewWillUnload(){
+    console.log("managerPage- ionViewWillUnload");
+    this.events.unsubscribe("update");
+  }
+  
   close(){
       this.navCtrl.pop();
   }

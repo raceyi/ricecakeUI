@@ -35,6 +35,7 @@ export class StorageProvider {
   newOrderInputShown:boolean=false;
 
   constructor(public http: HttpClient,
+              public alertCtrl:AlertController, 
               private platform: Platform,  
               public serverProvider:ServerProvider,
               public configProvider:ConfigProvider) {
@@ -49,10 +50,11 @@ export class StorageProvider {
   }
   
   refresh(){ // 서버로 부터 최신 정보를 가져온다.
+        return new Promise((resolve,reject)=>{                            
+      
           this.serverProvider.getCarriers().then((carriers:any)=>{
                 this.carriers=carriers;
             },err=>{
-
             })
             this.serverProvider.getMenus().then((menus)=>{
                 this.convertMenuInfo(menus);
@@ -71,16 +73,23 @@ export class StorageProvider {
                 this.reconfigureDeliverySection();
                 this.configureProduceSection();                                
                 console.log("orderList.length:"+this.orderList.length);
+                resolve();
             },err=>{
-
+                let alert = this.alertCtrl.create({
+                    title: '네트웍상태를 확인해주세요.',
+                    buttons: ['확인']
+                });
+                alert.present();                
+                reject();
             });
+            /*
             this.serverProvider.getOrdersInTrash().then((orders)=>{
                 this.trashList=orders;
                 this.convertOrderList(this.trashList);
             },err=>{
 
-            })
-
+            })*/
+        });
   }
 
 
@@ -400,6 +409,14 @@ export class StorageProvider {
                     this.unassingOrderEtcList.push(order);
             }
         });
+        this.assignOrderList.sort(function(a,b){
+            if(a.name <b.name)
+                  return -1;
+            if(a.name>b.name)
+                  return 1;
+            return 0;           
+        })
+
         console.log("this.assignOrderList-end:" + JSON.stringify(this.assignOrderList));
     }
 
@@ -458,6 +475,13 @@ export class StorageProvider {
                 return 0;
             });
         });
+        this.produceList.sort(function(a,b){
+            if(a.menu <b.menu)
+                  return -1;
+            if(a.menu>b.menu)
+                  return 1;
+            return 0;           
+        })
     };
 
 }

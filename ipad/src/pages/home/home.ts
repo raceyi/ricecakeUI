@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController,AlertController,Platform } from 'ionic-angular';
+import { NavController,AlertController,Platform,LoadingController } from 'ionic-angular';
 import {StorageProvider} from "../../providers/storage/storage";
 import {ServerProvider} from "../../providers/server/server";
 import {CarrierManagementPage} from "../carrier-management/carrier-management";
@@ -9,7 +9,8 @@ import {TrashPage} from '../trash/trash';
 
 import { BackgroundMode } from '@ionic-native/background-mode';
 import { Push, PushObject, PushOptions } from '@ionic-native/push';
-
+import { Printer, PrintOptions } from '@ionic-native/printer'
+import { Events } from 'ionic-angular';
 
 import * as moment from 'moment';
 var gHomePage;
@@ -31,6 +32,9 @@ export class HomePage {
                     public alertCtrl:AlertController, 
                     private platform: Platform,
                     private push: Push,
+                    private printer: Printer,  
+                    public events: Events,  
+                    public loadingCtrl: LoadingController,                                                                
                     private backgroundMode:BackgroundMode,
                     public serverProvider:ServerProvider, 
                     public storageProvider:StorageProvider) {
@@ -38,6 +42,33 @@ export class HomePage {
         this.section = "order";
         this.storageProvider.newOrderInputShown = false;
         this.storageProvider.reconfigureDeliverySection();
+
+        this.platform.ready().then(() => {
+            this.printer.isAvailable().then((avail)=>{
+                console.log("avail:"+avail);
+                this.printer.check().then((output)=>{
+                    console.log("output:"+JSON.stringify(output));
+                },err=>{
+                        let alert = this.alertCtrl.create({
+                            title: '출력기능에 문제가 발생하였습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();
+                });
+            }, (err)=>{
+                console.log("err:"+JSON.stringify(err));
+                        let alert = this.alertCtrl.create({
+                            title: '출력기능에 문제가 발생하였습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();            
+            });
+        });
+
+        events.subscribe('update', (tablename) => {
+            console.log("homePage receive update event");
+            this.storageProvider.refresh();
+        });
     }
     
     getDayInKorean(day) {
@@ -240,6 +271,7 @@ export class HomePage {
                 }else{
                     let alert = this.alertCtrl.create({
                         title: '주문 생성에 실패했습니다.',
+                        subTitle:JSON.stringify(err),
                         buttons: ['확인']
                     });
                     alert.present();
@@ -254,7 +286,7 @@ export class HomePage {
                     existing.modification = false;
                     if(order.diffDate){
                             let alert = this.alertCtrl.create({
-                                title:  order.deliveryTime.substr(0,10)+'으로 배달일을 이동하시겠습니까?',
+                                title:  order.deliveryTime.substr(0,10)+'으로 화면의 배달일을 이동하시겠습니까?',
                                 buttons: [
                                         {
                                         text: '아니오',
@@ -280,7 +312,7 @@ export class HomePage {
                     existing.modification = false;
                     if(order.diffDate){
                             let alert = this.alertCtrl.create({
-                                title:  order.deliveryTime.substr(0,10)+'으로 배달일을 이동하시겠습니까?',
+                                title:  order.deliveryTime.substr(0,10)+'으로 화면의 배달일을 이동하시겠습니까?',
                                 subTitle:"문자발송에 실패했습니다",
                                 buttons: [
                                         {
@@ -310,7 +342,7 @@ export class HomePage {
                     }
                 }else if(typeof err==="string" ){
                     let alert = this.alertCtrl.create({
-                        title: '주문 생성에 실패했습니다.',
+                        title: '주문 변경에 실패했습니다.',
                         subTitle:err,
                         buttons: ['확인']
                     });
@@ -318,6 +350,7 @@ export class HomePage {
                 }else{
                     let alert = this.alertCtrl.create({
                         title: '주문 변경에 실패했습니다.',
+                        subTitle:JSON.stringify(err),
                         buttons: ['확인']
                     });
                     alert.present();
@@ -359,6 +392,13 @@ export class HomePage {
                         buttons: ['확인']
                     });
                     alert.present();
+            }else{
+                    let alert = this.alertCtrl.create({
+                        title: '배달원 설정에 실패했습니다.',
+                        subTitle:JSON.stringify(err),
+                        buttons: ['확인']
+                    });
+                    alert.present();                
             }
         })
     };
@@ -387,6 +427,13 @@ export class HomePage {
                         buttons: ['확인']
                     });
                     alert.present();
+            }else{
+                    let alert = this.alertCtrl.create({
+                        title: '배달원 설정에 실패했습니다.',
+                        subTitle:JSON.stringify(err),
+                        buttons: ['확인']
+                    });
+                    alert.present();                
             }
         })
     };
@@ -429,10 +476,225 @@ export class HomePage {
     }
 
     refresh(){
-        this.storageProvider.refresh();
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: 5*1000
+            });
+          progressBarLoader.present();        
+        this.storageProvider.refresh().then(()=>{
+              progressBarLoader.dismiss();
+        },err=>{
+              progressBarLoader.dismiss();
+        });
     }
 
     print(){
+        let page;
+        if(this.section == 'order'){
+            page=this.constructOrderPrint();
+        }else if(this.section == 'delivery'){
 
+        }else if(this.section == 'produce'){
+            page=this.constructProducePrint();
+        }
+        //var page="<H2>검증하기</H2>";
+
+        let options: PrintOptions = {
+            name: 'MyDocument',
+            duplex: true,
+            landscape: true,
+            grayscale: true
+        };
+
+        this.printer.print(page, options).then((output)=>{
+            console.log("print-output:"+JSON.stringify(output));
+        },(err)=>{
+            console.log("err:"+JSON.stringify(err));
+        });
+
+    }
+
+
+    constructProducePrint(){
+        let rightCharacters:number=25;
+        let leftCharacters:number=9;
+        let linesPerPage=20;
+        let title=this.storageProvider.deliveryDate.substr(0,4)+"년"+
+                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
+                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay;
+        let currentPage=1;
+        let currentLines=0;
+        let eachItems=[];
+        let totalLinesNumber=0;
+
+        this.storageProvider.produceList.forEach(item=>{
+            let name="";
+            let nameLength=1;
+            if(item.menu.length>leftCharacters){
+                nameLength++;
+            }
+            let list=" ";
+            let totalLine="";
+            item.amount.forEach(amount=>{
+                totalLine+=amount.amount+'('+amount.time+'),';
+            });
+            totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
+            let remain=totalLine.length;
+            let index=0;
+            let lineNumber=0;
+            while(remain>=rightCharacters){
+                list+=totalLine.substr(index,rightCharacters);
+                remain=remain-rightCharacters;
+                index+=rightCharacters;
+                ++lineNumber;
+                if(remain>0)
+                    list+="<br>";
+            }
+            if(remain>0){
+                list+=totalLine.substr(index);
+                ++lineNumber;
+            }
+            console.log("lineNumber:"+lineNumber+"list:"+list);
+            if(nameLength>lineNumber){
+                ++lineNumber;
+            }
+            totalLinesNumber+=lineNumber;
+            eachItems.push({lines:list, name:item.menu,number:lineNumber});    
+        })
+
+        console.log("eachItems:"+JSON.stringify(eachItems));
+
+        let tables=[];
+        let pageNumber=1;
+        let currentPageNums=0;
+        let currentPageItems=[];
+        eachItems.forEach((item)=>{
+            if(currentPageNums+item.number>linesPerPage){
+                //move into next pages
+                tables.push({page:pageNumber,items:currentPageItems})
+                pageNumber++;
+                currentPageItems=[];
+                currentPageItems.push(item);
+                currentPageNums=item.number;
+            }else{
+                currentPageItems.push(item);
+                currentPageNums+=item.number;
+            }
+        })  
+        if(currentPageItems.length>0){ //last page
+              tables.push({page:pageNumber,items:currentPageItems})            
+        }
+        console.log("Tables:"+JSON.stringify(tables));
+
+        let pages="<html>\
+                    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
+        let index;
+        for(index=0;index<tables.length;index++){
+            // page title
+            if(index>0){
+                pages+="<H1 style=\"page-break-before: always;\">";
+            }else
+                pages+="<H1>";
+            pages+=this.storageProvider.deliveryDate.substr(0,4)+"년"+
+                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
+                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+"("+(index+1)+"/"+pageNumber+")"+"</H1>";
+            pages+="<table style=\"width:100%\;border-collapse:collapse;\">";          
+            tables[index].items.forEach(item=>{
+                pages+="<tr><td style=\"border: solid 1px; font-size:2em;\">"+item.name+"</td>"+
+                            "<td style=\"border: solid 1px; font-size:2em;\">"+item.lines+"</td>"+"</tr>";
+            })
+            pages+="</table>";
+        }
+        console.log("pages:"+pages);
+        return pages;
+    }
+
+    constructOrderPrint(){
+/*
+        let charactersInLine:number=65;
+        let linesPerPage=48;
+
+        let title="배달일:"+this.storageProvider.deliveryDate.substr(0,4)+"년"+
+                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
+                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+" 총:"+this.storageProvider.orderList.length+" ";
+
+        let currentPage=1;
+        let currentLines=0;
+
+        let eachItems=[];
+        let totalLinesNumber=0;
+
+        this.storageProvider.orderList.forEach(item=>{
+            let list=" ";
+            let totalLine="";
+            item.amount.forEach(amount=>{
+                totalLine+=amount.amount+'('+amount.time+'),';
+            });
+            totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
+            let remain=totalLine.length;
+            let index=0;
+            let lineNumber=0;
+            while(remain>=rightCharacters){
+                list+=totalLine.substr(index,rightCharacters);
+                remain=remain-rightCharacters;
+                index+=rightCharacters;
+                ++lineNumber;
+                if(remain>0)
+                    list+="<br>";
+            }
+            if(remain>0){
+                list+=totalLine.substr(index);
+                ++lineNumber;
+            }
+            console.log("lineNumber:"+lineNumber+"list:"+list);
+            if(nameLength>lineNumber){
+                ++lineNumber;
+            }
+            totalLinesNumber+=lineNumber;
+            eachItems.push({lines:list, name:item.menu,number:lineNumber});    
+        })
+
+        console.log("eachItems:"+JSON.stringify(eachItems));
+
+        let tables=[];
+        let pageNumber=1;
+        let currentPageNums=0;
+        let currentPageItems=[];
+        eachItems.forEach((item)=>{
+            if(currentPageNums+item.number>linesPerPage){
+                //move into next pages
+                tables.push({page:pageNumber,items:currentPageItems})
+                pageNumber++;
+                currentPageItems=[];
+                currentPageItems.push(item);
+                currentPageNums=item.number;
+            }else{
+                currentPageItems.push(item);
+                currentPageNums+=item.number;
+            }
+        })  
+        if(currentPageItems.length>0){ //last page
+              tables.push({page:pageNumber,items:currentPageItems})            
+        }
+        console.log("Tables:"+JSON.stringify(tables));
+
+        let pages="<html>\
+                    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
+        let index;
+        for(index=0;index<tables.length;index++){
+            // page title
+            pages+="<H1>"+this.storageProvider.deliveryDate.substr(0,4)+"년"+
+                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
+                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+"("+(index+1)+"/"+pageNumber+")"+"</H1>";
+            pages+="<table style=\"width:100%\;border-collapse:collapse;\">";          
+            tables[index].items.forEach(item=>{
+                pages+="<tr><td style=\"border: solid 1px; font-size:2em;\">"+item.name+"</td>"+
+                            "<td style=\"border: solid 1px; font-size:2em;\">"+item.lines+"</td>"+"</tr>";
+            })
+            pages+="</table>";
+        }
+        console.log("pages:"+pages);
+        return pages;
+*/
     }
 }

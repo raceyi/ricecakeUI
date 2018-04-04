@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController,AlertController, NavParams } from 'ionic-angular';
 import {StorageProvider} from "../../providers/storage/storage";
+import { Events } from 'ionic-angular';
 
 /**
  * Generated class for the CarrierManagementPage page.

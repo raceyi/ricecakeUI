@@ -16,6 +16,7 @@ import { HttpClientModule } from '@angular/common/http';
 import {HTTP} from '@ionic-native/http'
 import {Push,PushObject,PushOptions} from '@ionic-native/push';
 import { BackgroundMode } from '@ionic-native/background-mode';
+import { Printer, PrintOptions } from '@ionic-native/printer';
 
 import {CarrierManagementPageModule} from '../pages/carrier-management/carrier-management.module';
 import {ManagerEntrancePageModule} from '../pages/manager-entrance/manager-entrance.module';
@@ -47,6 +48,7 @@ import {MyErrorHandler} from '../classes/my-error-handler';
     HomePage
   ],
   providers: [
+    Printer,
     BackgroundMode,
     Push,
     HTTP,    

@@ -2,6 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {ConfigProvider} from "../config/config";
 import {HTTP} from '@ionic-native/http'
+import { NavController,LoadingController,AlertController,Platform } from 'ionic-angular';
+
+import { BackgroundMode } from '@ionic-native/background-mode';
+import { Push, PushObject, PushOptions } from '@ionic-native/push';
+import { Events } from 'ionic-angular';
 
 /*
   Generated class for the ServerProvider provider.
@@ -12,9 +17,89 @@ import {HTTP} from '@ionic-native/http'
 @Injectable()
 export class ServerProvider {
   registrationId;
+  pushNotification:PushObject;
+
+  timeout:number=5; //in seconds;
+  public progressBarLoader : any;
   
-  constructor(public http: HTTP,public configProvider:ConfigProvider) {
+  constructor(public http: HTTP,
+              private push: Push,
+              private platform: Platform,  
+              public loadingCtrl: LoadingController,                            
+              public alertCtrl:AlertController,                           
+              private backgroundMode:BackgroundMode,
+              public configProvider:ConfigProvider,
+              public events: Events) {
+
     console.log('Hello ServerProvider Provider');
+          this.platform.ready().then(() => {
+            this.backgroundMode.enable();
+            this.pushNotification=this.push.init({
+                ios: {
+                    //"fcmSandbox": "false", //code for production mode
+                    "fcmSandbox": "true",  //code for development mode
+                    //"alert": "true",
+                    //"sound": "true",
+                    //"badge": "true",
+                }
+            });
+            this.pushNotification.on('registration').subscribe((response:any)=>{
+                this.registrationId=response.registrationId;
+                console.log("registrationId:"+this.registrationId);
+                this.registerDeviceRegistrationId(this.registerDeviceRegistrationId).then(()=>{
+
+                },err=>{
+                    let alert = this.alertCtrl.create({
+                      title: '장치등록 오류입니다.',
+                      subTitle:"업데이트버튼을 사용해 주시기 바랍니다."+JSON.stringify(err),
+                      buttons: ['확인']
+                    });
+                    alert.present();
+                })
+            });
+            this.pushNotification.on('notification').subscribe((data:any)=>{
+                console.log("pushNotification.on-data:"+JSON.stringify(data));
+
+                if(data.additionalData.registrationId==this.registrationId){
+                    console.log("just ignore it");
+                    //this.events.publish('update',data.additionalData.table); // test code                    
+                }else{
+                    this.events.publish('update',data.additionalData.table);
+                }
+            });
+            this.pushNotification.on('error').subscribe((e:any)=>{
+                console.log(e.message);
+                let alert = this.alertCtrl.create({
+                  title: '장치등록 오류입니다.',
+                  subTitle:"업데이트버튼을 사용해 주시기 바랍니다.",
+                  buttons: ['확인']
+                });
+                alert.present();
+            });            
+        });
+
+  }
+
+  registerDeviceRegistrationId(registrationId){
+      return new Promise((resolve,reject)=>{    
+          let body = {registrationId:this.registrationId};
+          this.http.setDataSerializer("json"); 
+          this.http.post(this.configProvider.serverAddress+"/registerDeviceRegistrationId",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  let response=JSON.parse(res.data);            
+                  if(response.result=="success"){
+                      console.log("registerDeviceRegistrationId Success");
+                      resolve();
+                  }else{
+                    if(response.error)
+                      reject(response.error);
+                    else
+                      reject("unknown error in server");
+                  }
+          },(err)=>{
+                console.log("err:"+JSON.stringify(err));
+                reject(err);            
+          });            
+      });      
   }
 
   getOrders(deliveryDate){ 
@@ -22,8 +107,16 @@ export class ServerProvider {
           // deliveryDate: deliveryTime.substring(0,10)
           let body ={deliveryDate: deliveryDate,registrationId:this.registrationId};    
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
 
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          //progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/getOrderWithDeliveryDate",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+              //progressBarLoader.dismiss();
               console.log("res:"+JSON.stringify(res));
               let response=JSON.parse(res.data);
               console.log("getOrderWithDeliverDate response: " + JSON.stringify(response));
@@ -36,6 +129,7 @@ export class ServerProvider {
                       reject("unknown error in server");
               }
           },(err)=>{
+              //progressBarLoader.dismiss();
                 console.log("err:"+JSON.stringify(err));
                 reject(err);
           });
@@ -46,8 +140,16 @@ export class ServerProvider {
       return new Promise((resolve,reject)=>{
           let body ={registrationId:this.registrationId};    
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
 
           this.http.post(this.configProvider.serverAddress+"/getOrdersWithHide",body,{"Content-Type":"application/json"}).then((res:any)=>{              
+              progressBarLoader.dismiss();
               console.log("res:"+JSON.stringify(res));
               let response=JSON.parse(res.data);
               console.log("getOrdersWithHide response: " + JSON.stringify(response));
@@ -60,6 +162,7 @@ export class ServerProvider {
                       reject("unknown error in server");
               }
           },(err)=>{
+                progressBarLoader.dismiss();
                 console.log("err:"+JSON.stringify(err));
                 reject(err);
           });
@@ -73,7 +176,15 @@ export class ServerProvider {
           console.log("deliveryTime:"+order.deliveryTime);
           let body = {order:order,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/addOrder",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("Order Save Success");
@@ -86,6 +197,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                progressBarLoader.dismiss();            
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -102,7 +214,15 @@ export class ServerProvider {
 
           let body = {order:order,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/updateOrder",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("Order Update Success");
@@ -114,6 +234,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                progressBarLoader.dismiss();
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -124,7 +245,15 @@ export class ServerProvider {
       return new Promise((resolve,reject)=>{    
           let body = {registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          //progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/deleteOrders",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  //progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("deleteOrders Success");
@@ -136,6 +265,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                //progressBarLoader.dismiss();            
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -147,7 +277,15 @@ export class ServerProvider {
       return new Promise((resolve,reject)=>{    
           let body = {id:id,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/hideOrder",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("hideOrder Success");
@@ -159,6 +297,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                progressBarLoader.dismiss();            
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -169,7 +308,15 @@ export class ServerProvider {
       return new Promise((resolve,reject)=>{    
           let body = {id:id,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/showOrder",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("showOrder Success");
@@ -181,6 +328,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                progressBarLoader.dismiss();
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -190,8 +338,16 @@ export class ServerProvider {
   assignCarrier(orderid,carrier){
       return new Promise((resolve,reject)=>{    
           let body = {orderid:orderid,carrier:carrier,registrationId:this.registrationId};
-          this.http.setDataSerializer("json"); 
+          this.http.setDataSerializer("json");
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+           
           this.http.post(this.configProvider.serverAddress+"/assignCarrier",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("assignCarrier Success");
@@ -203,6 +359,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                progressBarLoader.dismiss();
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -214,7 +371,15 @@ export class ServerProvider {
       return new Promise((resolve,reject)=>{    
           let body = {name:name,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/addCarrier",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("addCarrier Success");
@@ -226,6 +391,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                progressBarLoader.dismiss();
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -237,7 +403,15 @@ export class ServerProvider {
       return new Promise((resolve,reject)=>{        
           let body = {name:name,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/deleteCarrier",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("deleteCarrier Success");
@@ -249,6 +423,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                progressBarLoader.dismiss();
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -259,7 +434,15 @@ export class ServerProvider {
       return new Promise((resolve,reject)=>{        
           let body = {registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          //progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/getCarriers",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  //progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("getCarriers Success");
@@ -271,6 +454,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                //progressBarLoader.dismiss();
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -282,7 +466,15 @@ export class ServerProvider {
       return new Promise((resolve,reject)=>{    
           let body = {category:category,name:name,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/addMenu",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("addMenu Success");
@@ -294,6 +486,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                progressBarLoader.dismiss();            
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -305,7 +498,15 @@ export class ServerProvider {
           let body = {category:category,name:name,registrationId:this.registrationId};
           console.log("body:"+JSON.stringify(body));
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/deleteMenu",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("deleteMenu Success");
@@ -317,6 +518,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                progressBarLoader.dismiss();            
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -327,7 +529,15 @@ export class ServerProvider {
       return new Promise((resolve,reject)=>{    
           let body = {registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          //progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/getMenus",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  //progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("getMenus Success");
@@ -339,6 +549,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                //progressBarLoader.dismiss();            
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -349,7 +560,15 @@ export class ServerProvider {
       return new Promise((resolve,reject)=>{    
           let body = {startDate:startDate,endDate:endDate,buyer:buyer.trim(),registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/getSalesWithBuyer",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("getSales Success");
@@ -361,6 +580,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                progressBarLoader.dismiss();
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -371,7 +591,15 @@ export class ServerProvider {
       return new Promise((resolve,reject)=>{    
           let body = {startDate:startDate,endDate:endDate,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/getSales",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("getSales Success");
@@ -383,6 +611,7 @@ export class ServerProvider {
                       reject("unknown error in server");
                   }
           },(err)=>{
+                progressBarLoader.dismiss();
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            
@@ -393,7 +622,15 @@ checkPIN(pin){
       return new Promise((resolve,reject)=>{    
           let body = {pin:pin,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          
           this.http.post(this.configProvider.serverAddress+"/checkPIN",body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       resolve();
@@ -404,6 +641,7 @@ checkPIN(pin){
                       reject("unknown error in server");
                   }
           },(err)=>{
+                progressBarLoader.dismiss();            
                 console.log("err:"+JSON.stringify(err));
                 reject(err);            
           });            

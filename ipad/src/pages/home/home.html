@@ -74,13 +74,13 @@
               <carrier-order [order]="order" (output)="modifyCarrier($event)" *ngFor="let order of carrier.orders;let j=index;"></carrier-order>      
           </div>
           <hr><br>
-          <h3>배달</h3>
+          <h3>*배달</h3>
               <unassigned-carrier-order [order]="order" (output)="assingCarrier($event)" *ngFor="let order of storageProvider.unassingOrderDeliveryList;let i=index;"></unassigned-carrier-order> 
-          <h3>픽업</h3>   
+          <h3>*픽업</h3>   
               <unassigned-carrier-order [order]="order" (output)="assingCarrier($event)" *ngFor="let order of storageProvider.unassingOrderPickupList;let i=index;"></unassigned-carrier-order> 
-          <h3>냉동</h3>
+          <h3>*냉동</h3>
               <unassigned-carrier-order [order]="order" (output)="assingCarrier($event)" *ngFor="let order of storageProvider.unassingOrderFrozenList;let i=index;"></unassigned-carrier-order> 
-          <h3>기타</h3>
+          <h3>*기타</h3>
               <unassigned-carrier-order [order]="order" (output)="assingCarrier($event)" *ngFor="let order of storageProvider.unassingOrderEtcList;let i=index;"></unassigned-carrier-order> 
 </div>
 
