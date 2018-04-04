@@ -1,0 +1,46 @@
+<!--page3각아이템입력시출력되는화면궁금한점은실제로앱에서구현되게되는화면이만들어질때모든아이템에대한페이지를만들어야하는건지?-->
+<ion-header>
+<ion-item>더큰도시락</ion-item>
+</ion-header>
+<ion-content padding>
+<ion-list id="div1">    
+<ion-item>오색참치비빔밥사진</ion-item>
+</ion-list>
+<ion-list id="div2">
+    <ion-grid>
+    <ion-row>
+    <ion-col col-3>가격</ion-col>
+    <ion-col col-6>4000</ion-col>
+    <ion-col col-3>원</ion-col>
+    </ion-row>
+    <ion-row>
+    <ion-col col-3>추가옵션</ion-col>
+    <ion-col col-9><ion-input placeholder="추가사항을말해주세요"></ion-input></ion-col>
+    </ion-row>
+    <ion-row>
+    <ion-col col-4>밥곱빼기</ion-col>
+    <ion-col col-6>+500</ion-col>
+    <ion-col col-2>Radio</ion-col>
+    </ion-row>
+    <ion-row>
+    <ion-col col-4>계란후라이</ion-col>
+    <ion-col col-6>+0</ion-col>
+    <ion-col col-2>Radio</ion-col>
+    </ion-row>
+    </ion-grid>
+</ion-list>
+<ion-list id="div3">
+    <ion-grid>
+    <ion-row>
+    <ion-col col-6>4000원</ion-col>
+    <ion-col col-2><button ion-button>(-)</button></ion-col>
+    <ion-col col-2>1</ion-col>
+    <ion-col col-2><button ion-button>(+)</button></ion-col>
+    </ion-row>
+    <ion-row>
+    <button ion-button>장바구니</button>
+    <button ion-button (click)="openPage4()">바로주문</button>
+    </ion-row>
+    </ion-grid>
+</ion-list>
+</ion-content>
