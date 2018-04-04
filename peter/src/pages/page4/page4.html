@@ -1,0 +1,52 @@
+<!--Page4-->
+<ion-header>
+ <button ion-button><</button>
+ <ion-item>결제하기</ion-item>
+ 
+ <button ion-button>매장</button>
+ <button ion-button>포장</button>
+ <button ion-button>배달</button>
+ 
+</ion-header>
+<ion-content padding>
+ <ion-list id="div1">
+ <ion-grid>
+ <ion-row>
+ <ion-col col-4>결제내역</ion-col>
+ <ion-col col-4>&nbsp;</ion-col>
+ <ion-col col-4>3800원</ion-col>
+ </ion-row>
+ <ion-row>
+ <ion-col col-5>캐시결제할인금액</ion-col>
+ <ion-col col-3>&nbsp;</ion-col>
+ <ion-col col-4>-114원</ion-col>
+ </ion-row>
+ <ion-row>
+ <ion-col col-4>결제금액</ion-col>
+ <ion-col col-4>&nbsp;</ion-col>
+ <ion-col col-4>4000원</ion-col>
+ </ion-row>
+ </ion-grid>
+ </ion-list>
+ <ion-list id="div2">
+ <ion-grid>
+ <ion-row>
+ <ion-col col-12>결제방식</ion-col>
+ <ion-col><button ion-button>웨이티캐시</button></ion-col>
+ </ion-row>
+ </ion-grid>
+ </ion-list>
+ <ion-list id="div3">
+ <ion-grid>
+ <ion-row><ion-col col-12>현금영수증 발행을 원하시면 나의정보에서 설정해주시기 바랍니다.</ion-col></ion-row>
+ <ion-row><ion-col col-12>제공받는자: 더큰도시락</ion-col></ion-row>
+ <ion-row><ion-col col-12>항목: 휴대폰 번호</ion-col></ion-row>
+ <ion-row><ion-col col-12>목적: 판매자와 구매자의 거래의 원활한 진행, 본인 의사의</ion-col></ion-row>
+ <ion-row><ion-col col-12>확인, 고객상담 및 불만처리 등</ion-col></ion-row>
+ <ion-row><ion-col col-12>주문 시점에서 전달완료 또는 취소 이후 24시간</ion-col></ion-row>
+ </ion-grid>
+ </ion-list>
+ <ion-list id="footer">
+ <button ion-button (click)="openPage5()">결제하기</button>
+ </ion-list>
+</ion-content>
