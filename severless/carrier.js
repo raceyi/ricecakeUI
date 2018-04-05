@@ -9,25 +9,15 @@ router.addCarrier=function (param){
                 let params={
                     TableName:"carrier",
                     Item:{
+                        "date":param.date,
                         "name":param.name
-                    },
-                    ConditionExpression : "attribute_not_exists(#name)",
-                    ExpressionAttributeNames: {
-                        "#name":"name"
                     }
                 };
                 console.log("addCarrier-params:"+JSON.stringify(params));
                 dynamoDB.dynamoInsertItem(params).then((value)=>{
                     // send push message into others for ordr list update
                     // 모든 db update에 대해 push 메시지가 전달되어야 한다.
-                    let params = {
-                        TableName: "carrier"
-                    };
-                    dynamoDB.dynamoScanItem(params).then((result)=>{
-                        resolve(result.Items);
-                    },err=>{
-                        reject(err);
-                    });
+                    resolve(value);
                 },err=>{
                     if(err.code=="ConditionalCheckFailedException"){
                         reject("AlreadyExist");
@@ -43,23 +33,13 @@ router.deleteCarrier=function(param){
         var params = {
             TableName:"carrier",
             Key:{
+                "date":param.date,
                 "name":param.name
-            },
-            ConditionExpression : "attribute_exists(#name)",
-            ExpressionAttributeNames: {
-                "#name":"name"
             }
         };
         console.log("deleteCarrier-params:"+JSON.stringify(params));                
         dynamoDB.dynamoDeleteItem(params).then((result)=>{
-                let params = {
-                    TableName: "carrier"
-                };
-                dynamoDB.dynamoScanItem(params).then((result)=>{
-                    resolve(result.Items);
-                },err=>{
-                        reject(err);
-                });
+            resolve(result);
         },(err)=>{
             if(err.code=="ConditionalCheckFailedException"){
                 reject("AlreadyDeleted");
@@ -72,42 +52,28 @@ router.deleteCarrier=function(param){
 router.getCarriers=function (param){
     return new Promise((resolve,reject)=>{
                     let params = {
-                        TableName: "carrier"
+                        TableName: "carrier",
+                        FilterExpression: "(#date =:date)",
+                        ExpressionAttributeNames: {
+                            "#date": "date"
+                        },
+                        ExpressionAttributeValues: {
+                            ":date": param.date
+                        }
                     };
+
                     dynamoDB.dynamoScanItem(params).then((result)=>{
-                        resolve(result.Items);
+                        let carriers=[];
+                        result.Items.forEach(item=>{
+                            carriers.push({name:item.name});
+                        })
+                        resolve(carriers);
                     },err=>{
                         reject(err);
                     });
                 },err=>{
                         reject(err);
                 });
-}
-
-router.getCarrier=function(name){
-    return new Promise((resolve,reject)=>{
-            var params = {
-                TableName : "carrier",
-                KeyConditionExpression: "#name = :name",
-                ExpressionAttributeNames:{
-                    "#name": "name"
-                },
-                ExpressionAttributeValues: {
-                    ":name":name
-                }
-            };
-            dynamoDB.dynamoQueryItem(params).then((result)=>{
-                    console.log("dynamoQueryItem result: "+JSON.stringify(result));
-                    if(result.Items.length==0)
-                        reject("invalidCarrier");
-                    else
-                        resolve(result.Items);
-            },err=>{
-                    reject(err);
-            });
-        },err=>{
-                reject(err);
-        });
 }
 
 module.exports = router;

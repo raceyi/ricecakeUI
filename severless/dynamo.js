@@ -23,13 +23,14 @@ router.dynamoInsertItem=function(params){
             } else {
                 console.log("Added item:", JSON.stringify(data, null, 2));
                 //resolve(data);
-                if(params.TableName!="devices"){
+                if(params.TableName!="devices" && params.TableName!="transactions"){
                     device.notifyAll(params.TableName).then(()=>{
                         resolve(data);
                     },err=>{
                         resolve(data);
                     });
-                }
+                }else
+                    resolve(data);
             }
         });   
     }); 
@@ -58,12 +59,14 @@ router.dynamoUpdateItem=function(params){
             } else {
                 console.log("item:", JSON.stringify(data, null, 2));
                 //resolve(data);
-                if(params.TableName!="devices"){
+                if(params.TableName!="devices" && params.TableName!="transactions"){
                     device.notifyAll(params.TableName).then(()=>{
                         resolve(data);
                     },err=>{
                         resolve(data);
                     });
+                }else{
+                    resolve(data);
                 }
             }
         });   
@@ -79,13 +82,15 @@ router.dynamoDeleteItem=function (params){
             } else {
                 console.log("item:", JSON.stringify(data, null, 2));
                 //resolve(data);
-                if(params.TableName!="devices"){
+                if(params.TableName!="devices" && params.TableName!="transactions"){
                     device.notifyAll(params.TableName).then(()=>{
                         resolve(data);
                     },err=>{
                         resolve(data);
                     });
-                }               
+                }else{
+                    resolve(data);
+                }              
             }
         });   
     }); 

@@ -9,6 +9,7 @@ var fs = require('fs');
 let async = require('async');
 
 var dynamoDB = require('./dynamo');
+//var dynamoDB = require('./dynamo.test');
 
 var config=require('./bankda.config');
 
@@ -49,6 +50,7 @@ updatePayment=function(param,next){
         let payment=param.payment;
         let bkcode=param.bkcode;
         let bktime=param.time; 
+        console.log("bktime:"+bktime);
         //console.log("updatePayment:"+JSON.stringify(order));
         var params = {
             TableName:"order",
@@ -59,7 +61,7 @@ updatePayment=function(param,next){
             ExpressionAttributeNames: {
                 "#id":"id"
             },
-            UpdateExpression: "set payment = :payment,bkcode=:bkcode,bktime:=bktime",
+            UpdateExpression: "set payment = :payment,bkcode=:bkcode,bktime=:bktime",
             ExpressionAttributeValues:{
                 ":payment":payment,
                 ":bkcode": bkcode,
@@ -120,7 +122,7 @@ checkTransaction=function(bkcode){
                                 },
                                 UpdateExpression: "set checked = :checked",
                                 ExpressionAttributeValues:{
-                                    ":lastValue":true
+                                    ":checked":true
                                 },
                                 ReturnValues:"UPDATED_NEW"
                             };
@@ -135,6 +137,7 @@ checkTransaction=function(bkcode){
 }
 
 addTransactionRecord=function(record,next){
+    console.log("addTransactionRecord:"+JSON.stringify(record));
     if(parseInt(record.$.bkinput)>0){
         let bkdate=record.$.bkdate;
         let bktime=record.$.bktime;
@@ -152,24 +155,25 @@ addTransactionRecord=function(record,next){
                 "bkinput":record.$.bkinput,
                 "bkjango":record.$.bkjango
             },
-            ConditionExpression : "attribute_not_exists(#bkcode)",
-            ExpressionAttributeNames: {
-                "#bkcode":"bkcode"
-            }
+            //ConditionExpression : "attribute_not_exists(#bkcode)",
+            //ExpressionAttributeNames: {
+            //    "#bkcode":"bkcode"
+            //}
         };
-        console.log("addTransactions-params:"+JSON.stringify(params));
+        console.log("addTransactions-params???:"+JSON.stringify(params));
         dynamoDB.dynamoInsertItem(params).then((value)=>{
+            console.log("!!!! check unpaid cash orders");
             // send push message into others for ordr list update
-            // 현재부터 7일전 까지의 지불되지 않은 주문을 검색한다. 
+            // 현재부터 30일전 까지의 지불되지 않은 주문을 검색한다. 
             var currTime = new Date();
             var currLocalTime=new Date(currTime.getTime()+9*60*60*1000);
             console.log("currTime:"+currLocalTime.toISOString());
-            var startLocalTime=new Date(currLocalTime.getTime()-7*24*60*60*1000);
+            var startLocalTime=new Date(currLocalTime.getTime()-30*24*60*60*1000); //30 days
             let start=startLocalTime.toISOString();
             let end=currLocalTime.toISOString() ;
             let params = {
                 TableName: "order",
-                FilterExpression: "(#orderedTime between :start and :end) AND #buyerName=:buyerName AND #paymentMethod=:cash AND #payment<>:payment)",
+                FilterExpression: "(#orderedTime between :start and :end) AND #buyerName=:buyerName AND #paymentMethod=:cash AND #payment<>:payment",
                 ExpressionAttributeNames: {
                     "#orderedTime": "orderedTime",
                     "#buyerName":"buyerName",
@@ -271,11 +275,11 @@ addTransactionRecord=function(record,next){
                         });
                 } 
             },(err)=>{
-                console.log("scanOrders "+JSON.stringify(err));
+                console.log("scanOrders humm"+JSON.stringify(err));
                 next(err);
             });
         },err=>{
-            console.log("addTransactions "+JSON.stringify(err));
+            console.log("addTransactions humm"+JSON.stringify(err));
             next(err);
         });
     }else{
@@ -365,4 +369,22 @@ module.exports = router;
 //check();
 //setInterval(check, 15*60000); //every 15 minutes
 
-
+/*
+result = fs.readFileSync('bankda.txt', 'utf8'); //just for testing
+console.log(result);            
+parser.parseString(result, function (err, obj) {
+    console.log("obj:"+JSON.stringify(obj.bankda.account[0].accinfo));
+    if(obj.bankda.account[0].accinfo){
+        console.log(JSON.stringify(obj.bankda.account[0].accinfo));
+        last_bkcode=parseInt(obj.bankda.account[0].accinfo[obj.bankda.account[0].accinfo.length-1].$.bkcode);
+        async.map(obj.bankda.account[0].accinfo,addTransactionRecord,function(err,eachResult){
+            //All done
+            console.log("All done");
+            //response.json({result:"success"});
+        });
+    }else{ //no transaction update
+            console.log("no transaction. All done");
+            //response.json({result:"success"});
+    }
+}); // parse
+*/

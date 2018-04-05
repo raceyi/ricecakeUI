@@ -189,9 +189,9 @@ app.post('/getCarriers',(req,res) =>{
 });
 
 app.post('/registerDeviceRegistrationId',(req,res) =>{
-        console.log("registerDeviceRegistrationId:",req.body);
-        carrier.putRegistrationId(req.body).then(value=>{
-            console.log("value:"+value);
+        console.log("registerDeviceRegistrationId:",req.body.registrationId);
+        device.putRegistrationId(req.body.registrationId).then((value)=>{
+            console.log("value:"+value);            
             res.json({result:"success"});
         },err=>{
             res.json({result:"failure",error:JSON.stringify(err)});

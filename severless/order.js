@@ -276,7 +276,7 @@ router.assignCarrier=function (param){
         if(!param.carrier || !param.orderid ){
             reject("invalidParam");
         }else{
-                carrier.getCarrier(param.carrier).then(value=>{
+                //carrier.getCarrier(param.carrier).then(value=>{
                         var params = {
                             TableName:"order",
                             Key:{
@@ -301,9 +301,9 @@ router.assignCarrier=function (param){
                                 else    
                                     reject(err);
                         });
-                },err=>{
-                    reject(err);
-                });
+                //},err=>{
+                //    reject(err);
+                //});
         }
     });
 }

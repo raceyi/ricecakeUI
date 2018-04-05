@@ -108,15 +108,10 @@ router.notifyOrder=function(order){
             content+="떡 발송 날짜 - "+month+"/"+date+" "+ dayString(deliveryDate.getUTCDay()); 
 
             content+='\n주문감사합니다.\n';
-            content+=' *입금부탁드립니다.\n \
-            *주문변경 및 취소는 2~3일 전에 매장 전화로만 가능합니다.\n \
-            (02-333-8880)(02-337-6376)\n \
-            *문자상담은 어렵습니다.\n \
-            *상담가능시간 오전6:00~오후6:00(일요일휴무)';
-
+            content+=' *입금부탁드립니다.\n *주문변경 및 취소는 2~3일 전에 매장 전화로만 가능합니다.\n (02-333-8880)(02-337-6376)\n *문자상담은 어렵습니다.\n *상담가능시간 오전6:00~오후6:00(일요일휴무)';
             console.log("content:"+content);
             
-            let phoneNumber= order.recipientPhoneNumber.replace(/-/g, "");
+            let phoneNumber= order.buyerPhoneNumber.replace(/-/g, "");
             let sender={receivers:[phoneNumber],
                       subject:"경기떡집입니다.",
                       content: content
