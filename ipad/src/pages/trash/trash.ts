@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController,AlertController, NavParams } from 'ionic-angular';
 import {StorageProvider} from "../../providers/storage/storage";
+import {ServerProvider} from "../../providers/server/server";
+
+import { Events } from 'ionic-angular';
 
 /**
  * Generated class for the TrashPage page.
@@ -17,11 +20,30 @@ import {StorageProvider} from "../../providers/storage/storage";
 export class TrashPage {
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
-              public alertCtrl:AlertController,public storageProvider:StorageProvider) {
+              public events: Events,
+              public alertCtrl:AlertController,
+              public serverProvider:ServerProvider,
+              public storageProvider:StorageProvider) {
+
+        events.subscribe('update', (tablename) => {
+            console.log("TrashPage receive update event");
+            this.serverProvider.getOrdersInTrash().then((orders)=>{
+                this.storageProvider.trashList=orders;
+                this.storageProvider.convertOrderList(this.storageProvider.trashList);
+            },err=>{
+
+            })
+        });
+
   }
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad TrashPage');
+  }
+
+  ionViewWillUnload(){
+    console.log("TrashPage- ionViewWillUnload");
+    this.events.unsubscribe("update");
   }
 
   close(){

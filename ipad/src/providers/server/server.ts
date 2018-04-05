@@ -60,12 +60,12 @@ export class ServerProvider {
             this.pushNotification.on('notification').subscribe((data:any)=>{
                 console.log("pushNotification.on-data:"+JSON.stringify(data));
 
-                if(data.additionalData.registrationId==this.registrationId){
-                    console.log("just ignore it");
+                //if(data.additionalData.registrationId==this.registrationId){
+                //    console.log("just ignore it");
                     //this.events.publish('update',data.additionalData.table); // test code                    
-                }else{
+                //}else{
                     this.events.publish('update',data.additionalData.table);
-                }
+                //}
             });
             this.pushNotification.on('error').subscribe((e:any)=>{
                 console.log(e.message);

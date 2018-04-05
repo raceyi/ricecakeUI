@@ -1,6 +1,6 @@
-import { NavController,AlertController,Platform } from 'ionic-angular';
+import { NavController,AlertController,Platform ,Events} from 'ionic-angular';
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable,NgZone } from '@angular/core';
 import {ConfigProvider} from "../config/config";
 import {ServerProvider} from "../../providers/server/server";
 import * as moment from 'moment';
@@ -37,8 +37,10 @@ export class StorageProvider {
   constructor(public http: HttpClient,
               public alertCtrl:AlertController, 
               private platform: Platform,  
+              public events: Events,                
               public serverProvider:ServerProvider,
-              public configProvider:ConfigProvider) {
+              public configProvider:ConfigProvider,
+              public ngZone:NgZone) {
     console.log('Hello StorageProvider Provider');
 
     this.platform.ready().then(() => {
@@ -47,6 +49,20 @@ export class StorageProvider {
     var now = new Date().getTime();
     this.setDeliveryDate(now);
     console.log("deliveryDate:" + this.deliveryDate);
+
+        events.subscribe('update', (tablename) => {
+            console.log("storageProvider receive update event");
+            /*
+            let alert = this.alertCtrl.create({
+                            title: '주문정보가 변경되었습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();   
+            this.refresh();
+              */          
+        });
+
+
   }
   
   refresh(){ // 서버로 부터 최신 정보를 가져온다.
@@ -58,21 +74,25 @@ export class StorageProvider {
             },err=>{
             })
             this.serverProvider.getMenus().then((menus)=>{
-                this.convertMenuInfo(menus);
+                this.ngZone.run(()=>{
+                    this.convertMenuInfo(menus);
+                })
             },err=>{
 
             })
             this.serverProvider.getOrders(this.deliveryDate.substr(0,10)).then((orders)=>{
-                this.orderList=orders;
-                this.convertOrderList(this.orderList);
-                this.orderList.sort(function(a,b){
-                        if (a.id > b.id) return -1;
-                        if (a.id < b.id) return 1;
-                        return 0;
-                } );
-                console.log("call reconfigureDeliverySection...");
-                this.reconfigureDeliverySection();
-                this.configureProduceSection();                                
+                this.ngZone.run(()=>{
+                    this.orderList=orders;
+                    this.convertOrderList(this.orderList);
+                    this.orderList.sort(function(a,b){
+                            if (a.id > b.id) return -1;
+                            if (a.id < b.id) return 1;
+                            return 0;
+                    } );
+                    console.log("call reconfigureDeliverySection...");
+                    this.reconfigureDeliverySection();
+                    this.configureProduceSection();
+                });                                
                 console.log("orderList.length:"+this.orderList.length);
                 resolve();
             },err=>{
@@ -384,6 +404,7 @@ export class StorageProvider {
         this.unassingOrderPickupList = [];
         this.unassingOrderFrozenList = [];
         this.unassingOrderEtcList = [];
+
         this.carriers.forEach((carrier) =>{
             this.assignOrderList.push({ name: carrier.name, orders: [] });
         });
@@ -391,13 +412,15 @@ export class StorageProvider {
         this.orderList.forEach((order)=> {
             if (order.carrier) {
                 console.log("order.carrier:" + order.carrier);
-                var index = this.assignOrderList.findIndex(function (carrierInfo) {
-                    if (order.carrier == carrierInfo.name) {
+                var index = this.assignOrderList.findIndex(function (carrier) {
+                    if (order.carrier == carrier.name) {
                         return true;
                     }
                     return false;
                 });
+                console.log("hum... please check error -1")
                 this.assignOrderList[index].orders.push(order);
+                console.log("hum... please check error -2")
             }
             else {
                 if (order.deliveryMethod == "배달")

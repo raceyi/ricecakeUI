@@ -67,6 +67,13 @@ export class HomePage {
 
         events.subscribe('update', (tablename) => {
             console.log("homePage receive update event");
+            /*
+            let alert = this.alertCtrl.create({
+                            title: '주문정보가 변경되었습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();   
+              */          
             this.storageProvider.refresh();
         });
     }
@@ -936,6 +943,7 @@ constructDeliveryPrint(){
    let index=0;
    let pageBreakFirst:boolean=false;
    for(index=0;index<this.storageProvider.assignOrderList.length;index++){
+       console.log("hum...storageProvider.assignOrderList[index].orders");
        if(this.storageProvider.assignOrderList[index].orders.length==0){ 
            continue;
        }else{

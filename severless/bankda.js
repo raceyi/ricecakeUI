@@ -7,7 +7,7 @@ var iconv = require('iconv-lite');
 var AWS = require("aws-sdk");
 var fs = require('fs');
 let async = require('async');
-
+const assert = require('assert');
 var dynamoDB = require('./dynamo');
 //var dynamoDB = require('./dynamo.test');
 
@@ -46,6 +46,9 @@ router.bankda=function(response){
 }
 
 updatePayment=function(param,next){
+    if(next==undefined){
+        console.log("udpatePayment next is undefined");
+    }
         let order=param.order;
         let payment=param.payment;
         let bkcode=param.bkcode;
@@ -71,8 +74,11 @@ updatePayment=function(param,next){
         };
         console.log("!!!!!!!updatePayment-params:"+JSON.stringify(params));                
         dynamoDB.dynamoUpdateItem(params).then(result=>{
+                console.log("updatePayment success");
+                console.log("next type:"+typeof next);
                 next(null);
         },err=>{
+                console.log("updatePayment failure");            
                 if(err.code=="ConditionalCheckFailedException")            
                     next("invalidOrderId");
                 else
@@ -136,7 +142,11 @@ checkTransaction=function(bkcode){
         });
 }
 
+let inputNumber=0;
+let outputNumber=0;
 addTransactionRecord=function(record,next){
+    ++inputNumber;
+    console.log("inputNumber:"+inputNumber);
     console.log("addTransactionRecord:"+JSON.stringify(record));
     if(parseInt(record.$.bkinput)>0){
         let bkdate=record.$.bkdate;
@@ -171,6 +181,7 @@ addTransactionRecord=function(record,next){
             var startLocalTime=new Date(currLocalTime.getTime()-30*24*60*60*1000); //30 days
             let start=startLocalTime.toISOString();
             let end=currLocalTime.toISOString() ;
+            console.log("!!!buyerName:"+record.$.bkjukyo);
             let params = {
                 TableName: "order",
                 FilterExpression: "(#orderedTime between :start and :end) AND #buyerName=:buyerName AND #paymentMethod=:cash AND #payment<>:payment",
@@ -188,91 +199,71 @@ addTransactionRecord=function(record,next){
                     ":cash":"cash"
                 }
             };
+            console.log("params:"+JSON.stringify(params));
             dynamoDB.dynamoScanItem(params).then((result)=>{
                 //1.7일 이내 동일금액,동일주문자의 주문이 하나만 존재할 경우 해당 주문에 대해 결제한것으로 지정한다.
                 //2.만약 동일인은 있으나 금액이 틀릴경우 7일 이내 주문금액의 합산금액과 입금액이 일치하는지를 확인한다. 주문 합산금액과 입금액이 동일할경우 결제한것으로 지정한다. 
                 //3.동일이름,동일주문금액의 주문이 두개 이상 존재할 경우 상점주가 확인하도록 한다. => !!! ignore this case!!!!
                 //paid,unpaid,ambigious
-                if(result.Items.length==1){   
-                    if(result.Items[0].totalPrice==record.$.bkinput){ //case 1
-                        updatePayment({order:result.Items[0],payment:"paid",bkcode:record.$.bkcode,time:time},function(err,next){
-                            if(err){
-                                //humm... Can it happen?
-                                next(err);
-                            }else{
-                                //update "checked" with true
-                                checkTransaction(record.$.bkcode).then(()=>{
-                                    updateLastBKCode().then(()=>{
-                                        next(null);
-                                    },err=>{
-                                        next(err);
-                                    });
-                                });
-                            }
-                        });
-                    }else{
-                            updateLastBKCode().then(()=>{
-                                next(null);
-                            },err=>{
-                                next(err);
-                            });
-                    }    
-                }else if(result.Items.length>1){ //case 2, case 3
-                    let i,sum=0;
-                    for(i=0;i<result.Items.length;i++){
-                        if(!result.Items[i].payment.startsWith("paid"))
-                            sum+=parseInt(result.Items[i].totalPrice);
-                    }
-                    if(sum==record.$.bkinput){  //case 2
-                        let orders=[];
-                        result.Items.forEach(item=>{
-                                orders.push({order:item,payment:"paid",bkcode:record.$.bkcode,time:time});
-                        })
-                        async.map(orders,updatePayment,function(err,eachResult){
-                            if(err){
-                                //humm.. Can it happen?
-                                next(err);
-                            }else{
-                                checkTransaction(record.$.bkcode).then(()=>{
-                                    updateLastBKCode().then(()=>{
-                                        next(null);
-                                    },err=>{
-                                        next(err);
-                                    });
-                                });
-                            }
-                        });
-                    }/*else{ //case 3 Just ignore this case!
-                        let same=[];
-                        result.Items.forEach(item=>{
-                            if(item.totalPrice== record.$.bkinput){
-                                let payment=item.payment;
-                                let strs=payment.splits('-');
-                                payment="ambigious-"+strs[1];
-                                same.push({order:item,payment:"ambigious"+item.payment,bkcode:record.$.bkcode,time:time});
-                            }
-                        });
-                        async.map(same,updatePayment,function(err,eachResult){
-                            if(err){
-                                //humm... Can it happen?
-                                next(err);
-                            }else{
-                                checkTransaction(record.$.bkcode).then(()=>{
-                                    updateLastBKCode().then(()=>{
-                                        next(null);
-                                    },err=>{
-                                        next(err);
-                                    });
-                                });
-                            }
-                        });
-                    }*/
-                }else{ // no order, just update bkcode
-                        updateLastBKCode().then(()=>{
+                if(result.Items.length==0){
+                        //updateLastBKCode().then(()=>{
                             next(null);
-                        },err=>{
-                            next(err);
-                        });
+                        //},err=>{
+                        //    next(err);
+                        //});
+                }else{
+                    console.log("!!! The same buyer found!!!!"+record.$.bkjukyo);
+                    let orders=[];
+                    let j;
+                    for(j=0;j<result.Items.length;j++){ 
+                        console.log("price:"+result.Items[j].totalPrice+" deposit:"+record.$.bkinput);
+                        if(result.Items[j].totalPrice==record.$.bkinput){//case 1
+                            orders.push({order:result.Items[j],payment:"paid",bkcode:record.$.bkcode,time:time}); //bktime?
+                            break;
+                        }
+                    }
+                    console.log("orders: "+JSON.stringify(orders));
+                    if(orders.length==0){ //check case 2
+                        let i,sum=0;
+                        let multipleOrders=[];
+                        for(i=0;i<result.Items.length;i++){
+                            if(!result.Items[i].payment.startsWith("paid")){
+                                sum+=parseInt(result.Items[i].totalPrice);
+                                multipleOrders.push({order:result.Items[i],payment:"paid",bkcode:record.$.bkcode,time:time});                                
+                            }
+                            console.log("price sum:"+sum+" deposit:"+record.$.bkinput);                            
+                            if(sum==record.$.bkinput){
+                                multipleOrders.push({order:result.Items[i],payment:"paid",bkcode:record.$.bkcode,time:time});
+                                break;
+                            }    
+                        }
+                        if(sum==record.$.bkinput && sum!=0){
+                            orders=multipleOrders;
+                        }
+                    }
+                    console.log("update orders:"+JSON.stringify(orders));
+                    if(orders.length>0){
+                            async.map(orders,updatePayment,function(err,eachResult){
+                                if(err){
+                                    //humm.. Can it happen?
+                                    next(err);
+                                }else{
+                                    checkTransaction(record.$.bkcode).then(()=>{
+                                        //updateLastBKCode().then(()=>{
+                                            next(null);
+                                        //},err=>{
+                                        //    next(err);
+                                        //});
+                                    });
+                                }
+                            });
+                    }else{
+                        //updateLastBKCode().then(()=>{
+                            next(null);
+                        //},err=>{
+                        //    next(err);
+                        //});
+                    }
                 } 
             },(err)=>{
                 console.log("scanOrders humm"+JSON.stringify(err));
@@ -331,7 +322,7 @@ check=function(response){
             result += iconv.decode(chunk,"euc-kr");
         });
         res.on('end', function () {
-            //result = fs.readFileSync('bankda.txt', 'utf8'); //just for testing
+            result = fs.readFileSync('bankda.txt', 'utf8'); //just for testing
             console.log(result);            
             parser.parseString(result, function (err, obj) {
                 console.log("obj:"+JSON.stringify(obj.bankda.account[0].accinfo));
@@ -339,9 +330,22 @@ check=function(response){
                     console.log(JSON.stringify(obj.bankda.account[0].accinfo));
                     last_bkcode=parseInt(obj.bankda.account[0].accinfo[obj.bankda.account[0].accinfo.length-1].$.bkcode);
                     async.map(obj.bankda.account[0].accinfo,addTransactionRecord,function(err,eachResult){
-                        //All done
-                        console.log("All done");
-                        response.json({result:"success"});
+                        if(err){
+                            console.log("check error:"+JSON.stringify(err));
+                            response.json({result:"failure"});
+                        }else{
+                            updateLastBKCode().then(()=>{
+                                console.log("All done");
+                                response.json({result:"success"});                                                
+                            },err=>{
+                                console.log("All done- lastBKCode write error");
+                                response.json({result:"failure"});                        
+                            });
+
+                            //All done
+                            console.log("All done");
+                            response.json({result:"success"});
+                        }
                     });
                 }else{ //no transaction update
                         console.log("no transaction. All done");
@@ -368,16 +372,20 @@ module.exports = router;
 
 //check();
 //setInterval(check, 15*60000); //every 15 minutes
-
 /*
 result = fs.readFileSync('bankda.txt', 'utf8'); //just for testing
 console.log(result);            
 parser.parseString(result, function (err, obj) {
     console.log("obj:"+JSON.stringify(obj.bankda.account[0].accinfo));
     if(obj.bankda.account[0].accinfo){
-        console.log(JSON.stringify(obj.bankda.account[0].accinfo));
+        console.log("accinfo(len:"+obj.bankda.account[0].accinfo.length+"):"+JSON.stringify(obj.bankda.account[0].accinfo));
         last_bkcode=parseInt(obj.bankda.account[0].accinfo[obj.bankda.account[0].accinfo.length-1].$.bkcode);
         async.map(obj.bankda.account[0].accinfo,addTransactionRecord,function(err,eachResult){
+            updateLastBKCode().then(()=>{
+                console.log("All done");
+            },err=>{
+                console.log("All done- lastBKCode write error");
+            });
             //All done
             console.log("All done");
             //response.json({result:"success"});
