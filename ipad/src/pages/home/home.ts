@@ -493,12 +493,10 @@ export class HomePage {
         if(this.section == 'order'){
             page=this.constructOrderPrint();
         }else if(this.section == 'delivery'){
-
+            page=this.constructDeliveryPrint();
         }else if(this.section == 'produce'){
             page=this.constructProducePrint();
         }
-        //var page="<H2>검증하기</H2>";
-
         let options: PrintOptions = {
             name: 'MyDocument',
             duplex: true,
@@ -605,12 +603,13 @@ export class HomePage {
             })
             pages+="</table>";
         }
+        pages+="</html>";
         console.log("pages:"+pages);
         return pages;
     }
 
     constructOrderPrint(){
-/*
+
         let charactersInLine:number=65;
         let linesPerPage=48;
 
@@ -618,83 +617,305 @@ export class HomePage {
                       this.storageProvider.deliveryDate.substr(5,2)+"월"+
                       this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+" 총:"+this.storageProvider.orderList.length+" ";
 
-        let currentPage=1;
-        let currentLines=0;
-
-        let eachItems=[];
+        let eachPages=[]; // tables(order,addressPrint, menusPrint, memoPrint) per page,pageNumber
+        let eachTables=[];
         let totalLinesNumber=0;
+        let defaultLinesNumber=4; 
 
         this.storageProvider.orderList.forEach(item=>{
-            let list=" ";
-            let totalLine="";
-            item.amount.forEach(amount=>{
-                totalLine+=amount.amount+'('+amount.time+'),';
-            });
-            totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
-            let remain=totalLine.length;
-            let index=0;
-            let lineNumber=0;
-            while(remain>=rightCharacters){
-                list+=totalLine.substr(index,rightCharacters);
-                remain=remain-rightCharacters;
-                index+=rightCharacters;
-                ++lineNumber;
-                if(remain>0)
-                    list+="<br>";
+            let addressPrint="";
+            let menusPrint="";
+            let memoPrint="";
+            let lineNumTable=0;
+
+            lineNumTable+=defaultLinesNumber;
+
+            if(item.recipientAddressDetail){
+                addressPrint= item.recipientAddress+" "+item.recipientAddressDetail;
+            }else
+                addressPrint= item.recipientAddress;
+            if(addressPrint.length>charactersInLine){
+                lineNumTable+=2;
+                addressPrint=addressPrint.substr(0,charactersInLine)+"<br>"+addressPrint.substr(charactersInLine);
+            }else{
+                ++lineNumTable;
             }
-            if(remain>0){
-                list+=totalLine.substr(index);
-                ++lineNumber;
+            if(item.memo!=undefined && item.memo!=null && item.memo.trim().length>0){
+                let characters=item.memo.trim().length;
+                let index=0;
+                while((characters-charactersInLine)>0){
+                    memoPrint+=item.memo.substr(index,charactersInLine)+"<br>";
+                    ++lineNumTable;
+                    index+=charactersInLine;
+                    characters-=charactersInLine;
+                }
+                ++lineNumTable;
+                memoPrint+=item.memo.substr(index);
+                console.log("memoPrint:"+memoPrint);
             }
-            console.log("lineNumber:"+lineNumber+"list:"+list);
-            if(nameLength>lineNumber){
-                ++lineNumber;
+            let menus="";
+            item.menuList.forEach(menu=>{
+                menus+=menu.category+menu.menuString+menu.amount+menu.unit+",";
+            })
+            console.log("!!!menus:"+menus);
+            menus=menus.substr(0,menus.length-1);
+            {
+                let characters=menus.length;
+                let index=0;
+                while((characters-charactersInLine)>0){
+                    menusPrint+=menus.substr(index,charactersInLine)+"<br>";
+                    ++lineNumTable;
+                    index+=charactersInLine;
+                    characters-=charactersInLine;
+                }
+                ++lineNumTable;
+                menusPrint+=menus.substr(index);
             }
-            totalLinesNumber+=lineNumber;
-            eachItems.push({lines:list, name:item.menu,number:lineNumber});    
+            console.log("!!! menusPrint:"+menusPrint);
+            totalLinesNumber+=lineNumTable;
+            eachTables.push({ order:item ,addressPrint:addressPrint,memoPrint:memoPrint,menusPrint:menusPrint, lines:lineNumTable });
         })
 
-        console.log("eachItems:"+JSON.stringify(eachItems));
+        let currentPage=1;
+        let currentLines=0;
+        let tablesPerPage=[];
 
-        let tables=[];
-        let pageNumber=1;
-        let currentPageNums=0;
-        let currentPageItems=[];
-        eachItems.forEach((item)=>{
-            if(currentPageNums+item.number>linesPerPage){
-                //move into next pages
-                tables.push({page:pageNumber,items:currentPageItems})
-                pageNumber++;
-                currentPageItems=[];
-                currentPageItems.push(item);
-                currentPageNums=item.number;
-            }else{
-                currentPageItems.push(item);
-                currentPageNums+=item.number;
+        eachTables.forEach(table=>{
+            console.log("tableLines:"+table.lines+" currentLines:"+currentLines+" currentPage:"+currentPage);
+            if(currentLines+(table.lines+1)>linesPerPage){ // table출력+table상단 1줄 번호 출력
+                eachPages.push({tables:tablesPerPage,page:currentPage});
+                ++currentPage;
+                tablesPerPage=[];
+                tablesPerPage.push(table);
+                currentLines=table.lines+1;    
+            }else{  
+                tablesPerPage.push(table);
+                currentLines+=(table.lines+1);
             }
-        })  
-        if(currentPageItems.length>0){ //last page
-              tables.push({page:pageNumber,items:currentPageItems})            
+        });
+        if(tablesPerPage.length>0){
+            eachPages.push({tables:tablesPerPage,page:currentPage});
         }
-        console.log("Tables:"+JSON.stringify(tables));
+        console.log("currentPage: "+currentPage+" currentLines")
 
-        let pages="<html>\
-                    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
+        let pages="<html>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\n";
         let index;
-        for(index=0;index<tables.length;index++){
+       let tableNumber=0;     
+        for(index=0;index<eachPages.length;index++){
             // page title
-            pages+="<H1>"+this.storageProvider.deliveryDate.substr(0,4)+"년"+
-                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
-                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+"("+(index+1)+"/"+pageNumber+")"+"</H1>";
-            pages+="<table style=\"width:100%\;border-collapse:collapse;\">";          
-            tables[index].items.forEach(item=>{
-                pages+="<tr><td style=\"border: solid 1px; font-size:2em;\">"+item.name+"</td>"+
-                            "<td style=\"border: solid 1px; font-size:2em;\">"+item.lines+"</td>"+"</tr>";
-            })
-            pages+="</table>";
+            if(index>0){
+                pages+="<H1 style=\"page-break-before: always;\">\n";
+            }else
+                pages+="<H1>";
+            pages+=title+"("+(index+1)+"/"+eachPages.length+")</H1>\n";
+            eachPages[index].tables.forEach(table=>{
+                //console.log("table:"+JSON.stringify(table));
+++tableNumber;
+pages+="<span>"+tableNumber+"/"+this.storageProvider.orderList.length+"</span><br>\n";
+pages+="<table style=\"width:100%;border-collapse:collapse;\">\n";
+pages+="<tr>"
+pages+="<td style=\"border:solid 1px; font-size:0.8em;\" colspan=\"4\">배달지:"+ table.addressPrint+"</td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">배달요청시간</td>\n";
+pages+="<td width=\"35%\" style=\"border: solid 1px; font-size:0.8em;\">"+ table.order.deliveryTime.slice(11,13) + "시 " + table.order.deliveryTime.slice(14,16) + "분" +"</td>\n";
+pages+="<td width=\"10%\" style=\"border: solid 1px; font-size:0.8em;\">수신자</td>\n";
+pages+="<td style=\"border:solid 1px;font-size:0.8em;\">"+table.order.recipientName+" "+table.order.recipientPhoneNumber+"</td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"15%\" style=\"border:solid 1px; font-size:0.8em;\">주문금액</td>\n";
+pages+="<td width=\"35%\" style=\"border:solid 1px; font-size:0.8em;\">"+ (table.order.price+table.order.deliveryFee).toLocaleString()+"원"+"(배달료 "+0+"원)</td>\n";
+pages+="<td width=\"10%\" style=\"border:solid 1px; font-size:0.8em;\">결제</td>\n";
+pages+="<td style=\"border:solid 1px;font-size:0.8em;\">"+table.order.paymentString+"</td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"20%\" style=\"border:solid 1px; font-size:0.8em;\">주문자</td>\n";
+pages+="<td style=\"border:solid 1px; font-size:0.8em;\" colspan=\"3\">"+table.order.buyerName+" "+table.order.buyerPhoneNumber+"<span>(접수:"+table.order.orderedTimeString+")</span></td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"15%\" style=\"border:solid 1px; font-size:0.8em;\">배송방법</td>\n";
+if(table.order.deliveryMethod=="픽업")
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" colspan=\"3\">"+table.order.deliveryMethod+"</td>\n";  
+else if(!table.order.carrier)
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" colspan=\"3\">"+table.order.deliveryMethod+"</td>\n";  
+else
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" colspan=\"3\">"+table.order.deliveryMethod+"("+table.order.carrier+")</td>\n";  
+pages+="</tr>\n";     
+pages+="<td style=\"border:solid 1px;font-size:0.8em;\" width=\"100%\" colspan=\"4\">\n";
+pages+=table.menusPrint;
+pages+="</td>\n";
+pages+="</tr>\n";
+if(table.memoPrint){ 
+    pages+="<tr>\n";
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" width=\"100%\" colspan=\"4\">"+table.memoPrint+"</td>\n";
+    pages+="</tr>\n"; 
+}
+pages+="</table>\n";
+            })  
         }
+        pages+="</html>";
         console.log("pages:"+pages);
         return pages;
-*/
     }
+
+
+constructDeliveryPrint(){
+//
+//H1 배달자별 다른 페이지  title:배달일(배달자:xxx) 배달수: 개
+// eachCarriers
+//
+// 픽업,냉동,기타 각각 다른 페이지
+// pickup
+// fronzon
+// etc
+//
+
+        let charactersInLine:number=65;
+        let linesPerPage=48;
+
+        let title="배달일:"+this.storageProvider.deliveryDate.substr(0,4)+"년"+
+                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
+                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+" 총:"+this.storageProvider.orderList.length+" ";
+
+        let eachPages=[]; // tables(order,addressPrint, menusPrint, memoPrint) per page,pageNumber
+        let eachTables=[];
+        let totalLinesNumber=0;
+        let defaultLinesNumber=4; 
+
+        this.storageProvider.orderList.forEach(item=>{
+            let addressPrint="";
+            let menusPrint="";
+            let memoPrint="";
+            let lineNumTable=0;
+
+            lineNumTable+=defaultLinesNumber;
+
+            if(item.recipientAddressDetail){
+                addressPrint= item.recipientAddress+" "+item.recipientAddressDetail;
+            }else
+                addressPrint= item.recipientAddress;
+            if(addressPrint.length>charactersInLine){
+                lineNumTable+=2;
+                addressPrint=addressPrint.substr(0,charactersInLine)+"<br>"+addressPrint.substr(charactersInLine);
+            }else{
+                ++lineNumTable;
+            }
+            if(item.memo!=undefined && item.memo!=null && item.memo.trim().length>0){
+                let characters=item.memo.trim().length;
+                let index=0;
+                while((characters-charactersInLine)>0){
+                    memoPrint+=item.memo.substr(index,charactersInLine)+"<br>";
+                    ++lineNumTable;
+                    index+=charactersInLine;
+                    characters-=charactersInLine;
+                }
+                ++lineNumTable;
+                memoPrint+=item.memo.substr(index);
+                console.log("memoPrint:"+memoPrint);
+            }
+            let menus="";
+            item.menuList.forEach(menu=>{
+                menus+=menu.category+menu.menuString+menu.amount+menu.unit+",";
+            })
+            console.log("!!!menus:"+menus);
+            menus=menus.substr(0,menus.length-1);
+            {
+                let characters=menus.length;
+                let index=0;
+                while((characters-charactersInLine)>0){
+                    menusPrint+=menus.substr(index,charactersInLine)+"<br>";
+                    ++lineNumTable;
+                    index+=charactersInLine;
+                    characters-=charactersInLine;
+                }
+                ++lineNumTable;
+                menusPrint+=menus.substr(index);
+            }
+            console.log("!!! menusPrint:"+menusPrint);
+            totalLinesNumber+=lineNumTable;
+            eachTables.push({ order:item ,addressPrint:addressPrint,memoPrint:memoPrint,menusPrint:menusPrint, lines:lineNumTable });
+        })
+
+        let currentPage=1;
+        let currentLines=0;
+        let tablesPerPage=[];
+
+        eachTables.forEach(table=>{
+            console.log("tableLines:"+table.lines+" currentLines:"+currentLines+" currentPage:"+currentPage);
+            if(currentLines+(table.lines+1)>linesPerPage){ // table출력+table상단 1줄 번호 출력
+                eachPages.push({tables:tablesPerPage,page:currentPage});
+                ++currentPage;
+                tablesPerPage=[];
+                tablesPerPage.push(table);
+                currentLines=table.lines+1;    
+            }else{  
+                tablesPerPage.push(table);
+                currentLines+=(table.lines+1);
+            }
+        });
+        if(tablesPerPage.length>0){
+            eachPages.push({tables:tablesPerPage,page:currentPage});
+        }
+        console.log("currentPage: "+currentPage+" currentLines")
+
+        let pages="<html>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\n";
+        let index;
+       let tableNumber=0;     
+        for(index=0;index<eachPages.length;index++){
+            // page title
+            if(index>0){
+                pages+="<H1 style=\"page-break-before: always;\">\n";
+            }else
+                pages+="<H1>";
+            pages+=title+"("+(index+1)+"/"+eachPages.length+")</H1>\n";
+            eachPages[index].tables.forEach(table=>{
+                //console.log("table:"+JSON.stringify(table));
+++tableNumber;
+pages+="<span>"+tableNumber+"/"+this.storageProvider.orderList.length+"</span><br>\n";
+pages+="<table style=\"width:100%;border-collapse:collapse;\">\n";
+pages+="<tr>"
+pages+="<td style=\"border:solid 1px; font-size:0.8em;\" colspan=\"4\">배달지:"+ table.addressPrint+"</td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">배달요청시간</td>\n";
+pages+="<td width=\"35%\" style=\"border: solid 1px; font-size:0.8em;\">"+ table.order.deliveryTime.slice(11,13) + "시 " + table.order.deliveryTime.slice(14,16) + "분" +"</td>\n";
+pages+="<td width=\"10%\" style=\"border: solid 1px; font-size:0.8em;\">수신자</td>\n";
+pages+="<td style=\"border:solid 1px;font-size:0.8em;\">"+table.order.recipientName+" "+table.order.recipientPhoneNumber+"</td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"15%\" style=\"border:solid 1px; font-size:0.8em;\">주문금액</td>\n";
+pages+="<td width=\"35%\" style=\"border:solid 1px; font-size:0.8em;\">"+ (table.order.price+table.order.deliveryFee).toLocaleString()+"원"+"(배달료 "+0+"원)</td>\n";
+pages+="<td width=\"10%\" style=\"border:solid 1px; font-size:0.8em;\">결제</td>\n";
+pages+="<td style=\"border:solid 1px;font-size:0.8em;\">"+table.order.paymentString+"</td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"20%\" style=\"border:solid 1px; font-size:0.8em;\">주문자</td>\n";
+pages+="<td style=\"border:solid 1px; font-size:0.8em;\" colspan=\"3\">"+table.order.buyerName+" "+table.order.buyerPhoneNumber+"<span>(접수:"+table.order.orderedTimeString+")</span></td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"15%\" style=\"border:solid 1px; font-size:0.8em;\">배송방법</td>\n";
+if(table.order.deliveryMethod=="픽업")
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" colspan=\"3\">"+table.order.deliveryMethod+"</td>\n";  
+else if(!table.order.carrier)
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" colspan=\"3\">"+table.order.deliveryMethod+"</td>\n";  
+else
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" colspan=\"3\">"+table.order.deliveryMethod+"("+table.order.carrier+")</td>\n";  
+pages+="</tr>\n";     
+pages+="<td style=\"border:solid 1px;font-size:0.8em;\" width=\"100%\" colspan=\"4\">\n";
+pages+=table.menusPrint;
+pages+="</td>\n";
+pages+="</tr>\n";
+if(table.memoPrint){ 
+    pages+="<tr>\n";
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" width=\"100%\" colspan=\"4\">"+table.memoPrint+"</td>\n";
+    pages+="</tr>\n"; 
+}
+pages+="</table>\n";
+            })  
+        }
+        pages+="</html>";
+        console.log("pages:"+pages);
+        return pages;
+    }
+
 }
