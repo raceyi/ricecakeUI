@@ -367,9 +367,9 @@ export class ServerProvider {
 
   } 
 
-  addCarrier(name){
+  addCarrier(name,date){
       return new Promise((resolve,reject)=>{    
-          let body = {name:name,registrationId:this.registrationId};
+          let body = {name:name,date:date,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
           this.http.setRequestTimeout(this.timeout);
           let progressBarLoader = this.loadingCtrl.create({
@@ -399,9 +399,9 @@ export class ServerProvider {
     
   }
 
-  deleteCarrier(name){
+  deleteCarrier(name,date){
       return new Promise((resolve,reject)=>{        
-          let body = {name:name,registrationId:this.registrationId};
+          let body = {name:name,date:date,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
           this.http.setRequestTimeout(this.timeout);
           let progressBarLoader = this.loadingCtrl.create({
@@ -430,9 +430,9 @@ export class ServerProvider {
       });    
   }
 
-  getCarriers(){
+  getCarriers(date){
       return new Promise((resolve,reject)=>{        
-          let body = {registrationId:this.registrationId};
+          let body = {date:date,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
           this.http.setRequestTimeout(this.timeout);
           let progressBarLoader = this.loadingCtrl.create({
@@ -446,7 +446,15 @@ export class ServerProvider {
                   let response=JSON.parse(res.data);            
                   if(response.result=="success"){
                       console.log("getCarriers Success");
-                      resolve(response.carriers);
+                      let carriers=response.carriers;
+                      carriers.sort(function(a,b){
+                        if(a <b)
+                            return -1;
+                        if(a>b)
+                            return 1;
+                        return 0;    
+                      })
+                      resolve(carriers);
                   }else{
                     if(response.error)
                       reject(response.error);

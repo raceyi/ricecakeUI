@@ -361,7 +361,25 @@ export class HomePage {
 
     modifyOrder(input) {
         if(input.operation=="delete"){
-            this.storageProvider.hideOrder(input.order.id);
+             let alert = this.alertCtrl.create({
+                    title: '주문을 삭제하시겠습니까?',
+                    buttons: [
+                            {
+                            text: '아니오',
+                            handler: () => {
+                                return;
+                            }
+                            },
+                            {
+                            text: '네',
+                            handler: () => {
+                                console.log('agree clicked');
+                                this.storageProvider.hideOrder(input.order.id);
+                                return;
+                            }
+                            }]
+                });
+                alert.present();
         }else if(input.operation=="modify"){
             input.order.modification = true;
         }
@@ -371,7 +389,7 @@ export class HomePage {
     assingCarrier(order) {
         //please Update carrier, sort order list again
         this.storageProvider.assignCarrier(order.id,order.carrier).then(()=>{
-
+            this.storageProvider.refresh();
         },err=>{
             if(typeof err==="string" && err.indexOf("invalidId")>=0){
                     let alert = this.alertCtrl.create({
@@ -406,7 +424,7 @@ export class HomePage {
     modifyCarrier(order) {
         //please Update carrier, sort order list again
         this.storageProvider.assignCarrier(order.id,order.updateCarrier).then(()=>{
-
+            this.storageProvider.refresh();
         },err=>{
             if(typeof err==="string" && err.indexOf("invalidId")>=0){
                     let alert = this.alertCtrl.create({

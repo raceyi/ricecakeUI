@@ -21,6 +21,8 @@
       <button ion-button clear color="black" style="font-size:4vw;" (click)="close()"><ion-icon large name="md-close"></ion-icon></button>
     </ion-col>
   </ion-row>
+
+<div showWhen="portrait">
     <div style="height:20vh;" text-center>
       <h1>관리자페이지</h1>
      </div>
@@ -34,6 +36,19 @@
         </ion-col> 
         <ion-col col-4></ion-col>
      </ion-row>
+</div>
+<div showWhen="landscape">
+    <div text-center>
+      <h1>관리자 비밀번호</h1>
+     </div>
+     <ion-row>
+        <ion-col col-4></ion-col>
+        <ion-col text-center class="landscapeNumberCircle" *ngFor="let digit of password" >
+          {{digit}}
+        </ion-col> 
+        <ion-col col-4></ion-col>
+     </ion-row>
+</div>
 </ion-content>
 <ion-footer>
  <ion-grid style="background-color:white;">

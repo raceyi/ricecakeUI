@@ -30,6 +30,7 @@ export class CarrierManagementPage {
   }
 
   close(){
+    this.storageProvider.reconfigureDeliverySection();
     this.navCtrl.pop();
   }
 
@@ -49,6 +50,7 @@ export class CarrierManagementPage {
                     console.log('agree clicked');
                     this.storageProvider.deleteCarrier(name).then(()=>{
                         console.log("deleteCarrier success ");
+                        this.storageProvider.refresh();
                     },(err:any)=>{
                       if(typeof err==="string" && err.indexOf("AlreadyDeleted")>=0){
                             let alert = this.alertCtrl.create({
@@ -71,11 +73,13 @@ export class CarrierManagementPage {
                                 buttons: ['확인']
                             });
                             alert.present();
+                            return;
 
     }
 
     this.storageProvider.addCarrier(this.newCarrier).then(()=>{
           this.newCarrier="";
+          this.storageProvider.refresh();
       },(err)=>{
           if(typeof err==="string" && err.indexOf("AlreadyExist")>=0){
                 let alert = this.alertCtrl.create({

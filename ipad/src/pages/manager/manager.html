@@ -44,6 +44,81 @@
         <button ion-button (click)="searchSales()">계산하기</button>
       </ion-col>
     </ion-row>
+  </ion-col>
+  <ion-col col-3>
+  </ion-col>
+</ion-row>
+</div>
+
+  <div>
+    <ion-row>
+      <ion-col col-4 style="font-size:2.7vw;" text-right>
+        <ion-row>
+          <ion-col>
+        현금완납:
+          </ion-col>
+          <ion-col>
+            {{cashPaid.toLocaleString()}}
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            카드완납:
+          </ion-col>
+          <ion-col>
+          {{cardPaid.toLocaleString()}}
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+           완납:
+          </ion-col>
+          <ion-col>
+             <amount-display [amount]="sum(cardPaid,cashPaid)"></amount-display>
+          </ion-col>
+        </ion-row>
+      </ion-col>
+      <ion-col col-4 col-4 style="font-size:2.7vw;" text-right>
+        <ion-row>
+          <ion-col>
+        현금미납:
+          </ion-col>
+          <ion-col>
+            {{cashUnpaid.toLocaleString()}}
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+         카드미납:
+          </ion-col>
+          <ion-col>
+             {{cardUnpaid.toLocaleString()}}
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+           미납
+          </ion-col>
+          <ion-col>
+            <amount-display [amount]="sum(cardUnpaid,cashUnpaid)"></amount-display>
+          </ion-col>
+        </ion-row>
+      </ion-col>
+      <ion-col col-4 col-4 style="font-size:2.7vw;" text-right>
+        <ion-row>
+          <ion-col>
+        총매출:
+          </ion-col>
+          <ion-col>
+            {{totalSales.toLocaleString()}}
+          </ion-col>
+        </ion-row>
+      </ion-col>
+      </ion-row>
+</div>  
+
+
+<!--
     <ion-row>
       <ion-col style="font-size:3vw;" text-right>
         현금(완납):
@@ -127,6 +202,8 @@
   </ion-col>
 </ion-row>
 </div>
+-->
+
 </div>
 
 

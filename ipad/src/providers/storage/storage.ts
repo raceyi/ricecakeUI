@@ -52,7 +52,8 @@ export class StorageProvider {
   refresh(){ // 서버로 부터 최신 정보를 가져온다.
         return new Promise((resolve,reject)=>{                            
       
-          this.serverProvider.getCarriers().then((carriers:any)=>{
+          this.serverProvider.getCarriers(this.deliveryDate.substr(0,10)).then((carriers:any)=>{
+                console.log("...carriers:"+JSON.stringify(carriers));
                 this.carriers=carriers;
             },err=>{
             })
@@ -317,10 +318,10 @@ export class StorageProvider {
     assignCarrier(orderid,carrier){
         return new Promise((resolve,reject)=>{                                            
         this.serverProvider.assignCarrier(orderid,carrier).then(()=>{
-           this.refresh();            
+           //this.refresh();            
            resolve(); 
         },(err)=>{
-            this.refresh();
+            //this.refresh();
             reject(err);
         });   
         });
@@ -328,11 +329,11 @@ export class StorageProvider {
     
     addCarrier(name){
         return new Promise((resolve,reject)=>{                                            
-        this.serverProvider.addCarrier(name).then(()=>{
-           this.refresh();            
+        this.serverProvider.addCarrier(name,this.deliveryDate.substr(0,10)).then(()=>{
+           //this.refresh();            
            resolve(); 
         },(err)=>{
-            this.refresh();
+            //this.refresh();
             reject(err);
         });   
         });
@@ -340,11 +341,11 @@ export class StorageProvider {
 
     deleteCarrier(name){
         return new Promise((resolve,reject)=>{                                            
-        this.serverProvider.deleteCarrier(name).then(()=>{
-            this.refresh();            
+        this.serverProvider.deleteCarrier(name,this.deliveryDate.substr(0,10)).then(()=>{
+            //this.refresh();            
             resolve(); 
         },(err)=>{
-            this.refresh();
+            //this.refresh();
             reject(err);
         });   
         });
