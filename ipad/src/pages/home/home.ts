@@ -758,31 +758,18 @@ pages+="</table>\n";
         return pages;
     }
 
-
-constructDeliveryPrint(){
-//
-//H1 배달자별 다른 페이지  title:배달일(배달자:xxx) 배달수: 개
-// eachCarriers
-//
-// 픽업,냉동,기타 각각 다른 페이지
-// pickup
-// fronzon
-// etc
-//
-
+printPages(titleHead,orders,pageBreakFirst){
         let charactersInLine:number=65;
         let linesPerPage=48;
 
-        let title="배달일:"+this.storageProvider.deliveryDate.substr(0,4)+"년"+
-                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
-                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+" 총:"+this.storageProvider.orderList.length+" ";
+        let title=titleHead+" 총:"+orders.length+" ";
 
         let eachPages=[]; // tables(order,addressPrint, menusPrint, memoPrint) per page,pageNumber
         let eachTables=[];
         let totalLinesNumber=0;
         let defaultLinesNumber=4; 
 
-        this.storageProvider.orderList.forEach(item=>{
+        orders.forEach(item=>{
             let addressPrint="";
             let menusPrint="";
             let memoPrint="";
@@ -858,12 +845,15 @@ constructDeliveryPrint(){
         }
         console.log("currentPage: "+currentPage+" currentLines")
 
-        let pages="<html>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\n";
+        let pages="";
         let index;
        let tableNumber=0;     
         for(index=0;index<eachPages.length;index++){
             // page title
             if(index>0){
+                pages+="<H1 style=\"page-break-before: always;\">\n";
+            }else if(pageBreakFirst){
+                console.log("!!!pageBreakFirst:"+pageBreakFirst);
                 pages+="<H1 style=\"page-break-before: always;\">\n";
             }else
                 pages+="<H1>";
@@ -871,7 +861,7 @@ constructDeliveryPrint(){
             eachPages[index].tables.forEach(table=>{
                 //console.log("table:"+JSON.stringify(table));
 ++tableNumber;
-pages+="<span>"+tableNumber+"/"+this.storageProvider.orderList.length+"</span><br>\n";
+pages+="<span>"+tableNumber+"/"+orders.length+"</span><br>\n";
 pages+="<table style=\"width:100%;border-collapse:collapse;\">\n";
 pages+="<tr>"
 pages+="<td style=\"border:solid 1px; font-size:0.8em;\" colspan=\"4\">배달지:"+ table.addressPrint+"</td>\n";
@@ -892,15 +882,7 @@ pages+="<tr>\n";
 pages+="<td width=\"20%\" style=\"border:solid 1px; font-size:0.8em;\">주문자</td>\n";
 pages+="<td style=\"border:solid 1px; font-size:0.8em;\" colspan=\"3\">"+table.order.buyerName+" "+table.order.buyerPhoneNumber+"<span>(접수:"+table.order.orderedTimeString+")</span></td>\n";
 pages+="</tr>\n";
-pages+="<tr>\n";
-pages+="<td width=\"15%\" style=\"border:solid 1px; font-size:0.8em;\">배송방법</td>\n";
-if(table.order.deliveryMethod=="픽업")
-    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" colspan=\"3\">"+table.order.deliveryMethod+"</td>\n";  
-else if(!table.order.carrier)
-    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" colspan=\"3\">"+table.order.deliveryMethod+"</td>\n";  
-else
-    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" colspan=\"3\">"+table.order.deliveryMethod+"("+table.order.carrier+")</td>\n";  
-pages+="</tr>\n";     
+//pages+="<tr>\n"; 
 pages+="<td style=\"border:solid 1px;font-size:0.8em;\" width=\"100%\" colspan=\"4\">\n";
 pages+=table.menusPrint;
 pages+="</td>\n";
@@ -913,9 +895,64 @@ if(table.memoPrint){ 
 pages+="</table>\n";
             })  
         }
-        pages+="</html>";
         console.log("pages:"+pages);
         return pages;
-    }
+}
+
+constructDeliveryPrint(){
+//
+//H1 배달자별 다른 페이지  title:배달일(배달자:xxx) 배달수: 개
+// eachCarriers
+//
+// 픽업,냉동,기타 각각 다른 페이지
+// pickup
+// fronzon
+// etc
+// 
+   let pages="<html>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\n";
+
+   let defaultTitle="배달일:"+this.storageProvider.deliveryDate.substr(0,4)+"년"+
+                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
+                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay;
+
+   let index=0;
+   let pageBreakFirst:boolean=false;
+   for(index=0;index<this.storageProvider.assignOrderList.length;index++){
+       if(this.storageProvider.assignOrderList[index].orders.length==0){ 
+           continue;
+       }else{
+            let title;
+            title=defaultTitle+"("+ this.storageProvider.assignOrderList[index].name+")";
+            pages+=this.printPages(title,this.storageProvider.assignOrderList[index].orders,pageBreakFirst);
+            pageBreakFirst=true;
+
+       }
+   }
+
+   let title;
+   if(this.storageProvider.unassingOrderFrozenList.length>0){
+        title=defaultTitle+" 배송 ";
+        pages+=this.printPages(title,this.storageProvider.unassingOrderFrozenList,pageBreakFirst);
+        pageBreakFirst=true;
+   }
+   if(this.storageProvider.unassingOrderFrozenList.length>0){
+        title=defaultTitle+" 냉동 ";
+        pages+=this.printPages(title,this.storageProvider.unassingOrderFrozenList,pageBreakFirst);
+        pageBreakFirst=true;
+   }
+   if(this.storageProvider.unassingOrderPickupList.length>0){
+        title=defaultTitle+" 픽업 ";
+        console.log("pageBreakFirst:"+pageBreakFirst);
+        pages+=this.printPages(title,this.storageProvider.unassingOrderPickupList,pageBreakFirst);
+        pageBreakFirst=true;
+   }
+   if(this.storageProvider.unassingOrderEtcList.length>0){
+        title=defaultTitle+" 기타 ";
+        pages+=this.printPages(title,this.storageProvider.unassingOrderEtcList,pageBreakFirst);
+        pageBreakFirst=true;
+   }
+   pages+="</html>";
+   return pages;
+}
 
 }
