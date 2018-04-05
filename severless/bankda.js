@@ -41,7 +41,8 @@ router.bankda=function(response){
         }
         check(response);
     },err=>{
-        check(response);
+        //check(response);
+        response.json({result:"failure"});                        
     });
 }
 
@@ -322,7 +323,7 @@ check=function(response){
             result += iconv.decode(chunk,"euc-kr");
         });
         res.on('end', function () {
-            result = fs.readFileSync('bankda.txt', 'utf8'); //just for testing
+            //result = fs.readFileSync('bankda.txt', 'utf8'); //just for testing
             console.log(result);            
             parser.parseString(result, function (err, obj) {
                 console.log("obj:"+JSON.stringify(obj.bankda.account[0].accinfo));
@@ -341,10 +342,6 @@ check=function(response){
                                 console.log("All done- lastBKCode write error");
                                 response.json({result:"failure"});                        
                             });
-
-                            //All done
-                            console.log("All done");
-                            response.json({result:"success"});
                         }
                     });
                 }else{ //no transaction update
@@ -355,12 +352,14 @@ check=function(response){
         });//res.end
         res.on('error', function (err) {
             console.log(err);
+            response.json({result:"failure"});  
         })
     });
     
     // req error
     req.on('error', function (err) {
     console.log(err);
+    response.json({result:"failure"});  
     });
     
     //send request witht the postData form
@@ -396,3 +395,5 @@ parser.parseString(result, function (err, obj) {
     }
 }); // parse
 */
+
+//router.bankda();
