@@ -61,7 +61,7 @@ export class OrderComponent implements OnInit {
    // console.log("this.deliveryMethod:"+this.deliveryMethod);
   }
 
-  getJuso(){
+  getJusoAuto(){
     this.order.addressInputType="auto";
     this.order.recipientAddress="주소 선택";
     this.getJusoDaum();
@@ -69,6 +69,7 @@ export class OrderComponent implements OnInit {
 
   manualInput(){
     this.order.addressInputType="manual";
+    this.order.recipientAddressDetail="";
     this.order.recipientAddress=""
   }
 
@@ -487,4 +488,12 @@ computeTotal(){
 
     return this.sum(this.order.deliveryFee,this.order.price);
 }
+
+
+changeManual(){
+    this.order.addressInputType="manual";
+    this.order.recipientAddress="";
+    this.order.recipientAddressDetail="";
+}
+
 }

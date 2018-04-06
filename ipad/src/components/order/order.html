@@ -12,7 +12,7 @@
               </ion-col>
               <ion-col col-9 *ngIf="order.addressInputType=='unknown'">
                 <ion-item class="no-item-border-bottom">
-                  <button ion-button class="getJusoButton" outline (click)="getJuso()">{{order.recipientAddress}}</button>
+                  <button ion-button class="getJusoButton" outline (click)="getJusoAuto()">{{order.recipientAddress}}</button>
                   <button ion-button  class="getJusoButton" outline (click)="manualInput()">직접입력</button>
                 </ion-item>
               </ion-col>
@@ -27,19 +27,33 @@
                 </ion-item>         
               </ion-col>
             </ion-row>
+
             <ion-row>
               <ion-col col-3>
                 &nbsp;
               </ion-col>
-              <ion-col col-9>
-                <ion-item *ngIf="order.addressInputType!='manual'">
+              <ion-col col-9 *ngIf="order.addressInputType=='unknown'">
+                <ion-item >
                   <ion-input type="text" placeholder="상세주소" [(ngModel)]="order.recipientAddressDetail"></ion-input>
-                </ion-item>
-                <ion-item *ngIf="order.addressInputType=='manual'" class="no-item-border-bottom">
-                  <button ion-button class="getJusoButton" outline (click)="changeAddressInputType('auto')" >주소 선택</button>
-                </ion-item>          
-              </ion-col>
+                </ion-item>       
+              </ion-col>              
+              <ion-col col-9 *ngIf="order.addressInputType=='manual'">
+                <ion-item >
+                  <button ion-button class="getJusoButton" outline (click)="getJusoAuto()">주소 선택</button>
+                </ion-item>       
+              </ion-col>              
+              <ion-col col-8 *ngIf="order.addressInputType=='auto'">
+                <ion-item >
+                  <ion-input type="text" placeholder="상세주소" [(ngModel)]="order.recipientAddressDetail"></ion-input>
+                </ion-item>       
+              </ion-col> 
+              <ion-col no-padding no-margin col-1 *ngIf="order.addressInputType=='auto'">
+                <ion-item no-padding no-margin class="manual-input-button no-item-border-bottom">
+                  <button outline ion-button no-padding no-margin (click)="changeManual()" >직접<br>입력</button>
+                </ion-item>       
+              </ion-col> 
             </ion-row>
+
             <ion-row>
               <ion-col col-3>
                 &nbsp;
@@ -164,7 +178,7 @@
           </ion-row>
           <ion-row>
             <ion-item >
-              <ion-input text-right type="tel" (input)="inputPrice()" [(ngModel)]="priceString"></ion-input>     
+              <ion-input text-right type="tel" placeholder="금액" (input)="inputPrice()" [(ngModel)]="priceString"></ion-input>     
           </ion-item> 
           </ion-row>
           <ion-row>
