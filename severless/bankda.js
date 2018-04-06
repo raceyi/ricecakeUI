@@ -10,7 +10,7 @@ let async = require('async');
 const assert = require('assert');
 var dynamoDB = require('./dynamo');
 //var dynamoDB = require('./dynamo.test');
-
+var combination = require('./combination');
 var config=require('./bankda.config');
 
 var xml2js = require('xml2js');
@@ -207,15 +207,16 @@ addTransactionRecord=function(record,next){
                 //3.동일이름,동일주문금액의 주문이 두개 이상 존재할 경우 상점주가 확인하도록 한다. => !!! ignore this case!!!!
                 //paid,unpaid,ambigious
                 if(result.Items.length==0){
-                        //updateLastBKCode().then(()=>{
                             next(null);
-                        //},err=>{
-                        //    next(err);
-                        //});
                 }else{
                     console.log("!!! The same buyer found!!!!"+record.$.bkjukyo);
                     let orders=[];
                     let j;
+                    result.Items.sort(function(a,b){
+                            if (a.id > b.id) return -1;
+                            if (a.id < b.id) return 1;
+                            return 0;
+                    })
                     for(j=0;j<result.Items.length;j++){ 
                         console.log("price:"+result.Items[j].totalPrice+" deposit:"+record.$.bkinput);
                         if(result.Items[j].totalPrice==record.$.bkinput){//case 1
@@ -224,9 +225,22 @@ addTransactionRecord=function(record,next){
                         }
                     }
                     console.log("orders: "+JSON.stringify(orders));
-                    if(orders.length==0){ //check case 2
-                        let i,sum=0;
-                        let multipleOrders=[];
+                    if(orders.length==0){ //check case 2: 모든 조합을 계산하여 동일한 금액이 나오는 첫경우에 대해 paid로 처리한다.
+                        // make all combination sum of orders
+                        let combinations=combination.combinations(result.Items,record.$.bkinput,function(orders){
+                            let sum=0;
+                            orders.forEach(order=>{
+                                sum+=parseInt(order.totalPrice);
+                            });
+                            return sum;
+                        });
+                        console.log("combinations:"+JSON.stringify(combinations));
+                        if(combinations.length>0){
+                            combinations[0].comb.forEach(order=>{
+                                orders.push({order:order,payment:"paid",bkcode:record.$.bkcode,time:time});
+                            })
+                        }
+                        /*
                         for(i=0;i<result.Items.length;i++){
                             if(!result.Items[i].payment.startsWith("paid")){
                                 sum+=parseInt(result.Items[i].totalPrice);
@@ -240,7 +254,7 @@ addTransactionRecord=function(record,next){
                         }
                         if(sum==record.$.bkinput && sum!=0){
                             orders=multipleOrders;
-                        }
+                        }*/
                     }
                     console.log("update orders:"+JSON.stringify(orders));
                     if(orders.length>0){
