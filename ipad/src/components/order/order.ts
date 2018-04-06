@@ -26,6 +26,9 @@ export class OrderComponent implements OnInit {
   amount:number;
   menuIndex:number=-1;
 
+  priceString;
+  deliveryFeeString;
+
   //paymentOption;  // ion-select가 custom component에서 초기화가 안된다. 왜그럴까? 
   //deliveryMethod;
   
@@ -47,6 +50,10 @@ export class OrderComponent implements OnInit {
   ngOnInit() { 
     this.order = Object.assign({}, this.orderIn); // copy object. Very important!!!! 아주 중요하다. 입력값은 사용하지 않는다.
     this.deliveryTimeUpdate=this.order.deliveryTime;
+    if(this.order.price)
+        this.priceString=this.order.price.toLocaleString();
+    if(this.order.deliveryFee)   
+        this.deliveryFeeString=this.order.deliveryFee.toLocaleString();
     
     console.log('component initialized. order:'+JSON.stringify(this.order)); 
    // this.paymentOption=this.order.paymentOption; //workaround solution. 왜 ion-select의 ngModel값이 초기화가 안될까?
@@ -56,6 +63,8 @@ export class OrderComponent implements OnInit {
 
   getJuso(){
     this.order.addressInputType="auto";
+    this.order.recipientAddress="주소 선택";
+    this.getJusoDaum();
   }
 
   manualInput(){
@@ -136,7 +145,10 @@ export class OrderComponent implements OnInit {
 
   changeAddressInputType(type){
     this.order.addressInputType=type;
-    this.order.recipientAddress="도로명 주소 선택";
+    this.order.recipientAddress="주소 선택";
+    if(type=="auto"){
+        this.getJusoDaum();
+    }
   }
 
 
@@ -422,4 +434,57 @@ autoHypenPhone(str){
   }
 */  
 
+inputPrice(){
+    console.log("inputPrice ");
+    if(this.priceString){
+        let numberString=this.priceString.replace(/,/gi, "");
+        let number=parseInt(numberString);
+        console.log("boolean:"+(parseInt(numberString).toString()==="NaN"));
+        if(parseInt(numberString)==NaN || numberString.length==0){
+            number=0;
+        }
+        console.log("[inputPrice]number:"+number+"priceString"+this.priceString);
+        this.priceString=number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }else{
+      this.priceString="";
+    }
+  }
+
+  inputDeliveryFee(){
+    if(this.deliveryFeeString){
+        let numberString=this.deliveryFeeString.replace(/,/gi, "");
+        let number=parseInt(numberString);
+        if(numberString.length==0 ||parseInt(numberString)==NaN)
+            number=0;
+        this.deliveryFeeString=number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }else{
+      this.deliveryFeeString="";
+    }
+  }
+
+computeTotal(){
+    console.log("computeTotal price:"+this.priceString+" deliveryFee: "+ this.deliveryFeeString);
+    if(this.priceString && this.priceString.length>0){
+        let numberString=this.priceString.replace(/,/gi, "");
+        let number=parseInt(numberString);
+        console.log("number:"+number+"priceString"+this.priceString);
+        this.order.price=number;      
+    }else{
+        this.order.price=0;
+        console.log("price is :"+this.order.price);
+    }
+    if(this.deliveryFeeString && this.deliveryFeeString.length>0){
+        let numberString=this.deliveryFeeString.replace(/,/gi, "");
+        let number=parseInt(numberString);
+        if(numberString.length==0)
+            number=0;
+        this.order.deliveryFee=number;              
+    }else{
+        this.order.deliveryFee=0;
+    } 
+    console.log("deliveryFee: "+this.order.deliveryFee);
+    console.log("price: "+this.order.price);
+
+    return this.sum(this.order.deliveryFee,this.order.price);
+}
 }

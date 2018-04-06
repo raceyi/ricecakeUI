@@ -1,9 +1,4 @@
 <!-- Generated template for the OrderComponent component -->
-<!--
-    <ion-row>
-      <ion-col text-right>  <button ion-button (click)="orderCancel()">입력취소</button></ion-col>
-    </ion-row>
--->
     <ion-grid class="order-input-section" no-padding>
       <ion-row>
         <ion-col col-9>
@@ -41,7 +36,7 @@
                   <ion-input type="text" placeholder="상세주소" [(ngModel)]="order.recipientAddressDetail"></ion-input>
                 </ion-item>
                 <ion-item *ngIf="order.addressInputType=='manual'" class="no-item-border-bottom">
-                  <button ion-button class="getJusoButton" outline (click)="changeAddressInputType('auto')" >도로명 주소 선택</button>
+                  <button ion-button class="getJusoButton" outline (click)="changeAddressInputType('auto')" >주소 선택</button>
                 </ion-item>          
               </ion-col>
             </ion-row>
@@ -144,7 +139,7 @@
                 <ion-row>
                   <ion-col text-center>
                       <ion-item class="save-button no-item-border-bottom">
-                          <button ion-button no-padding no-margin full  (click)="save()">저장</button>           
+                          <button ion-button no-padding no-margin full  (click)="orderCancel()">입력취소</button>           
                       </ion-item>
                   </ion-col>
                 </ion-row>  
@@ -169,20 +164,20 @@
           </ion-row>
           <ion-row>
             <ion-item >
-              <ion-input text-right type="number" placeholder="금액" [(ngModel)]="order.price"></ion-input>     
+              <ion-input text-right type="tel" (input)="inputPrice()" [(ngModel)]="priceString"></ion-input>     
           </ion-item> 
           </ion-row>
           <ion-row>
           <ion-item >
-            <ion-input text-right type="number" placeholder="배송비" [(ngModel)]="order.deliveryFee"></ion-input>
+            <ion-input text-right type="tel" placeholder="배송비" (input)="inputDeliveryFee()" [(ngModel)]="deliveryFeeString"></ion-input>
           </ion-item>
           </ion-row>
             <ion-row>
               <ion-col  style="font-size:large;" col-4 text-left>
                   <b>&nbsp;&nbsp;합계</b>
               </ion-col>
-              <ion-col col-8 style="font-size:large;"  text-right *ngIf="order.price!=undefined || order.deliveryFee!=undefined" >
-                  <amount-display [amount]="sum(order.price,order.deliveryFee)"></amount-display>&nbsp;
+              <ion-col col-8 style="font-size:large;"  text-right *ngIf="priceString!=undefined || deliveryFeeString!=undefined" >
+                  <amount-display [amount]="computeTotal()"></amount-display>&nbsp;
               </ion-col>
             </ion-row>
             <ion-row>
@@ -204,7 +199,7 @@
             <ion-row>
               <ion-col>
                  <ion-item text-right class="save-button no-item-border-bottom">
-                    <button ion-button no-padding no-margin style="background-color:darkgray;" (click)="orderCancel()">입력취소</button>
+                    <button ion-button no-padding no-margin style="background-color:darkgray;" (click)="save()">저장</button>
                  </ion-item>
               </ion-col>
             </ion-row>

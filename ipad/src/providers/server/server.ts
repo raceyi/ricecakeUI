@@ -36,8 +36,8 @@ export class ServerProvider {
             this.backgroundMode.enable();
             this.pushNotification=this.push.init({
                 ios: {
-                    //"fcmSandbox": "false", //code for production mode
-                    "fcmSandbox": "true",  //code for development mode
+                    "fcmSandbox": "false", //code for production mode
+                    //"fcmSandbox": "true",  //code for development mode
                     //"alert": "true",
                     //"sound": "true",
                     //"badge": "true",

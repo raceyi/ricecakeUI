@@ -182,7 +182,7 @@ export class HomePage {
             order.receiverSame = false;
         }
         if (order.recipientAddress == undefined) {
-            order.recipientAddress = "도로명 주소 선택";
+            order.recipientAddress = "주소 선택";
             order.addressInputType = "unknown";
         }
         else if (order.recipientAddressDetail == undefined || order.recipientAddressDetail.trim().length == 0) {
@@ -293,7 +293,7 @@ export class HomePage {
                     existing.modification = false;
                     if(order.diffDate){
                             let alert = this.alertCtrl.create({
-                                title:  order.deliveryTime.substr(0,10)+'으로 화면의 배달일을 이동하시겠습니까?',
+                                title:  order.deliveryTime.substr(0,10)+'일 화면을 확인하시겠습니까?',
                                 buttons: [
                                         {
                                         text: '아니오',
