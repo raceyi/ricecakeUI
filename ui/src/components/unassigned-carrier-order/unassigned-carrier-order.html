@@ -37,14 +37,14 @@
           </ion-row>
           <ion-row>
             <ion-col col-2 no-margin no-padding>
-              <ion-row>
+                  <ion-row *ngIf="order.deliveryMethod!='픽업'">
                   <ion-item class="no-item-border-bottom">
                       <ion-select class="payment-select carrier-select" placeholder="배달자" [(ngModel)]="order.carrier">
                         <ion-option *ngFor="let carrier of storageProvider.carriers" [value]="carrier.name" >{{carrier.name}}</ion-option>
                       </ion-select>
                   </ion-item>
               </ion-row>
-              <ion-row>
+              <ion-row *ngIf="order.deliveryMethod!='픽업'">
                   <button ion-button full no-padding no-margin style="width:60px;height:20px;" (click)="assingCarrier(order)" > 저장</button>                
               </ion-row>
             </ion-col>

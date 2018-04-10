@@ -23,6 +23,7 @@ export class HomePage {
     unassingOrderEtcList;
     filter=[];
     produceList;
+    etcProduceList;
 
     deliveryDate;
     deliveyDay;
@@ -47,6 +48,7 @@ export class HomePage {
         /////////////////////////////
         // 생산 섹션 변수들 -begin
         this.produceList = [];
+        this.etcProduceList=[];
         // 생산 섹션 변수들 -end
         //////////////////////////////
         this.newOrderInputShown = false;
@@ -393,12 +395,21 @@ export class HomePage {
         console.log("produceList:" + JSON.stringify(this.produceList));
     };
     
+    addEtcMenuInList(menu, deliveryTime){
+        var hhmm = deliveryTime.slice(11, 13) + "시 " + deliveryTime.slice(14, 16) + "분";
+        var min = parseInt(deliveryTime.slice(11, 13)) * 60 + parseInt(deliveryTime.slice(14, 16));        
+        this.etcProduceList.push({ menu: menu , time: hhmm, min: min });
+    }
+
     configureProduceSection() {
         this.produceList = []; //[{menu:"단호박소담",amount:[{amount:"1kg",time:"03:00"}]}]
+        this.etcProduceList=[];
         this.storageProvider.orderList.forEach( (order)=> {
             console.log("order.menuList: "+JSON.stringify(order.menuList));
             order.menuList.forEach( (menu) =>{
-                if (menu.menu.indexOf("[") == 0) {
+                if(menu.category=="기타"){
+                    gHomePage.addEtcMenuInList(menu.menu, order.deliveryTime);
+                }else if (menu.menu.indexOf("[") == 0) {
                     var menuObjs = JSON.parse(menu.menu);
                     menuObjs.forEach(function (menuObj) {
                         var key :any= Object.keys(menuObj);
@@ -407,14 +418,15 @@ export class HomePage {
                         console.log("amount:" + amount);
                         gHomePage.addMenuInList(menuInput, order.deliveryTime, amount);
                     });
-                }
-                else {
+                }else {
                     console.log("menu.menu:"+menu.menu);
                     gHomePage.addMenuInList(menu, order.deliveryTime, menu.amount); //Please update it!!!
                 }
             });
         });
         console.log("produceList:" + JSON.stringify(this.produceList));
+        console.log("etcProduceList:" + JSON.stringify(this.etcProduceList));
+        
         //humm sort each menu with deliveryTime(?)   
         this.produceList.forEach((menu)=> {
             menu.amount.sort(function (a, b) {
@@ -425,6 +437,14 @@ export class HomePage {
                 return 0;
             });
         });
+
+        this.etcProduceList.sort(function (a, b) {
+                if (a.min < b.min)
+                    return -1;
+                if (a.min > b.min)
+                    return 1;
+                return 0;
+            });
     };
     ////////////////////////////////////////
     // move into other pages
@@ -457,5 +477,11 @@ export class HomePage {
                     return value.buyerName.startsWith(gHomePage.searchKeyWord);                
             }
         });
+    }
+
+    todayOrders(){
+        var now = new Date().getTime();
+        this.setDeliveryDate(now);
+
     }
 }

@@ -50,6 +50,7 @@
       </div>
       <div *ngIf="!searchKeyWord || searchKeyWord.trim().length==0">
             <ion-row>
+                    <ion-col text-left> <button ion-button (click)="todayOrders()">오늘</button></ion-col>
                     <ion-col *ngIf="!newOrderInputShown" text-right><button ion-button (click)="createNewOrder()">주문생성</button></ion-col>
             </ion-row>
             <order *ngIf="newOrderInputShown" [order]="newOrder" [menus]="storageProvider.menus" (output)="saveOrder($event)"></order>
@@ -92,6 +93,14 @@
                 </ion-col>
                 <ion-col col-9>
                     <span *ngFor="let item of menu.amount">{{item.amount}}({{item.time}}),</span>
+                </ion-col>
+          </ion-row>
+          <ion-row *ngIf="etcProduceList.length>0" >
+              *기타
+          </ion-row>
+          <ion-row *ngFor="let item of etcProduceList" style="border:solid 1px darkgray;">
+                <ion-col>
+                    {{item.menu}}({{item.time}})
                 </ion-col>
           </ion-row>
       </ion-grid>

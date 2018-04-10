@@ -24,12 +24,17 @@ export class OrderComponent implements OnInit {
   unit:string;
   amount:number;
   menuIndex:number=-1;
+  package:string;
 
   paymentOption;  // ion-select가 custom component에서 초기화가 안된다. 왜그럴까? 
   deliveryMethod;
   deliveryTimeUpdate; //왜 ngModel이 동작하지 않는가???
   addressInputType;
   order;
+  choices=[];
+  priceString;
+  deliveryFeeString;
+  etc:string; //기타 
 
   browserRef;
   done:boolean=false;
@@ -42,6 +47,10 @@ export class OrderComponent implements OnInit {
 
   ngOnInit() { 
    this.order = Object.assign({}, this.orderIn); // copy object. Very important!!!! 아주 중요하다. 입력값은 사용하지 않는다.
+   if(this.order.price)
+       this.priceString=this.order.price.toLocaleString();
+   if(this.order.deliveryFee)   
+       this.deliveryFeeString=this.order.deliveryFee.toLocaleString();
 
    this.addressInputType=this.order.addressInputType;
     console.log('component initialized. order:'+JSON.stringify(this.order)); 
@@ -133,7 +142,7 @@ export class OrderComponent implements OnInit {
 
   changeAddressInputType(type){
       this.order.addressInputType=type;
-      this.order.recipientAddress="도로명 주소 선택123";
+      this.order.recipientAddress="주소 선택";
       console.log("!!!!this.order.addressInputType:"+this.order.addressInputType);
   }
 
@@ -143,10 +152,25 @@ export class OrderComponent implements OnInit {
       console.log("categorySelected is -1. How can it happen?");
       return;
     }
+    if(this.categorySelected==-2){
+      return;
+    }
     console.log("selectCategory:"+this.order.categorySelected);
     if(this.menus[this.categorySelected].menus.length==1){
           this.menuIndex=0;
     }
+    if(this.menus[this.categorySelected].type.startsWith("complex")){
+        this.unit="개";
+    }
+    if(this.menus[this.categorySelected].type=="complex-choice"){
+          this.choices=[];
+          let i;
+          for(i=0;i<this.menus[this.categorySelected].choiceNumber;i++)
+              this.choices.push({index:0});
+    }
+  }
+
+  selectChoice(i){
   }
 
   addMenu(){
@@ -157,15 +181,45 @@ export class OrderComponent implements OnInit {
             });
             alert.present();
         return;
-    }    
-    if(this.menuIndex==-1 ){
+    }  
+
+    if(this.categorySelected==-2){
+      if(!this.etc ||this.etc.trim().length==0){
             let alert = this.alertCtrl.create({
-              title: '메뉴를 선택해 주시기 바랍니다.',
+              title: '메뉴를 입력해 주시기 바랍니다.',
               buttons: ['확인']
             });
             alert.present();
-        return;
-    }    
+            return;
+      }
+      let menu={category:"기타", menuString:this.etc, menu:this.etc};
+
+      this.order.menuList.push(menu);              
+      console.log("menu:"+JSON.stringify(menu));          
+      this.categorySelected=-1;
+      this.etc="";
+      return;
+    }
+
+   if(this.menus[this.categorySelected].type!="complex-choice" ){
+        if(this.menuIndex==-1 ){
+                let alert = this.alertCtrl.create({
+                  title: '메뉴를 선택해 주시기 바랍니다.',
+                  buttons: ['확인']
+                });
+                alert.present();
+            return;
+        }    
+        if(!this.package || this.package.length ==0){
+                let alert = this.alertCtrl.create({
+                  title: '포장을 선택해 주시기 바랍니다.',
+                  buttons: ['확인']
+                });
+                alert.present();
+                return;
+        }
+   }
+
     if(!this.amount || this.amount==0){
             let alert = this.alertCtrl.create({
               title: '수량을 선택해 주시기 바랍니다.',
@@ -182,7 +236,7 @@ export class OrderComponent implements OnInit {
             alert.present();
         return;
     }
-    if(this.menus[this.categorySelected].menuStrings[this.menuIndex]!=this.menus[this.categorySelected].menus[this.menuIndex]){
+    if(this.menus[this.categorySelected].type.startsWith("complex")){
           if(this.unit!="개"){
               let alert = this.alertCtrl.create({
                 title: '복합 메뉴의 단위는 개만 선택가능합니다.',
@@ -192,16 +246,58 @@ export class OrderComponent implements OnInit {
               return;      
           }
     }    
-    let menu={category:this.menus[this.categorySelected].category,
+   let menuStringWithPackage="";
+   let menuWithPackage;
+
+    if(this.menus[this.categorySelected].type=="complex-choice"){
+                console.log("this.menus[this.categorySelected]:"+JSON.stringify(this.menus[this.categorySelected]));
+                let menuObjsWithPackage=[];
+                for(let i=0;i<this.choices.length ;i++){
+                  let key=this.menus[this.categorySelected].menus[this.choices[i]].menu[0];
+                   let object={};
+                   object[key]=this.menus[this.categorySelected].menus[this.choices[i]].amount;
+                   menuObjsWithPackage.push(object);
+                   menuStringWithPackage+=key+this.menus[this.categorySelected].menus[this.choices[i]].amount+" ";
+                }
+                menuWithPackage=JSON.stringify(menuObjsWithPackage);
+    }else if(this.menus[this.categorySelected].type=="complex"){ //복합메뉴
+                let menuObjs=JSON.parse(this.menus[this.categorySelected].menus[this.menuIndex]);
+                let menuObjsWithPackage=[];
+                menuObjs.forEach(menuObj=>{
+                   let key:any=Object.keys(menuObj)[0];
+                   console.log("key:"+key);
+                   menuStringWithPackage+=key+"("+this.package+")"+menuObj[key]+" ";
+                   let keyName:string=key+"("+this.package+")";
+                   let object={};
+                   object[keyName]=menuObj[key];
+                   menuObjsWithPackage.push(object);
+                });
+                menuWithPackage=JSON.stringify(menuObjsWithPackage);
+    }else{ //단일 메뉴
+        menuWithPackage=this.menus[this.categorySelected].menuStrings[this.menuIndex]+"("+this.package+")";
+        menuStringWithPackage=menuWithPackage;
+    }
+    console.log("menuWithPackage:"+menuWithPackage);
+    console.log("menuStringWithPackage:"+menuStringWithPackage);
+
+   /* let menu={category:this.menus[this.categorySelected].category,
               menuString:this.menus[this.categorySelected].menuStrings[this.menuIndex],
               menu:this.menus[this.categorySelected].menus[this.menuIndex], 
               amount:this.amount, unit: this.unit}
+   */
+  let menu={category:this.menus[this.categorySelected].category,
+              menuString:menuStringWithPackage,
+              menu:menuWithPackage, 
+              amount:this.amount, unit: this.unit}
+
     this.order.menuList.push(menu);              
     console.log("menu:"+JSON.stringify(menu));          
     this.categorySelected=-1;
     this.unit="";
     this.amount=null; //undefined doesn't work for initialization.
     this.menuIndex=-1;
+    this.package="";
+    this.choices=[];
   }
 
  removeMenu(i){
@@ -249,7 +345,7 @@ autoHypenPhone(str){
 
   save(){
 
-    if(this.addressInputType=="unknown"){
+    if(this.order.addressInputType=="unknown"){
       let alert = this.alertCtrl.create({
         title: '주소 형식을 선택해주세요.',
         buttons: ['확인']
@@ -258,7 +354,7 @@ autoHypenPhone(str){
       return ;
     }
 
-    if(this.addressInputType=="auto" && (!this.order.recipientAddressDetail || this.order.recipientAddressDetail.trim().length==0)){
+    if(this.order.addressInputType=="auto" && (!this.order.recipientAddressDetail || this.order.recipientAddressDetail.trim().length==0)){
       let alert = this.alertCtrl.create({
         title:'상세주소를 입력하세요.',
         buttons: ['확인']
@@ -267,7 +363,7 @@ autoHypenPhone(str){
       return ;
     }
 
-    if(this.addressInputType=="manual" && (!this.order.recipientAddress || this.order.recipientAddress.trim().length==0)){
+    if(this.order.addressInputType=="manual" && (!this.order.recipientAddress || this.order.recipientAddress.trim().length==0)){
       let alert = this.alertCtrl.create({
         title:'주소를 입력하세요.',
         buttons: ['확인']
@@ -313,8 +409,12 @@ autoHypenPhone(str){
     }
 
     if(this.order.menuList==undefined || this.order.menuList.length==0){
+        this.addMenu();        
+    }
+
+    if(this.order.menuList==undefined || this.order.menuList.length==0){
       let alert = this.alertCtrl.create({
-        title: '떡 종류를 선택하세요. (떡 종류 / 수량 / 단위 선택 후 떡 추가 버튼 누르기)',
+        title: '주문 떡 메뉴를 입력해주세요.',
         buttons: ['확인']
       });
       alert.present();
@@ -386,6 +486,68 @@ autoHypenPhone(str){
     this.output.emit(this.order);
   }
 
+
+  inputPrice(){
+    console.log("inputPrice ");
+    if(this.priceString){
+        let numberString=this.priceString.replace(/,/gi, "");
+        let number=parseInt(numberString);
+        console.log("boolean:"+(parseInt(numberString).toString()==="NaN"));
+        if(parseInt(numberString)==NaN || numberString.length==0){
+            number=0;
+        }
+        console.log("[inputPrice]number:"+number+"priceString"+this.priceString);
+        this.priceString=number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }else{
+      this.priceString="";
+    }
+  }
+
+  inputDeliveryFee(){
+    if(this.deliveryFeeString){
+        let numberString=this.deliveryFeeString.replace(/,/gi, "");
+        let number=parseInt(numberString);
+        if(numberString.length==0 ||parseInt(numberString)==NaN)
+            number=0;
+        this.deliveryFeeString=number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }else{
+      this.deliveryFeeString="";
+    }
+  }
+
+computeTotal(){
+    console.log("computeTotal price:"+this.priceString+" deliveryFee: "+ this.deliveryFeeString);
+    if(this.priceString && this.priceString.length>0){
+        let numberString=this.priceString.replace(/,/gi, "");
+        let number=parseInt(numberString);
+        console.log("number:"+number+"priceString"+this.priceString);
+        this.order.price=number;      
+    }else{
+        this.order.price=0;
+        console.log("price is :"+this.order.price);
+    }
+    if(this.deliveryFeeString && this.deliveryFeeString.length>0){
+        let numberString=this.deliveryFeeString.replace(/,/gi, "");
+        let number=parseInt(numberString);
+        if(numberString.length==0)
+            number=0;
+        this.order.deliveryFee=number;              
+    }else{
+        this.order.deliveryFee=0;
+    } 
+    console.log("deliveryFee: "+this.order.deliveryFee);
+    console.log("price: "+this.order.price);
+
+    return this.sum(this.order.deliveryFee,this.order.price);
+}
+
+changeManual(){
+    this.order.addressInputType="manual";
+    if(this.order.recipientAddress=="주소 선택"){
+        this.order.recipientAddress="";
+    }
+    this.order.recipientAddressDetail="";
+}
 /*
   updatePaymentOption(value){
     console.log("updatePaymentOption:"+value);
