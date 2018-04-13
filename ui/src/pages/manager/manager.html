@@ -1,0 +1,324 @@
+<!--
+  Generated template for the ManagerPage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+
+  <ion-navbar hideBackButton>
+    <ion-title></ion-title>
+    <ion-buttons end>
+          <button ion-button style="font-size:4vw;" color="black" (click)="close()"><ion-icon  large name="md-close"></ion-icon></button>
+    </ion-buttons>    
+  </ion-navbar>
+</ion-header>
+<ion-content class="no-scroll">
+<div text-center style="font-size:x-large;">
+  <button  *ngIf="section=='sales'" style="color:#488aff;font-size:x-large;" ion-button clear large> <매출> </button>
+  <button  *ngIf="section!='sales'" style="color:black;font-size:x-large;" ion-button clear large (click)="salesSection()"><매출></button>
+  <button  *ngIf="section=='menu'" style="color:#488aff;font-size:x-large;" ion-button clear large> <메뉴></button>   
+  <button  *ngIf="section!='menu'" style="color:black;font-size:x-large;" ion-button clear large (click)="menuSection()"> <메뉴></button>
+</div>
+
+<div [hidden]="section!='sales'">
+<ion-row>
+  <ion-col col-6>
+    <ion-calendar #calendar (onDaySelect)="onStartDaySelect($event)"></ion-calendar>
+  </ion-col>
+  <ion-col col-6>
+    <ion-calendar #calendar (onDaySelect)="onEndDaySelect($event)"></ion-calendar>
+  </ion-col>
+</ion-row>
+
+<div padding>
+<ion-row>
+  <ion-col col-3>
+  </ion-col>
+  <ion-col col-6>
+    <ion-row>
+      <ion-col>
+              <ion-searchbar (ionInput)="searchSales()" placeholder="주문자 검색" [(ngModel)]="searchKeyWord"></ion-searchbar>
+      </ion-col>
+      <ion-col text-center>
+        <button ion-button (click)="getSales()">계산하기</button>
+      </ion-col>
+    </ion-row>
+  </ion-col>
+  <ion-col col-3>
+  </ion-col>
+</ion-row>
+</div>
+
+  <div>
+    <ion-row>
+      <ion-col col-4 style="font-size:2.7vw;" text-right>
+        <ion-row>
+          <ion-col>
+        현금완납:
+          </ion-col>
+          <ion-col>
+            10,000,000,000
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            카드(완납):
+          </ion-col>
+          <ion-col>
+          1000
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+           완납:
+          </ion-col>
+          <ion-col>
+            xxx
+          </ion-col>
+        </ion-row>
+      </ion-col>
+      <ion-col col-4 col-4 style="font-size:2.8vw;" text-right>
+        <ion-row>
+          <ion-col>
+        현금(미납):
+          </ion-col>
+          <ion-col>
+            1000
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+         카드(미납):
+          </ion-col>
+          <ion-col>
+            1000
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+           미납
+          </ion-col>
+          <ion-col>
+            xxx
+          </ion-col>
+        </ion-row>
+      </ion-col>
+      <ion-col col-4 col-4 style="font-size:2.8vw;" text-right>
+        <ion-row>
+          <ion-col>
+        총매출:
+          </ion-col>
+          <ion-col>
+            1000,000,000,000
+          </ion-col>
+        </ion-row>
+      </ion-col>
+      </ion-row>
+</div>  
+
+<!--
+    <ion-row>
+      <ion-col style="font-size:3vw;" text-right>
+        현금(완납):
+      </ion-col>
+      <ion-col style="font-size:3vw;" text-right>
+        300,000,000
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col style="font-size:3vw;" text-right>
+        카드(완납):
+      </ion-col>
+      <ion-col style="font-size:3vw;" text-right>
+        300,000,000
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col style="font-size:3vw;" text-right>
+        완납:
+      </ion-col>
+      <ion-col style="font-size:3vw;" text-right>
+        300,000,000
+      </ion-col>
+    </ion-row>
+  </ion-col>
+  <ion-col col-3>
+  </ion-col>
+</ion-row>
+</div>
+
+<div padding>
+<ion-row>
+  <ion-col col-3>
+  </ion-col>
+  <ion-col col-6>
+    <ion-row>
+      <ion-col style="font-size:3vw;" text-right>
+        현금(미납):
+      </ion-col>
+      <ion-col style="font-size:3vw;" text-right>
+        300,000,000
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col style="font-size:3vw;" text-right>
+        카드(미납):
+      </ion-col>
+      <ion-col style="font-size:3vw;" text-right>
+        300,000,000
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col style="font-size:3vw;" text-right>
+        미납:
+      </ion-col>
+      <ion-col style="font-size:3vw;" text-right>
+        300,000,000
+      </ion-col>
+    </ion-row>
+  </ion-col>
+  <ion-col col-3>
+  </ion-col>
+</ion-row>
+</div>
+
+<div>
+<ion-row>
+  <ion-col col-3>
+  </ion-col>
+  <ion-col col-6>
+    <ion-row>
+      <ion-col style="font-size:3vw;" text-right>
+        총매출:
+      </ion-col>
+      <ion-col style="font-size:3vw;" text-right>
+        300,000,000
+      </ion-col>
+    </ion-row>
+  </ion-col>
+  <ion-col col-3>
+  </ion-col>
+</ion-row>
+</div>
+-->
+</div>
+
+
+<div [hidden]="section!='menu'">
+  <ion-row class="row-categories-menus">
+    <ion-col padding-left="10px;">
+      <div text-center style="font-size:3vw;">
+      종류
+      </div>
+      <ion-scroll scrollY="true" class="scroll-menus">      
+      <ion-list>
+            <ion-item no-padding no-margin class="no-item-border-bottom" *ngFor="let category of storageProvider.menus;let i=index;">     
+                <ion-row>
+                  <ion-col no-padding no-margin text-left>
+                    <button *ngIf="i!=categorySelected" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="selectCategory(i)" > <ion-icon style="font-size: 1.5em;" name="md-square-outline"></ion-icon></button>
+                    <button *ngIf="i==categorySelected" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button> <ion-icon style="font-size: 1.5em;" name="md-checkbox-outline"></ion-icon></button>
+                        {{category.category}}  <!-- md-checkbox-outline -->
+                    <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="removeCategory(category.category,i)" > <ion-icon style="font-size: 1.5em;" name="md-remove-circle"></ion-icon></button>
+                  </ion-col>
+                </ion-row>
+            </ion-item>
+            <ion-item class="no-item-border-bottom">
+                <ion-row>
+                  <ion-col>
+                    <button *ngIf="'general'!=newCategoryType" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="categoyTypeSelect('general')" > <ion-icon style="font-size: 1.5em;" name="md-square-outline"></ion-icon></button>
+                    <button *ngIf="'general'==newCategoryType" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button > <ion-icon style="font-size: 1.5em;" name="md-checkbox-outline"></ion-icon></button>
+                        일반
+                  </ion-col>
+                  <ion-col>
+                    <button *ngIf="'complex'!=newCategoryType" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="categoyTypeSelect('complex')" > <ion-icon style="font-size: 1.5em;" name="md-square-outline"></ion-icon></button>
+                    <button *ngIf="'complex'==newCategoryType" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button > <ion-icon style="font-size: 1.5em;" name="md-checkbox-outline"></ion-icon></button>
+                        복합
+                  </ion-col>
+                </ion-row>
+            </ion-item>
+              <ion-row>
+                <ion-col col-8 no-padding no-margin text-left>
+                <ion-item class="no-item-border-bottom">
+                <ion-input type="text" placeholder="종류" [(ngModel)]="newCategory" style="border-bottom:solid 1px;"></ion-input>
+                </ion-item>
+                </ion-col>
+                <ion-col col-4 no-padding no-margin text-left>                    
+                <ion-item class="no-item-border-bottom">         
+                <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="addCategory()" ><b> <ion-icon style="font-size: 1.8em;" name="md-add"></ion-icon></b></button>
+                </ion-item>
+                </ion-col>
+              </ion-row>  
+      </ion-list>     
+      </ion-scroll>
+    </ion-col>
+
+    <ion-col style=" padding-left:10px;">
+      <div text-center style="font-size:3vw;">
+      이름 
+      </div>
+      <div *ngIf=" " >
+      </div>
+      <ion-scroll scrollY="true" class="scroll-menus">
+      <ion-list>
+            <ion-item no-padding no-margin class="no-item-border-bottom" *ngFor="let menu of storageProvider.menus[categorySelected].menuStrings;let i=index;">     
+                <ion-row>
+                  <ion-col no-padding no-margin text-left>
+                        {{menu}}  
+                    <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="removeMenu(menu,i)" > <ion-icon style="font-size: 1.5em;" name="md-remove-circle"></ion-icon></button>
+                  </ion-col>
+                </ion-row>
+            </ion-item>
+              <ion-row *ngIf="storageProvider.menus[categorySelected].type=='general'">
+                <ion-col col-8 no-padding no-margin text-left>
+                <ion-item class="no-item-border-bottom">
+                <ion-input type="text" placeholder="이름"  [(ngModel)]="newName"  style="border-bottom:solid 1px;"></ion-input>
+                </ion-item>
+                </ion-col>
+                <ion-col col-4 no-padding no-margin text-left>                    
+                <ion-item class="no-item-border-bottom">         
+                <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="addMenu()" ><b> <ion-icon style="font-size: 1.8em;" name="md-add"></ion-icon></b></button>
+                </ion-item>
+                </ion-col>
+              </ion-row>  
+              <div *ngIf="storageProvider.menus[categorySelected].type=='complex' && storageProvider.menus[categorySelected].menus.length==0">
+                <ion-item class="no-item-border-bottom" *ngFor="let item of newComplexMenuItems;let k=index;">
+                  <ion-row >
+                    <ion-col>
+                        {{item.string}}
+                        <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="removeComplexMenuItems(k)" > <ion-icon style="font-size: 1.5em;" name="md-remove-circle"></ion-icon></button>
+                    </ion-col>
+                  </ion-row> 
+                </ion-item>
+              <ion-row>
+                <ion-col col-6 no-padding no-margin text-left>
+                <ion-item class="no-item-border-bottom">
+                <ion-input type="text" placeholder="이름"  [(ngModel)]="newName"  style="border-bottom:solid 1px;"></ion-input>
+                </ion-item>
+                </ion-col>
+                <ion-col col-2 no-padding no-margin>
+                <ion-item >
+                  <ion-input type="number" placeholder="수량"  text-right [(ngModel)]="newAmount"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col col-2 no-padding no-margin>
+                <ion-item class="no-item-border-bottom">
+                  개 
+                </ion-item>
+              </ion-col> 
+              <ion-col col-2>
+                <ion-item class="no-item-border-bottom">         
+                <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="addComplexMenuItem()" ><b> <ion-icon style="font-size: 1.8em;" name="md-add"></ion-icon></b></button>
+                </ion-item>                  
+              </ion-col>                            
+              </ion-row>
+              <ion-row>
+                <button ion-button (click)="saveComplexMenu()">저장</button>
+              </ion-row>  
+              </div>
+      </ion-list>  
+      </ion-scroll>
+    </ion-col>
+  </ion-row>
+</div>
+</ion-content>

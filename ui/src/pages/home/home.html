@@ -1,0 +1,111 @@
+<ion-header>
+<ion-navbar>
+<ion-buttons start>
+  <button ion-button (click)="adminPage()"><ion-icon large name="person"></ion-icon>관리자</button>
+  <button ion-button (click)="trashPage()"><ion-icon large name="trash"></ion-icon>휴지통</button>
+</ion-buttons>
+<ion-buttons end>
+   <button ion-button (click)="refresh()"><ion-icon large name="md-refresh" ></ion-icon>&nbsp;업데이트</button>
+   <button ion-button (click)="print()"><ion-icon large name="print"></ion-icon>프린트</button>
+</ion-buttons>
+</ion-navbar>
+</ion-header>
+
+<ion-content>
+<div text-center>
+  <button *ngIf="section=='order'" style="color:#488aff;" ion-button clear large>| 주문 |</button>
+  <button *ngIf="section!='order'" style="color:black;" ion-button clear large (click)="orderSection()">| 주문 |</button>
+  <button *ngIf="section=='delivery'" style="color:#488aff;" ion-button clear large>| 배달 |</button>   
+  <button *ngIf="section!='delivery'" style="color:black;" ion-button clear large (click)="deliverySection()">| 배달 |</button>
+  <button *ngIf="section=='produce'" style="color:#488aff;" ion-button clear large>| 생산 |</button>
+  <button *ngIf="section!='produce'" style="color:black;" ion-button clear large (click)="produceSection()">| 생산 |</button>
+</div>
+
+<ion-grid class="delivery-date" no-padding>
+    <ion-row>
+      <ion-col col-2>
+      <button ion-button float-right clear (click)="orderGoYesterday()">
+      <ion-icon class="icon-md-datetime-left" name="arrow-back"></ion-icon>
+      </button>
+      </ion-col>
+      <ion-col col-5 no-padding no-margin >
+      <ion-item class="item-datetime-inner">
+      <ion-datetime class="main-datetime-text" displayFormat="YYYY년 MM월 DD일" pickerFormat="YYYY MM DD" (ionChange)="updateDeliveryDay()" [(ngModel)]="deliveryDate"></ion-datetime>
+      </ion-item>
+      </ion-col>
+      <ion-col col-2 class="day">
+         {{deliveyDay}}
+      </ion-col>
+      <ion-col col-3>
+      <button ion-button float-left clear (click)="orderGoTomorrow()">
+      <ion-icon class="icon-md-datetime-right" name="arrow-forward"></ion-icon>
+      </button>
+      </ion-col>
+    </ion-row>
+</ion-grid>
+
+<div [hidden]="section!='order'">
+      <div style="width:30%;margin:auto;">
+              <ion-searchbar placeholder="주문자 이름,전화번호 검색" (input)="inputSearchKeyWord()" [(ngModel)]="searchKeyWord"></ion-searchbar>
+      </div>
+      <div *ngIf="!searchKeyWord || searchKeyWord.trim().length==0">
+            <ion-row>
+                    <ion-col text-left> <button ion-button (click)="todayOrders()">오늘</button></ion-col>
+                    <ion-col *ngIf="!newOrderInputShown" text-right><button ion-button (click)="createNewOrder()">주문생성</button></ion-col>
+            </ion-row>
+            <order *ngIf="newOrderInputShown" [order]="newOrder" [menus]="storageProvider.menus" (output)="saveOrder($event)"></order>
+            
+            <div *ngFor="let order of storageProvider.orderList;let i=index;">
+                <existing-order *ngIf="!order.modification" [order]="order" (output)="modifyOrder($event)"></existing-order>        
+                <order *ngIf="order.modification" [order]="configureOrderInput(order)" [menus]="storageProvider.menus" (output)="saveOrder($event,order)"></order>        
+            </div>
+      </div>
+      <div *ngIf="searchKeyWord && searchKeyWord.trim().length>0">
+              <div *ngFor="let order of filter;let i=index;">
+                <existing-order *ngIf="!order.modification" [order]="order" (output)="modifyOrder($event)"></existing-order>        
+                <order *ngIf="order.modification" [order]="configureOrderInput(order)" [menus]="storageProvider.menus" (output)="saveOrder($event,order)"></order>        
+            </div>        
+      </div>
+</div>
+
+<div [hidden]="section!='delivery'">
+      <div text-right> <button ion-button clear (click)="manageCarrier()">배달인원관리</button></div>
+          <div *ngFor="let carrier of assignOrderList;let i=index;"> 
+          <h3>{{carrier.name}}</h3>
+              <carrier-order [order]="order" (output)="modifyCarrier($event)" *ngFor="let order of carrier.orders;let j=index;"></carrier-order>      
+          </div>
+          <hr><br>
+          <h3>배달</h3>
+              <unassigned-carrier-order [order]="order" (output)="assingCarrier($event)" *ngFor="let order of unassingOrderDeliveryList;let i=index;"></unassigned-carrier-order> 
+          <h3>픽업</h3>   
+              <unassigned-carrier-order [order]="order" (output)="assingCarrier($event)" *ngFor="let order of unassingOrderPickupList;let i=index;"></unassigned-carrier-order> 
+          <h3>냉동</h3>
+              <unassigned-carrier-order [order]="order" (output)="assingCarrier($event)" *ngFor="let order of unassingOrderFrozenList;let i=index;"></unassigned-carrier-order> 
+          <h3>기타</h3>
+              <unassigned-carrier-order [order]="order" (output)="assingCarrier($event)" *ngFor="let order of unassingOrderEtcList;let i=index;"></unassigned-carrier-order> 
+</div>
+
+<div [hidden]="section!='produce'">
+      <ion-grid style="font-size:large;">
+          <ion-row *ngFor="let menu of produceList" style="border:solid 1px darkgray;">
+                <ion-col col-3 style="border-right:solid 1px darkgray;">
+                    {{menu.menu}}
+                </ion-col>
+                <ion-col col-9>
+                    <span *ngFor="let item of menu.amount">{{item.amount}}({{item.time}}),</span>
+                </ion-col>
+          </ion-row>
+          <ion-row *ngIf="etcProduceList.length>0" >
+              *기타
+          </ion-row>
+          <ion-row *ngFor="let item of etcProduceList" style="border:solid 1px darkgray;">
+                <ion-col>
+                    {{item.menu}}({{item.time}})
+                </ion-col>
+          </ion-row>
+      </ion-grid>
+</div>
+
+</ion-content>
+                                      
+

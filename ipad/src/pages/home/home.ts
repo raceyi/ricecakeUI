@@ -1,584 +1,984 @@
 import { Component } from '@angular/core';
-import { NavController,AlertController } from 'ionic-angular';
+import { NavController,AlertController,Platform,LoadingController } from 'ionic-angular';
+import {StorageProvider} from "../../providers/storage/storage";
+import {ServerProvider} from "../../providers/server/server";
+import {CarrierManagementPage} from "../carrier-management/carrier-management";
+
+import {ManagerEntrancePage} from '../manager-entrance/manager-entrance';
+import {TrashPage} from '../trash/trash';
+
+import { BackgroundMode } from '@ionic-native/background-mode';
+import { Push, PushObject, PushOptions } from '@ionic-native/push';
+import { Printer, PrintOptions } from '@ionic-native/printer'
+import { Events } from 'ionic-angular';
+
 import * as moment from 'moment';
+var gHomePage;
 
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
 export class HomePage {
-  section="order";
-  searchKeyWord:string;
-  
-  deliveryDate; //배달일을 지정함 
-  deliveyDay;   //배달일의 요일을 지정함. 월요일,화요일,...일요일
+    section:string;
+    filter=[];
 
-   carriers=[
-        {
-            "name": "박서준"
-        },
-        {
-            "name": "정유미"
-        },
-        {
-            "name": "이서진"
-        }
-    ];
+    //newOrderInputShown;
+    
+    searchKeyWord;
+    newOrder;
 
-  menus:any=[
-        {
-            "category": "미니설기",
-            "menu": "100"
-        },
-        {
-            "category": "미니설기",
-            "menu": "무지"
-        },
-        {
-            "category": "미니설기",
-            "menu": "첫돌"
-        },
-        {
-            "category": "미니설기",
-            "menu": "하트"
-        },
-        {
-            "category": "멥떡",
-            "menu": "4색 송편"
-        },
-        {
-            "category": "멥떡",
-            "menu": "가래떡"
-        },
-        {
-            "category": "멥떡",
-            "menu": "꿀떡"
-        },
-        {
-            "category": "멥떡",
-            "menu": "녹두호박설기"
-        },
-        {
-            "category": "멥떡",
-            "menu": "단호박 소담"
-        },
-        {
-            "category": "멥떡",
-            "menu": "딸기 설기"
-        },
-        {
-            "category": "멥떡",
-            "menu": "떡국떡"
-        },
-        {
-            "category": "멥떡",
-            "menu": "무지개 설기"
-        },
-        {
-            "category": "멥떡",
-            "menu": "바람떡"
-        },
-        {
-            "category": "멥떡",
-            "menu": "밤콩설기"
-        },
-        {
-            "category": "멥떡",
-            "menu": "백설기"
-        },
-        {
-            "category": "멥떡",
-            "menu": "쑥밤콩설기"
-        },
-        {
-            "category": "멥떡",
-            "menu": "절편"
-        },
-        {
-            "category": "십리향1송이",
-            "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
-        },
-        {
-            "category": "제사편",
-            "menu": "거피"
-        },
-        {
-            "category": "제사편",
-            "menu": "녹두"
-        },
-        {
-            "category": "제사편",
-            "menu": "콩"
-        },
-        {
-            "category": "제사편",
-            "menu": "콩 흑임자"
-        },
-        {
-            "category": "제사편",
-            "menu": "흑임자"
-        },
-        {
-            "category": "찰떡",
-            "menu": "고구마단호박찰떡"
-        },
-        {
-            "category": "찰떡",
-            "menu": "고물 인절미"
-        },
-        {
-            "category": "찰떡",
-            "menu": "모듬영양찰떡"
-        },
-        {
-            "category": "찰떡",
-            "menu": "수수떡"
-        },
-        {
-            "category": "찰떡",
-            "menu": "약식"
-        },
-        {
-            "category": "찰떡",
-            "menu": "완두시루떡"
-        },
-        {
-            "category": "찰떡",
-            "menu": "이티떡"
-        },
-        {
-            "category": "찰떡",
-            "menu": "인절미"
-        },
-        {
-            "category": "찰떡",
-            "menu": "콩영양찰떡"
-        },
-        {
-            "category": "찰떡",
-            "menu": "팥시루떡"
-        },
-        {
-            "category": "멥편",
-            "menu": "거피팥"
-        },
-        {
-            "category": "멥편",
-            "menu": "녹두"
-        },
-        {
-            "category": "멥편",
-            "menu": "콩"
-        },
-        {
-            "category": "멥편",
-            "menu": "팥"
-        },
-        {
-            "category": "답례떡",
-            "menu": "매화2송이"
-        },
-        {
-            "category": "답례떡",
-            "menu": "매화3송이"
-        },
-        {
-            "category": "답례떡",
-            "menu": "매화5송이"
-        },
-        {
-            "category": "떡케이크",
-            "menu": "밤콩백설기케이크"
-        },
-        {
-            "category": "떡케이크",
-            "menu": "백설기케이크"
-        }
-    ];
+     constructor(public navCtrl:NavController, 
+                    public alertCtrl:AlertController, 
+                    private platform: Platform,
+                    private push: Push,
+                    private printer: Printer,  
+                    public events: Events,  
+                    public loadingCtrl: LoadingController,                                                                
+                    private backgroundMode:BackgroundMode,
+                    public serverProvider:ServerProvider, 
+                    public storageProvider:StorageProvider) {
+        gHomePage=this;
+        this.section = "order";
+        this.storageProvider.newOrderInputShown = false;
+        this.storageProvider.reconfigureDeliverySection();
 
-
-
-  //새주문 입력 패라미터
-  newDeliveryTime; //새주문 입력시 배달시간
-  newRecipientAddress: string="도로명 주소 선택";
-  newAddressInputType:string="unknown"; // unknown, manual,auto: 주소 입력 모드 
-  newRecipientAddressDetail:string;
-  newReceiverSame:boolean=false;
-  newBuyerName:string;
-  newBuyerPhoneNumber:string;
-  newRecipientPhoneNumber:string;
-  newRecipientName:string;
-  newDeliveryFee:number;
-  newPrice:number;
-  newDeliveryMethod:string;
-  newPayment:string;
-  newCarrier:string;
-  categorySelected:number=-1;
-  unit:string;
-  amount:number;
-  menuIndex:number;
-  menuList=[];
-  //기존 주문 수정 패라미터
-  orderList=[];
-
-  newOrderInputShown:boolean=false;
-  constructor(public navCtrl: NavController,    
-              public alertCtrl:AlertController) {
-      let now=new Date().getTime();
-      this.setDeliveryDate(now);
-      console.log("deliveryDate:"+this.deliveryDate);
-      this.convertMenuInfo(this.menus);
-  }
-
-  convertMenuInfo(menus){
-        menus.sort(function(a,b){
-              if (a.category < b.category) return -1;
-              if (a.category > b.category) return 1;
-              if(a.menu<b.menu) return -1;
-              if(a.menu>b.menu) return 1;
-              return 0;
-        });
-        console.log("sorted menus:"+JSON.stringify(menus));
-        let categories=[];
-        menus.forEach(menu=>{
-            if(categories.indexOf(menu.category)==-1){
-              categories.push(menu.category);
-            }
-        })
-        let menuInfos=[];
-        categories.forEach(category=>{
-            menuInfos.push({category:category,menus:[],menuStrings:[]});
-        })
-        menus.forEach(menu=>{
-             let menuString=menu.menu;
-             if(menu.menu.indexOf("[")==0){  
-                let menuObjs=JSON.parse(menu.menu);
-                console.log("menuObj:"+JSON.stringify(menuObjs));
-                menuString="";
-                menuObjs.forEach(menuObj=>{
-                   let key:any=Object.keys(menuObj);
-                   menuString+=key+menuObj[key]+" ";
+        this.platform.ready().then(() => {
+            this.printer.isAvailable().then((avail)=>{
+                console.log("avail:"+avail);
+                this.printer.check().then((output)=>{
+                    console.log("output:"+JSON.stringify(output));
+                },err=>{
+                        let alert = this.alertCtrl.create({
+                            title: '출력기능에 문제가 발생하였습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();
                 });
-             }
-                console.log("menuString:"+menuString);
-
-                menuInfos[categories.indexOf(menu.category)].menus.push(menu.menu);
-                menuInfos[categories.indexOf(menu.category)].menuStrings.push(menuString);
-                console.log("index:"+categories.indexOf(menu.category));
-                console.log(JSON.stringify(menuInfos[categories.indexOf(menu.category)].menus));
-
-        })     
-        
-          this.menus = menuInfos;
-          console.log("menus: " + JSON.stringify(this.menus));
-  }
-
-  getDayInKorean(day){
-    switch(day){
-      case 0:return "일요일";
-      case 1:return "월요일";
-      case 2:return "화요일";
-      case 3:return "수요일";
-      case 4:return "목요일";
-      case 5:return "금요일";
-      case 6:return "토요일";
-    }
-  }
-
-  getISO8601Format(milliseconds){
-    let d=new Date(milliseconds);
-    var mm = d.getMonth() < 9 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1); // getMonth() is zero-based
-    var dd  = d.getDate() < 10 ? "0" + d.getDate() : d.getDate();
-    var hh = d.getHours() <10? "0"+d.getHours(): d.getHours();
-    var min = d.getMinutes()<10? "0"+d.getMinutes():d.getMinutes(); 
-    return d.getFullYear()+'-'+(mm)+'-'+dd+'T'+hh+":"+min+moment().format("Z");
-  }
-  
-  setDeliveryDate(milliseconds){
-    let d=new Date(milliseconds);
-    var mm = d.getMonth() < 9 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1); // getMonth() is zero-based
-    var dd  = d.getDate() < 10 ? "0" + d.getDate() : d.getDate();
-    var hh = d.getHours() <10? "0"+d.getHours(): d.getHours();
-    var min = d.getMinutes()<10? "0"+d.getMinutes():d.getMinutes(); 
-    var dString=d.getFullYear()+'-'+(mm)+'-'+dd+'T'+hh+":"+min+moment().format("Z");
-    this.deliveryDate=dString;
-    this.deliveyDay= this.getDayInKorean(d.getDay());
-  }
-
-  orderSection(){
-    this.section='order';
-  }
-
-  deliverySection(){
-    this.section='delivery';
-  }
-
-  produceSection(){
-    this.section='produce';
-  }
-
-  searchOrderItems(){
-    let searchKeyword=this.searchKeyWord.trim();
-    if('0'<=searchKeyword[0] && searchKeyword[0]<='9'){ //It is digit.
-        this.searchKeyWord=this.autoHypenPhone(searchKeyword); // look for phone number
-    }
-  }
-
-  autoHypenPhone(str){
-    str = str.replace(/[^0-9]/g, '');
-    var tmp = '';
-
-    if(str.length>=2 && str.startsWith('02')){
-      tmp += str.substr(0, 2);
-      tmp+='-';
-      if(str.length<7){
-        tmp+=str.substr(2);
-      }else{
-        tmp+=str.substr(2,3);
-        tmp+='-';
-        tmp+=str.substr(5);
-      }
-      return tmp;
-    }else if( str.length < 4){
-      return str;
-    }else if(str.length < 7){
-      tmp += str.substr(0, 3);
-      tmp += '-';
-      tmp += str.substr(3);
-      return tmp;
-    }else if(str.length < 11){
-      tmp += str.substr(0, 3);
-      tmp += '-';
-      tmp += str.substr(3, 3);
-      tmp += '-';
-      tmp += str.substr(6);
-      return tmp;
-    }else{        
-      tmp += str.substr(0, 3);
-      tmp += '-';
-      tmp += str.substr(3, 4);
-      tmp += '-';
-      tmp += str.substr(7);
-      return tmp;
-    }
-  }
-
-  getISOtime(time){  // milliseconds
-    let d=new Date(time);
-    var sss = d.getMilliseconds();
-    var ss = d.getSeconds() < 10? "0" + (d.getSeconds()) : (d.getSeconds());
-    var mm = d.getMonth() < 9? "0" + (d.getMonth() + 1) : (d.getMonth() +1);
-    var dd = d.getDate() <10? "0" + d.getDate() : d.getDate();
-    var hh = d.getHours() <10? "0" + d.getHours() : d.getHours();
-    var min = d.getMinutes() <10? "0"+d.getMinutes() : d.getMinutes();
-    var dString = d.getFullYear()+ '-' + (mm) + '-' + (dd) + 'T' + hh + ":" + min + ":" + ss + "." + sss;
-    return dString;
-  }
-
-  orderGoYesterday(){
-    let yesterday=new Date(this.deliveryDate).getTime()-24*60*60*1000;
-    console.log("order move yesterday:"+this.getISOtime(yesterday));
-
-    this.setDeliveryDate(yesterday);
-
-
-    let body ={deliveryDate: this.getISOtime(yesterday).substring(0,10)};
-    console.log("body: "+JSON.stringify(body));
-    /*
-        this.http.setDataSerializer("json"); 
-        this.http.post("https://8ca0a9qq5g.execute-api.ap-northeast-2.amazonaws.com/latest/getOrderWithDeliveryDate",body,{"Content-Type":"application/json"}).then((res:any)=>{              
-          console.log("res:"+JSON.stringify(res));
-          let response=JSON.parse(res.data);
-          if(response.result=="success"){
-                this.setDeliveryDate(yesterday);
-                response.orders.forEach(order=>{
-                  let menuList = order.menuList;
-                  order.menuList = JSON.parse(menuList);
-                })
-                this.orderList = response.orders;
-                console.log("orderList: " + JSON.stringify(this.orderList));
-          }
-      },(err)=>{
-          console.log("err:"+JSON.stringify(err));
-      });
-*/      
-  }
-
-  orderGoTomorrow(){
-    let tomorrow=new Date(this.deliveryDate).getTime()+24*60*60*1000;
-    console.log("order move tomorrow:"+this.getISOtime(tomorrow));
-
-    this.setDeliveryDate(tomorrow);
-
-    let body ={deliveryDate: this.getISOtime(tomorrow).substring(0,10)};
-    console.log("body: "+JSON.stringify(body));
-
-  }
-/////////////////////////////////////////////////////////
-
-resetNewOrder(){
-    let deliveryDate=new Date(this.deliveryDate);
-    deliveryDate.setHours(0);
-    deliveryDate.setMinutes(0);
-    deliveryDate.setSeconds(0);
-    deliveryDate.setMilliseconds(0);
-    this.newDeliveryTime=this.getISO8601Format(deliveryDate.getTime()); //새주문 입력시 배달시간
-    this.newRecipientAddress="도로명 주소 선택";
-    this.newAddressInputType="unknown"; // unknown, manual,auto: 주소 입력 모드 
-
-    this.newRecipientAddressDetail="";
-    this.newReceiverSame=false;
-    this.newBuyerName="";
-    this.newBuyerPhoneNumber="";
-    this.newRecipientPhoneNumber="";
-    this.newRecipientName="";
-    this.newDeliveryFee=undefined;
-    this.newPrice=undefined;
-    this.newDeliveryMethod=undefined;
-    this.newPayment=undefined;
-
-    this.categorySelected=-1;
-    this.unit=undefined;
-    this.amount=undefined;
-}
-
-  newOrder(){
-    //1.reset order info
-    this.resetNewOrder();    
-    //2. show order input area
-    this.newOrderInputShown=true; 
-  }
-
-  newGetJuso(){
-    this.newAddressInputType="auto";
-  }
-
-  newManualInput(){
-    this.newAddressInputType="manual";
-    this.newRecipientAddress=""
-  }
-
-  newOrderCancel(){ //initialize and hide orderArea
-    this.newOrderInputShown=false; 
-    this.resetNewOrder();
-  }
-
-  newReceiverSameChange(){
-    console.log("newReceiverSameChange");
-    if(this.newReceiverSame){
-      this.newRecipientPhoneNumber=this.newBuyerPhoneNumber;
-      this.newRecipientName=this.newBuyerName;
-    }else{
-      if(this.newRecipientPhoneNumber==this.newBuyerPhoneNumber
-          && this.newRecipientName==this.newBuyerName){
-            this.newRecipientName="";
-            this.newRecipientPhoneNumber="";
-          }
-    }
-  }
-
-  inputNewBuyerPhoneNumber(){
-        let newBuyerPhoneNumber=this.newBuyerPhoneNumber.trim();
-        this.newBuyerPhoneNumber=this.autoHypenPhone(newBuyerPhoneNumber); // look for phone number
-  }
-
-  inputnewRecipientPhoneNumber(){
-        let newRecipientPhoneNumber=this.newRecipientPhoneNumber.trim();
-        this.newRecipientPhoneNumber=this.autoHypenPhone(newRecipientPhoneNumber); // look for phone number
-  }
-
-  inputNewBuyerName(){
-    console.log("inputNewBuyerName");
-    if(this.newReceiverSame){
-        this.newRecipientName=this.newBuyerName;
-    }
-  }
-
- reflectNewBuyerPhoneNumber(){
-   if(this.newReceiverSame){
-        this.newRecipientPhoneNumber=this.newBuyerPhoneNumber;
-    }
- }
-
-  sum(a,b){
-    if(!a){
-      return parseInt(b);
-    }
-    if(!b){
-      return parseInt(a);
-    }
-    return parseInt(a)+parseInt(b);
-  }
-
-  changeAddressInputType(type){
-    this.newAddressInputType=type;
-    this.newRecipientAddress="도로명 주소 선택";
-  }
-
-
-  selectCategory(){
-    if(this.categorySelected==-1){
-      console.log("categorySelected is -1. How can it happen?");
-      return;
-    }
-    console.log("selectCategory:"+this.categorySelected);
-    if(this.menus[this.categorySelected].menus.length==1){
-          this.menuIndex=0;
-    }
-  }
-
-  addMenu(){
-    if(this.categorySelected==-1 ){
-            let alert = this.alertCtrl.create({
-              title: '종류를 선택해 주시기 바랍니다.',
-              buttons: ['확인']
+            }, (err)=>{
+                console.log("err:"+JSON.stringify(err));
+                        let alert = this.alertCtrl.create({
+                            title: '출력기능에 문제가 발생하였습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();            
             });
-            alert.present();
-        return;
-    }    
-    if(this.menuIndex==-1 ){
+        });
+
+        events.subscribe('update', (tablename) => {
+            console.log("homePage receive update event");
+            /*
             let alert = this.alertCtrl.create({
-              title: '메뉴를 선택해 주시기 바랍니다.',
-              buttons: ['확인']
-            });
-            alert.present();
-        return;
-    }    
-    if(this.amount==undefined || this.amount==0){
-            let alert = this.alertCtrl.create({
-              title: '수량을 선택해 주시기 바랍니다.',
-              buttons: ['확인']
-            });
-            alert.present();
-        return;
-    }
-    if(this.unit==undefined || this.unit.length==0){
-            let alert = this.alertCtrl.create({
-              title: '단위를 선택해 주시기 바랍니다.',
-              buttons: ['확인']
-            });
-            alert.present();
-        return;
+                            title: '주문정보가 변경되었습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();   
+              */          
+            this.storageProvider.refresh();
+        });
     }
     
-    let menu={category:this.menus[this.categorySelected].category,
-              menuString:this.menus[this.categorySelected].menuStrings[this.menuIndex],
-              menu:this.menus[this.categorySelected].menus[this.menuIndex], 
-              amount:this.amount, unit: this.unit}
-    this.menuList.push(menu);              
-    console.log("menu:"+JSON.stringify(menu));          
-    this.categorySelected=-1;
-    this.unit="";
-    this.amount=0;
-    this.menuIndex=-1;
-  }
+    getDayInKorean(day) {
+        switch (day) {
+            case 0: return "일요일";
+            case 1: return "월요일";
+            case 2: return "화요일";
+            case 3: return "수요일";
+            case 4: return "목요일";
+            case 5: return "금요일";
+            case 6: return "토요일";
+        }
+    };
+    
+    getISO8601Format(milliseconds) {
+        var d = new Date(milliseconds);
+        var mm = d.getMonth() < 9 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1); // getMonth() is zero-based
+        var dd = d.getDate() < 10 ? "0" + d.getDate() : d.getDate();
+        var hh = d.getHours() < 10 ? "0" + d.getHours() : d.getHours();
+        var min = d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes();
+        return d.getFullYear() + '-' + (mm) + '-' + dd + 'T' + hh + ":" + min + moment().format("Z");
+    };
+    
+    orderSection() {
+        this.section = 'order';
+    };
 
- removeMenu(i){
-    this.menuList.splice(i,1);
- }
+    deliverySection() {
+        this.storageProvider.reconfigureDeliverySection();
+        this.section = 'delivery';
+    };
 
-  save(){
+    produceSection() {
+        this.section = 'produce';
+        this.storageProvider.configureProduceSection();
+    };
 
-  }
-/////////////////////////////////////////////////////////
+    autoHypenPhone(str) {
+        str = str.replace(/[^0-9]/g, '');
+        var tmp = '';
+        if (str.length >= 2 && str.startsWith('02')) {
+            tmp += str.substr(0, 2);
+            tmp += '-';
+            if (str.length < 7) {
+                tmp += str.substr(2);
+            }
+            else {
+                tmp += str.substr(2, 3);
+                tmp += '-';
+                tmp += str.substr(5);
+            }
+            return tmp;
+        }
+        else if (str.length < 4) {
+            return str;
+        }
+        else if (str.length < 7) {
+            tmp += str.substr(0, 3);
+            tmp += '-';
+            tmp += str.substr(3);
+            return tmp;
+        }
+        else if (str.length < 11) {
+            tmp += str.substr(0, 3);
+            tmp += '-';
+            tmp += str.substr(3, 3);
+            tmp += '-';
+            tmp += str.substr(6);
+            return tmp;
+        }
+        else {
+            tmp += str.substr(0, 3);
+            tmp += '-';
+            tmp += str.substr(3, 4);
+            tmp += '-';
+            tmp += str.substr(7);
+            return tmp;
+        }
+    };
+    
+    getISOtime(time) {
+        var d = new Date(time);
+        var sss = d.getMilliseconds();
+        var ss = d.getSeconds() < 10 ? "0" + (d.getSeconds()) : (d.getSeconds());
+        var mm = d.getMonth() < 9 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1);
+        var dd = d.getDate() < 10 ? "0" + d.getDate() : d.getDate();
+        var hh = d.getHours() < 10 ? "0" + d.getHours() : d.getHours();
+        var min = d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes();
+        var dString = d.getFullYear() + '-' + (mm) + '-' + (dd) + 'T' + hh + ":" + min + ":" + ss + "." + sss;
+        return dString;
+    };
+        
+    /////////////////////////////////////////////////////////
+    configureOrderInput(order) {
+        //console.log("configureOrderInput:"+JSON.stringify(order));
+        if (order == undefined)
+            order = {};
+        if (order.buyerName != undefined
+            && order.buyerName == order.recipientName
+            && order.buyerPhoneNumber == order.recipientPhoneNumber) {
+            order.receiverSame = true;
+        }
+        else {
+            order.receiverSame = false;
+        }
+        if (order.recipientAddress == undefined) {
+            order.recipientAddress = "주소 선택";
+            order.addressInputType = "unknown";
+        }
+        else if (order.recipientAddressDetail == undefined || order.recipientAddressDetail.trim().length == 0) {
+            order.addressInputType = "manual";
+        }
+        else {
+            order.addressInputType = "auto";
+        }
+        //결제 방법 변환(?)
+        if (order.paymentMethod == "cash") {
+            if (order.payment.startsWith("paid")) {
+                order.paymentOption = "cash-paid";
+            }
+            else if (order.payment.indexOf("pre") >= 0) {
+                order.paymentOption = "cash-pre";
+            }
+            else if (order.payment.indexOf("after") >= 0) {
+                order.paymentOption = "cash-after";
+            }
+        }
+        else if (order.paymentMethod == "card") {
+            if (order.payment.startsWith("paid")) {
+                order.paymentOption = "card-paid";
+            }
+            else if (order.payment.indexOf("pre") >= 0) {
+                order.paymentOption = "card-pre";
+            }
+            else if (order.payment.indexOf("after") >= 0) {
+                order.paymentOption = "card-after";
+            }
+        }
+        if (order.menuList == undefined) {
+            order.menuList = [];
+        }
+        if (order.deliveryTime == undefined) {
+            console.log("deliveryDate:" + this.storageProvider.deliveryDate);
+            var deliveryDate = new Date(this.storageProvider.deliveryDate);
+            deliveryDate.setHours(0);
+            deliveryDate.setMinutes(0);
+            deliveryDate.setSeconds(0);
+            deliveryDate.setMilliseconds(0);
+            order.deliveryTime = this.getISO8601Format(deliveryDate.getTime()); //새주문 입력시 배달시간
+            console.log("new order deliveryTime:"+order.deliveryTime);
+        }else{
+            order.deliveryTime= order.deliveryTime; 
+            console.log("deliveryTime is "+order.deliveryTime+" in modification");
+        }
+        return order;
+    };
+
+    createNewOrder() {
+        //1. initalize values for new order, <order>를 호출하기 전에 해당 변수들을 모두 초기화해줘야 함.
+        this.newOrder = this.configureOrderInput({});
+        //2. show order input area
+        this.storageProvider.newOrderInputShown = true;
+    };
+
+    saveOrder (order, existing) {
+        console.log("saveOrder-output:" + JSON.stringify(order));
+        if (order == undefined && existing == undefined) {
+            console.log("cancel order creation");
+            this.storageProvider.newOrderInputShown = false;
+            return;
+        }
+        else if (order == undefined && existing) {
+            console.log("cancel order modification");
+            existing.modification = false;
+            return;
+        }
+
+        if (order.id == undefined) {
+            console.log("order creation " + JSON.stringify(order));
+            //save order in DB by calling server API. 
+            this.storageProvider.saveOrder(order).then(()=>{///
+                this.storageProvider.newOrderInputShown = false;
+            },err=>{
+                console.log("err:"+JSON.stringify(err));
+                if(typeof err==="string" && err.indexOf("SMS-")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '문자발송에 실패했습니다.',
+                        buttons: ['확인']
+                    });
+                    alert.present();
+                    this.storageProvider.newOrderInputShown=false;
+                }else if(typeof err==="string" ){
+                    let alert = this.alertCtrl.create({
+                        title: '주문 생성에 실패했습니다.',
+                        subTitle:err,
+                        buttons: ['확인']
+                    });
+                    alert.present();
+
+                }else{
+                    let alert = this.alertCtrl.create({
+                        title: '주문 생성에 실패했습니다.',
+                        subTitle:JSON.stringify(err),
+                        buttons: ['확인']
+                    });
+                    alert.present();
+                }
+            });
+        }
+        else {
+            // please update DB here
+            console.log("order modification");
+            //update order List in DB by calling server API.
+            this.storageProvider.updateOrder(order).then(()=>{///
+                    existing.modification = false;
+                    if(order.diffDate){
+                            let alert = this.alertCtrl.create({
+                                title:  order.deliveryTime.substr(0,10)+'일 화면을 확인하시겠습니까?',
+                                buttons: [
+                                        {
+                                        text: '아니오',
+                                        handler: () => {
+                                            return;
+                                        }
+                                        },
+                                        {
+                                        text: '네',
+                                        handler: () => {
+                                            console.log('agree clicked');
+                                            //배달일 수정하기
+                                            this.storageProvider.setDeliveryDate(order.deliveryTime);
+                                            this.storageProvider.refresh();
+                                            return;
+                                        }
+                                        }]
+                            });
+                            alert.present();                                    
+                    }   
+            },err=>{
+                if(typeof err==="string" && err.indexOf("SMS-")>=0){
+                    existing.modification = false;
+                    if(order.diffDate){
+                            let alert = this.alertCtrl.create({
+                                title:  order.deliveryTime.substr(0,10)+'으로 화면의 배달일을 이동하시겠습니까?',
+                                subTitle:"문자발송에 실패했습니다",
+                                buttons: [
+                                        {
+                                        text: '아니오',
+                                        handler: () => {
+                                            return;
+                                        }
+                                        },
+                                        {
+                                        text: '네',
+                                        handler: () => {
+                                            console.log('agree clicked');
+                                            //배달일 수정하기
+                                            this.storageProvider.setDeliveryDate(order.deliveryTime);
+                                            this.storageProvider.refresh();
+                                            return;
+                                        }
+                                        }]
+                            });
+                            alert.present();                                    
+                    }else{
+                        let alert = this.alertCtrl.create({
+                            title: '문자발송에 실패했습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();
+                    }
+                }else if(typeof err==="string" ){
+                    let alert = this.alertCtrl.create({
+                        title: '주문 변경에 실패했습니다.',
+                        subTitle:err,
+                        buttons: ['확인']
+                    });
+                    alert.present();
+                }else{
+                    let alert = this.alertCtrl.create({
+                        title: '주문 변경에 실패했습니다.',
+                        subTitle:JSON.stringify(err),
+                        buttons: ['확인']
+                    });
+                    alert.present();
+                }
+            });
+        }
+    };
+
+    modifyOrder(input) {
+        if(input.operation=="delete"){
+             let alert = this.alertCtrl.create({
+                    title: '주문을 삭제하시겠습니까?',
+                    buttons: [
+                            {
+                            text: '아니오',
+                            handler: () => {
+                                return;
+                            }
+                            },
+                            {
+                            text: '네',
+                            handler: () => {
+                                console.log('agree clicked');
+                                this.storageProvider.hideOrder(input.order.id);
+                                return;
+                            }
+                            }]
+                });
+                alert.present();
+        }else if(input.operation=="modify"){
+            input.order.modification = true;
+        }
+    };
+    /////////////////////////////////////////////////////////
+    //   Delivery section - begin
+    assingCarrier(order) {
+        //please Update carrier, sort order list again
+        this.storageProvider.assignCarrier(order.id,order.carrier).then(()=>{
+            this.storageProvider.refresh();
+        },err=>{
+            if(typeof err==="string" && err.indexOf("invalidId")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '존재하지 않는 주문입니다.',
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }else if(typeof err==="string" && err.indexOf("invalidCarrier")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '존재하지 않는 배달원입니다.',
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }else if(typeof err==="string" ){
+                    let alert = this.alertCtrl.create({
+                        title: '배달원 설정에 실패했습니다.',
+                        subTitle:err,
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }else{
+                    let alert = this.alertCtrl.create({
+                        title: '배달원 설정에 실패했습니다.',
+                        subTitle:JSON.stringify(err),
+                        buttons: ['확인']
+                    });
+                    alert.present();                
+            }
+        })
+    };
+
+    modifyCarrier(order) {
+        //please Update carrier, sort order list again
+        this.storageProvider.assignCarrier(order.id,order.updateCarrier).then(()=>{
+            this.storageProvider.refresh();
+        },err=>{
+            if(typeof err==="string" && err.indexOf("invalidId")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '존재하지 않는 주문입니다.',
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }else if(typeof err==="string" && err.indexOf("invalidCarrier")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '존재하지 않는 배달원입니다.',
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }else if(typeof err==="string" ){
+                    let alert = this.alertCtrl.create({
+                        title: '배달원 설정에 실패했습니다.',
+                        subTitle:err,
+                        buttons: ['확인']
+                    });
+                    alert.present();
+            }else{
+                    let alert = this.alertCtrl.create({
+                        title: '배달원 설정에 실패했습니다.',
+                        subTitle:JSON.stringify(err),
+                        buttons: ['확인']
+                    });
+                    alert.present();                
+            }
+        })
+    };
+
+    manageCarrier() {
+        this.navCtrl.push(CarrierManagementPage);
+    };
+    
+    ////////////////////////////////////////
+    // move into other pages
+    adminPage(){
+            this.navCtrl.push(ManagerEntrancePage);
+    }
+
+    trashPage(){
+            this.navCtrl.push(TrashPage);
+    }
+
+    inputSearchKeyWord(){
+        console.log("inputSearchKeyWord:"+this.searchKeyWord);
+
+        if(!this.searchKeyWord) return;
+
+        var searchKeyWord = this.searchKeyWord.trim();
+        if ('0' <= searchKeyWord[0] && searchKeyWord[0] <= '9') {
+            this.searchKeyWord = this.autoHypenPhone(searchKeyWord); // look for phone number
+        }
+
+        this.filter=this.storageProvider.orderList.filter(function(value){
+            if('0'<=gHomePage.searchKeyWord[0] && gHomePage.searchKeyWord[0]<='9'){ //check digit
+                    console.log(" "+value.buyerPhoneNumber+" "+gHomePage.searchKeyWord);
+                    console.log(value.buyerPhoneNumber.startsWith(gHomePage.searchKeyWord));
+                    return value.buyerPhoneNumber.startsWith(gHomePage.searchKeyWord);
+            }else{
+                    console.log(" "+value.buyerName+" "+gHomePage.searchKeyWord); 
+                    console.log(value.buyerName.startsWith(gHomePage.searchKeyWord));               
+                    return value.buyerName.startsWith(gHomePage.searchKeyWord);                
+            }
+        });
+    }
+
+    refresh(){
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: 5*1000
+            });
+          progressBarLoader.present();        
+        this.storageProvider.refresh().then(()=>{
+              progressBarLoader.dismiss();
+        },err=>{
+              progressBarLoader.dismiss();
+        });
+    }
+
+    print(){
+        let page;
+        if(this.section == 'order'){
+            page=this.constructOrderPrint();
+        }else if(this.section == 'delivery'){
+            page=this.constructDeliveryPrint();
+        }else if(this.section == 'produce'){
+            page=this.constructProducePrint();
+        }
+        let options: PrintOptions = {
+            name: 'MyDocument',
+            duplex: true,
+            landscape: true,
+            grayscale: true
+        };
+
+        this.printer.print(page, options).then((output)=>{
+            console.log("print-output:"+JSON.stringify(output));
+        },(err)=>{
+            console.log("err:"+JSON.stringify(err));
+        });
+
+    }
+
+
+    constructProducePrint(){
+        let rightCharacters:number=25;
+        let leftCharacters:number=9;
+        let linesPerPage=20;
+        let title=this.storageProvider.deliveryDate.substr(0,4)+"년"+
+                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
+                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay;
+        let currentPage=1;
+        let currentLines=0;
+        let eachItems=[];
+        let totalLinesNumber=0;
+
+        this.storageProvider.produceList.forEach(item=>{
+            let name="";
+            let nameLength=1;
+            if(item.menu.length>leftCharacters){
+                nameLength++;
+            }
+            let list=" ";
+            let totalLine="";
+            item.amount.forEach(amount=>{
+                totalLine+=amount.amount+'('+amount.time+'),';
+            });
+            totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
+            let remain=totalLine.length;
+            let index=0;
+            let lineNumber=0;
+            while(remain>=rightCharacters){
+                list+=totalLine.substr(index,rightCharacters);
+                remain=remain-rightCharacters;
+                index+=rightCharacters;
+                ++lineNumber;
+                if(remain>0)
+                    list+="<br>";
+            }
+            if(remain>0){
+                list+=totalLine.substr(index);
+                ++lineNumber;
+            }
+            console.log("lineNumber:"+lineNumber+"list:"+list);
+            if(nameLength>lineNumber){
+                ++lineNumber;
+            }
+            totalLinesNumber+=lineNumber;
+            eachItems.push({lines:list, name:item.menu,number:lineNumber});    
+        })
+
+        console.log("eachItems:"+JSON.stringify(eachItems));
+
+        let tables=[];
+        let pageNumber=1;
+        let currentPageNums=0;
+        let currentPageItems=[];
+        eachItems.forEach((item)=>{
+            if(currentPageNums+item.number>linesPerPage){
+                //move into next pages
+                tables.push({page:pageNumber,items:currentPageItems})
+                pageNumber++;
+                currentPageItems=[];
+                currentPageItems.push(item);
+                currentPageNums=item.number;
+            }else{
+                currentPageItems.push(item);
+                currentPageNums+=item.number;
+            }
+        })  
+        if(currentPageItems.length>0){ //last page
+              tables.push({page:pageNumber,items:currentPageItems})            
+        }
+        console.log("Tables:"+JSON.stringify(tables));
+
+        let pages="<html>\
+                    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
+        let index;
+        for(index=0;index<tables.length;index++){
+            // page title
+            if(index>0){
+                pages+="<H1 style=\"page-break-before: always;\">";
+            }else
+                pages+="<H1>";
+            pages+=this.storageProvider.deliveryDate.substr(0,4)+"년"+
+                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
+                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+"("+(index+1)+"/"+pageNumber+")"+"</H1>";
+            pages+="<table style=\"width:100%\;border-collapse:collapse;\">";          
+            tables[index].items.forEach(item=>{
+                pages+="<tr><td style=\"border: solid 1px; font-size:2em;\">"+item.name+"</td>"+
+                            "<td style=\"border: solid 1px; font-size:2em;\">"+item.lines+"</td>"+"</tr>";
+            })
+            pages+="</table>";
+        }
+        pages+="</html>";
+        console.log("pages:"+pages);
+        return pages;
+    }
+
+    constructOrderPrint(){
+
+        let charactersInLine:number=65;
+        let linesPerPage=48;
+
+        let title="배달일:"+this.storageProvider.deliveryDate.substr(0,4)+"년"+
+                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
+                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+" 총:"+this.storageProvider.orderList.length+" ";
+
+        let eachPages=[]; // tables(order,addressPrint, menusPrint, memoPrint) per page,pageNumber
+        let eachTables=[];
+        let totalLinesNumber=0;
+        let defaultLinesNumber=4; 
+
+        this.storageProvider.orderList.forEach(item=>{
+            let addressPrint="";
+            let menusPrint="";
+            let memoPrint="";
+            let lineNumTable=0;
+
+            lineNumTable+=defaultLinesNumber;
+
+            if(item.recipientAddressDetail){
+                addressPrint= item.recipientAddress+" "+item.recipientAddressDetail;
+            }else
+                addressPrint= item.recipientAddress;
+            if(addressPrint.length>charactersInLine){
+                lineNumTable+=2;
+                addressPrint=addressPrint.substr(0,charactersInLine)+"<br>"+addressPrint.substr(charactersInLine);
+            }else{
+                ++lineNumTable;
+            }
+            if(item.memo!=undefined && item.memo!=null && item.memo.trim().length>0){
+                let characters=item.memo.trim().length;
+                let index=0;
+                while((characters-charactersInLine)>0){
+                    memoPrint+=item.memo.substr(index,charactersInLine)+"<br>";
+                    ++lineNumTable;
+                    index+=charactersInLine;
+                    characters-=charactersInLine;
+                }
+                ++lineNumTable;
+                memoPrint+=item.memo.substr(index);
+                console.log("memoPrint:"+memoPrint);
+            }
+            let menus="";
+            item.menuList.forEach(menu=>{
+                menus+=menu.category+menu.menuString+menu.amount+menu.unit+",";
+            })
+            console.log("!!!menus:"+menus);
+            menus=menus.substr(0,menus.length-1);
+            {
+                let characters=menus.length;
+                let index=0;
+                while((characters-charactersInLine)>0){
+                    menusPrint+=menus.substr(index,charactersInLine)+"<br>";
+                    ++lineNumTable;
+                    index+=charactersInLine;
+                    characters-=charactersInLine;
+                }
+                ++lineNumTable;
+                menusPrint+=menus.substr(index);
+            }
+            console.log("!!! menusPrint:"+menusPrint);
+            totalLinesNumber+=lineNumTable;
+            eachTables.push({ order:item ,addressPrint:addressPrint,memoPrint:memoPrint,menusPrint:menusPrint, lines:lineNumTable });
+        })
+
+        let currentPage=1;
+        let currentLines=0;
+        let tablesPerPage=[];
+
+        eachTables.forEach(table=>{
+            console.log("tableLines:"+table.lines+" currentLines:"+currentLines+" currentPage:"+currentPage);
+            if(currentLines+(table.lines+1)>linesPerPage){ // table출력+table상단 1줄 번호 출력
+                eachPages.push({tables:tablesPerPage,page:currentPage});
+                ++currentPage;
+                tablesPerPage=[];
+                tablesPerPage.push(table);
+                currentLines=table.lines+1;    
+            }else{  
+                tablesPerPage.push(table);
+                currentLines+=(table.lines+1);
+            }
+        });
+        if(tablesPerPage.length>0){
+            eachPages.push({tables:tablesPerPage,page:currentPage});
+        }
+        console.log("currentPage: "+currentPage+" currentLines")
+
+        let pages="<html>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\n";
+        let index;
+       let tableNumber=0;     
+        for(index=0;index<eachPages.length;index++){
+            // page title
+            if(index>0){
+                pages+="<H1 style=\"page-break-before: always;\">\n";
+            }else
+                pages+="<H1>";
+            pages+=title+"("+(index+1)+"/"+eachPages.length+")</H1>\n";
+            eachPages[index].tables.forEach(table=>{
+                //console.log("table:"+JSON.stringify(table));
+++tableNumber;
+pages+="<span>"+tableNumber+"/"+this.storageProvider.orderList.length+"</span><br>\n";
+pages+="<table style=\"width:100%;border-collapse:collapse;\">\n";
+pages+="<tr>"
+pages+="<td style=\"border:solid 1px; font-size:0.8em;\" colspan=\"4\">배달지:"+ table.addressPrint+"</td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">배달요청시간</td>\n";
+pages+="<td width=\"35%\" style=\"border: solid 1px; font-size:0.8em;\">"+ table.order.deliveryTime.slice(11,13) + "시 " + table.order.deliveryTime.slice(14,16) + "분" +"</td>\n";
+pages+="<td width=\"10%\" style=\"border: solid 1px; font-size:0.8em;\">수신자</td>\n";
+pages+="<td style=\"border:solid 1px;font-size:0.8em;\">"+table.order.recipientName+" "+table.order.recipientPhoneNumber+"</td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"15%\" style=\"border:solid 1px; font-size:0.8em;\">주문금액</td>\n";
+pages+="<td width=\"35%\" style=\"border:solid 1px; font-size:0.8em;\">"+ (table.order.price+table.order.deliveryFee).toLocaleString()+"원"+"(배달료 "+0+"원)</td>\n";
+pages+="<td width=\"10%\" style=\"border:solid 1px; font-size:0.8em;\">결제</td>\n";
+pages+="<td style=\"border:solid 1px;font-size:0.8em;\">"+table.order.paymentString+"</td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"20%\" style=\"border:solid 1px; font-size:0.8em;\">주문자</td>\n";
+pages+="<td style=\"border:solid 1px; font-size:0.8em;\" colspan=\"3\">"+table.order.buyerName+" "+table.order.buyerPhoneNumber+"<span>(접수:"+table.order.orderedTimeString+")</span></td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"15%\" style=\"border:solid 1px; font-size:0.8em;\">배송방법</td>\n";
+if(table.order.deliveryMethod=="픽업")
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" colspan=\"3\">"+table.order.deliveryMethod+"</td>\n";  
+else if(!table.order.carrier)
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" colspan=\"3\">"+table.order.deliveryMethod+"</td>\n";  
+else
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" colspan=\"3\">"+table.order.deliveryMethod+"("+table.order.carrier+")</td>\n";  
+pages+="</tr>\n";     
+pages+="<td style=\"border:solid 1px;font-size:0.8em;\" width=\"100%\" colspan=\"4\">\n";
+pages+=table.menusPrint;
+pages+="</td>\n";
+pages+="</tr>\n";
+if(table.memoPrint){ 
+    pages+="<tr>\n";
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" width=\"100%\" colspan=\"4\">"+table.memoPrint+"</td>\n";
+    pages+="</tr>\n"; 
+}
+pages+="</table>\n";
+            })  
+        }
+        pages+="</html>";
+        console.log("pages:"+pages);
+        return pages;
+    }
+
+printPages(titleHead,orders,pageBreakFirst){
+        let charactersInLine:number=65;
+        let linesPerPage=48;
+
+        let title=titleHead+" 총:"+orders.length+" ";
+
+        let eachPages=[]; // tables(order,addressPrint, menusPrint, memoPrint) per page,pageNumber
+        let eachTables=[];
+        let totalLinesNumber=0;
+        let defaultLinesNumber=4; 
+
+        orders.forEach(item=>{
+            let addressPrint="";
+            let menusPrint="";
+            let memoPrint="";
+            let lineNumTable=0;
+
+            lineNumTable+=defaultLinesNumber;
+
+            if(item.recipientAddressDetail){
+                addressPrint= item.recipientAddress+" "+item.recipientAddressDetail;
+            }else
+                addressPrint= item.recipientAddress;
+            if(addressPrint.length>charactersInLine){
+                lineNumTable+=2;
+                addressPrint=addressPrint.substr(0,charactersInLine)+"<br>"+addressPrint.substr(charactersInLine);
+            }else{
+                ++lineNumTable;
+            }
+            if(item.memo!=undefined && item.memo!=null && item.memo.trim().length>0){
+                let characters=item.memo.trim().length;
+                let index=0;
+                while((characters-charactersInLine)>0){
+                    memoPrint+=item.memo.substr(index,charactersInLine)+"<br>";
+                    ++lineNumTable;
+                    index+=charactersInLine;
+                    characters-=charactersInLine;
+                }
+                ++lineNumTable;
+                memoPrint+=item.memo.substr(index);
+                console.log("memoPrint:"+memoPrint);
+            }
+            let menus="";
+            item.menuList.forEach(menu=>{
+                menus+=menu.category+menu.menuString+menu.amount+menu.unit+",";
+            })
+            console.log("!!!menus:"+menus);
+            menus=menus.substr(0,menus.length-1);
+            {
+                let characters=menus.length;
+                let index=0;
+                while((characters-charactersInLine)>0){
+                    menusPrint+=menus.substr(index,charactersInLine)+"<br>";
+                    ++lineNumTable;
+                    index+=charactersInLine;
+                    characters-=charactersInLine;
+                }
+                ++lineNumTable;
+                menusPrint+=menus.substr(index);
+            }
+            console.log("!!! menusPrint:"+menusPrint);
+            totalLinesNumber+=lineNumTable;
+            eachTables.push({ order:item ,addressPrint:addressPrint,memoPrint:memoPrint,menusPrint:menusPrint, lines:lineNumTable });
+        })
+
+        let currentPage=1;
+        let currentLines=0;
+        let tablesPerPage=[];
+
+        eachTables.forEach(table=>{
+            console.log("tableLines:"+table.lines+" currentLines:"+currentLines+" currentPage:"+currentPage);
+            if(currentLines+(table.lines+1)>linesPerPage){ // table출력+table상단 1줄 번호 출력
+                eachPages.push({tables:tablesPerPage,page:currentPage});
+                ++currentPage;
+                tablesPerPage=[];
+                tablesPerPage.push(table);
+                currentLines=table.lines+1;    
+            }else{  
+                tablesPerPage.push(table);
+                currentLines+=(table.lines+1);
+            }
+        });
+        if(tablesPerPage.length>0){
+            eachPages.push({tables:tablesPerPage,page:currentPage});
+        }
+        console.log("currentPage: "+currentPage+" currentLines")
+
+        let pages="";
+        let index;
+       let tableNumber=0;     
+        for(index=0;index<eachPages.length;index++){
+            // page title
+            if(index>0){
+                pages+="<H1 style=\"page-break-before: always;\">\n";
+            }else if(pageBreakFirst){
+                console.log("!!!pageBreakFirst:"+pageBreakFirst);
+                pages+="<H1 style=\"page-break-before: always;\">\n";
+            }else
+                pages+="<H1>";
+            pages+=title+"("+(index+1)+"/"+eachPages.length+")</H1>\n";
+            eachPages[index].tables.forEach(table=>{
+                //console.log("table:"+JSON.stringify(table));
+++tableNumber;
+pages+="<span>"+tableNumber+"/"+orders.length+"</span><br>\n";
+pages+="<table style=\"width:100%;border-collapse:collapse;\">\n";
+pages+="<tr>"
+pages+="<td style=\"border:solid 1px; font-size:0.8em;\" colspan=\"4\">배달지:"+ table.addressPrint+"</td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"15%\" style=\"border: solid 1px; font-size:0.8em;\">배달요청시간</td>\n";
+pages+="<td width=\"35%\" style=\"border: solid 1px; font-size:0.8em;\">"+ table.order.deliveryTime.slice(11,13) + "시 " + table.order.deliveryTime.slice(14,16) + "분" +"</td>\n";
+pages+="<td width=\"10%\" style=\"border: solid 1px; font-size:0.8em;\">수신자</td>\n";
+pages+="<td style=\"border:solid 1px;font-size:0.8em;\">"+table.order.recipientName+" "+table.order.recipientPhoneNumber+"</td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"15%\" style=\"border:solid 1px; font-size:0.8em;\">주문금액</td>\n";
+pages+="<td width=\"35%\" style=\"border:solid 1px; font-size:0.8em;\">"+ (table.order.price+table.order.deliveryFee).toLocaleString()+"원"+"(배달료 "+0+"원)</td>\n";
+pages+="<td width=\"10%\" style=\"border:solid 1px; font-size:0.8em;\">결제</td>\n";
+pages+="<td style=\"border:solid 1px;font-size:0.8em;\">"+table.order.paymentString+"</td>\n";
+pages+="</tr>\n";
+pages+="<tr>\n";
+pages+="<td width=\"20%\" style=\"border:solid 1px; font-size:0.8em;\">주문자</td>\n";
+pages+="<td style=\"border:solid 1px; font-size:0.8em;\" colspan=\"3\">"+table.order.buyerName+" "+table.order.buyerPhoneNumber+"<span>(접수:"+table.order.orderedTimeString+")</span></td>\n";
+pages+="</tr>\n";
+//pages+="<tr>\n"; 
+pages+="<td style=\"border:solid 1px;font-size:0.8em;\" width=\"100%\" colspan=\"4\">\n";
+pages+=table.menusPrint;
+pages+="</td>\n";
+pages+="</tr>\n";
+if(table.memoPrint){ 
+    pages+="<tr>\n";
+    pages+="<td style=\"border:solid 1px;font-size:0.8em;\" width=\"100%\" colspan=\"4\">"+table.memoPrint+"</td>\n";
+    pages+="</tr>\n"; 
+}
+pages+="</table>\n";
+            })  
+        }
+        console.log("pages:"+pages);
+        return pages;
+}
+
+constructDeliveryPrint(){
+//
+//H1 배달자별 다른 페이지  title:배달일(배달자:xxx) 배달수: 개
+// eachCarriers
+//
+// 픽업,냉동,기타 각각 다른 페이지
+// pickup
+// fronzon
+// etc
+// 
+   let pages="<html>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\n";
+
+   let defaultTitle="배달일:"+this.storageProvider.deliveryDate.substr(0,4)+"년"+
+                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
+                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay;
+
+   let index=0;
+   let pageBreakFirst:boolean=false;
+   for(index=0;index<this.storageProvider.assignOrderList.length;index++){
+       console.log("hum...storageProvider.assignOrderList[index].orders");
+       if(this.storageProvider.assignOrderList[index].orders.length==0){ 
+           continue;
+       }else{
+            let title;
+            title=defaultTitle+"("+ this.storageProvider.assignOrderList[index].name+")";
+            pages+=this.printPages(title,this.storageProvider.assignOrderList[index].orders,pageBreakFirst);
+            pageBreakFirst=true;
+
+       }
+   }
+
+   let title;
+   if(this.storageProvider.unassingOrderFrozenList.length>0){
+        title=defaultTitle+" 배송 ";
+        pages+=this.printPages(title,this.storageProvider.unassingOrderFrozenList,pageBreakFirst);
+        pageBreakFirst=true;
+   }
+   if(this.storageProvider.unassingOrderFrozenList.length>0){
+        title=defaultTitle+" 냉동 ";
+        pages+=this.printPages(title,this.storageProvider.unassingOrderFrozenList,pageBreakFirst);
+        pageBreakFirst=true;
+   }
+   if(this.storageProvider.unassingOrderPickupList.length>0){
+        title=defaultTitle+" 픽업 ";
+        console.log("pageBreakFirst:"+pageBreakFirst);
+        pages+=this.printPages(title,this.storageProvider.unassingOrderPickupList,pageBreakFirst);
+        pageBreakFirst=true;
+   }
+   if(this.storageProvider.unassingOrderEtcList.length>0){
+        title=defaultTitle+" 기타 ";
+        pages+=this.printPages(title,this.storageProvider.unassingOrderEtcList,pageBreakFirst);
+        pageBreakFirst=true;
+   }
+   pages+="</html>";
+   return pages;
+}
+
 }

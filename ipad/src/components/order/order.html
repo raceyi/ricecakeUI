@@ -1,0 +1,222 @@
+<!-- Generated template for the OrderComponent component -->
+    <ion-grid class="order-input-section" no-padding>
+      <ion-row>
+        <ion-col col-9>
+            <ion-row>
+              <ion-col col-3 no-padding no-margin>
+                <ion-item>
+                  ...
+                  <ion-datetime *ngIf="order.id" class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="YYYY MM DD HH mm" placeholder="배달시간" [(ngModel)]="deliveryTimeUpdate"></ion-datetime>
+                  <ion-datetime *ngIf="!order.id" class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="  HH mm" placeholder="배달시간" [(ngModel)]="order.deliveryTime"></ion-datetime>
+                </ion-item>
+              </ion-col>
+              <ion-col col-9 *ngIf="order.addressInputType=='unknown'">
+                <ion-item class="no-item-border-bottom">
+                  <button ion-button class="getJusoButton" outline (click)="getJusoAuto()">{{order.recipientAddress}}</button>
+                  <button ion-button  class="getJusoButton" outline (click)="manualInput()">직접입력</button>
+                </ion-item>
+              </ion-col>
+              <ion-col col-9 *ngIf="order.addressInputType=='manual'">
+                <ion-item>
+                  <ion-input type="text" placeholder="주소입력" [(ngModel)]="order.recipientAddress"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col col-9 *ngIf="order.addressInputType=='auto'">
+                <ion-item class="no-item-border-bottom">
+                  <button ion-button class="getJusoButton" outline (click)="getJusoDaum()">{{order.recipientAddress}}</button> 
+                </ion-item>         
+              </ion-col>
+            </ion-row>
+
+            <ion-row>
+              <ion-col col-3>
+                &nbsp;
+              </ion-col>
+              <ion-col col-9 *ngIf="order.addressInputType=='unknown'">
+                <ion-item >
+                  <ion-input type="text" placeholder="상세주소" [(ngModel)]="order.recipientAddressDetail"></ion-input>
+                </ion-item>       
+              </ion-col>              
+              <ion-col col-9 *ngIf="order.addressInputType=='manual'">
+                <ion-item >
+                  <button ion-button class="getJusoButton" outline (click)="getJusoAuto()">주소 선택</button>
+                </ion-item>       
+              </ion-col>              
+              <ion-col col-8 *ngIf="order.addressInputType=='auto'">
+                <ion-item >
+                  <ion-input type="text" placeholder="상세주소" [(ngModel)]="order.recipientAddressDetail"></ion-input>
+                </ion-item>       
+              </ion-col> 
+              <ion-col no-padding no-margin col-1 *ngIf="order.addressInputType=='auto'">
+                <ion-item no-padding no-margin class="manual-input-button no-item-border-bottom">
+                  <button outline ion-button no-padding no-margin (click)="changeManual()" >직접<br>입력</button>
+                </ion-item>       
+              </ion-col> 
+            </ion-row>
+
+            <ion-row>
+              <ion-col col-3>
+                &nbsp;
+              </ion-col>
+              <ion-col col-6>
+                <ion-item class="no-item-border-bottom">
+                    <ion-label>구매자와 동일</ion-label>
+                    <ion-checkbox [(ngModel)]="order.receiverSame" (ionChange)="receiverSameChange()"></ion-checkbox>
+                </ion-item>
+              </ion-col>
+              <ion-col col-3>
+                    <ion-item class="no-item-border-bottom">
+                      <ion-select class="payment-select" placeholder="배송방법" interface="popover" [(ngModel)]="order.deliveryMethod">
+                        <ion-option value="픽업">픽업</ion-option>
+                        <ion-option value="배달">배달</ion-option>                  
+                        <ion-option value="냉동">냉동</ion-option>
+                        <ion-option value="기타">기타</ion-option>
+                      </ion-select>
+                    </ion-item>            
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col col-3>
+                &nbsp;
+              </ion-col>
+              <ion-col col-4>
+                  <ion-item>
+                    <ion-input type="text" placeholder="받는분 성함" [(ngModel)]="order.recipientName"></ion-input>
+                  </ion-item>
+                </ion-col>
+              <ion-col col-5>
+                  <ion-item>
+                    <ion-input type="tel" placeholder="받는분 연락처" (input)="inputRecipientPhoneNumber()"  [(ngModel)]="order.recipientPhoneNumber"></ion-input>
+                  </ion-item>
+              </ion-col>
+            </ion-row>
+
+            <ion-row *ngFor="let menu of order.menuList; let i=index">
+              <ion-col col-2></ion-col>
+              <ion-col col-3>{{menu.category}}</ion-col>
+              <ion-col col-4>{{menu.menuString}}</ion-col>
+              <ion-col col-1 text-right>{{menu.amount}}</ion-col>
+              <ion-col col-1 text-left>{{menu.unit}}</ion-col>
+              <ion-col col-1>
+                <button ion-button no-padding no-margin clear style="height:15px;" (click)="removeMenu(i)">
+                  <ion-icon name="close-circle"></ion-icon>
+                </button>
+              </ion-col>
+            </ion-row>
+
+            <ion-row>
+              <ion-col col-1 no-padding no-margin class="add-button">
+                <ion-item class="no-item-border-bottom">
+                <button no-padding no-margin ion-button (click)="addMenu()"><ion-icon name="add"></ion-icon></button>
+                </ion-item>
+              </ion-col>
+              
+              <ion-col col-3 no-padding no-margin>
+                <ion-item class="no-item-border-bottom">
+                  <ion-select no-padding interface="action-sheet" placeholder="메뉴종류" (ionChange)="selectCategory()" [(ngModel)]="categorySelected">
+                  <ion-option [value]="i" *ngFor="let menu of menus;let i=index">{{menu.category}}</ion-option>
+                  </ion-select>
+                </ion-item>
+              </ion-col>
+              <ion-col col-4 no-padding no-margin>
+                <ion-item class="no-item-border-bottom" *ngIf="categorySelected!=-1"> 
+                  <ion-select interface="action-sheet" placeholder="메뉴이름" [(ngModel)]="menuIndex">
+                    <ion-option [value]="i" *ngFor="let menuString of menus[categorySelected].menuStrings,let i=index">{{menuString}}</ion-option>
+                  </ion-select>
+                </ion-item>    
+                <ion-item class="no-item-border-bottom" *ngIf="categorySelected==-1"> 
+                  메뉴종류 선택필요
+                </ion-item>                          
+              </ion-col>
+              <ion-col col-2 no-padding no-margin>
+                <ion-item >
+                  <ion-input type="number" placeholder="수량"  text-right [(ngModel)]="amount"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col col-2 no-padding no-margin>
+                <ion-item class="no-item-border-bottom">
+                  <ion-select no-padding placeholder="단위" interface="popover" [(ngModel)]="unit">
+                    <ion-option value="kg">kg</ion-option>
+                    <ion-option value="말">말</ion-option>
+                    <ion-option value="되">되</ion-option>
+                    <ion-option value="접시">접시</ion-option>
+                    <ion-option value="개">개</ion-option>
+                  </ion-select>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+            <ion-row>
+              <ion-col col-3>
+                <ion-row>
+                </ion-row>
+                <ion-row>
+                  <ion-col text-center>
+                      <ion-item class="save-button no-item-border-bottom">
+                          <button ion-button no-padding no-margin full  (click)="orderCancel()">입력취소</button>           
+                      </ion-item>
+                  </ion-col>
+                </ion-row>  
+              </ion-col>
+              <ion-col col-9>
+                <ion-item class="textarea-item no-item-border-bottom">
+                  <ion-textarea type="text" placeholder="메모" [(ngModel)]="order.memo"></ion-textarea>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+        </ion-col>
+        <ion-col col-3>
+          <ion-row>
+          <ion-item>
+            <ion-input type="text" placeholder="구매자 성함" (ionBlur)="inputBuyerName()" [(ngModel)]="order.buyerName"></ion-input>
+          </ion-item>
+          </ion-row>
+          <ion-row>
+          <ion-item>
+            <ion-input type="tel" placeholder="구매자 연락처" (input)="inputBuyerPhoneNumber()" (ionBlur)="reflectBuyerPhoneNumber()" [(ngModel)]="order.buyerPhoneNumber"></ion-input>
+          </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item >
+              <ion-input text-right type="tel" placeholder="금액" (input)="inputPrice()" [(ngModel)]="priceString"></ion-input>     
+          </ion-item> 
+          </ion-row>
+          <ion-row>
+          <ion-item >
+            <ion-input text-right type="tel" placeholder="배송비" (input)="inputDeliveryFee()" [(ngModel)]="deliveryFeeString"></ion-input>
+          </ion-item>
+          </ion-row>
+            <ion-row>
+              <ion-col  style="font-size:large;" col-4 text-left>
+                  <b>&nbsp;&nbsp;합계</b>
+              </ion-col>
+              <ion-col col-8 style="font-size:large;"  text-right *ngIf="priceString!=undefined || deliveryFeeString!=undefined" >
+                  <amount-display [amount]="computeTotal()"></amount-display>&nbsp;
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col col-8>
+              <ion-item class="no-item-border-bottom">
+                <ion-select class="payment-select" placeholder="결제방법" interface="popover" [(ngModel)]="order.paymentOption">
+                  <ion-option value="cash-pre" >현금-선불</ion-option>
+                  <ion-option value="cash-after">현금-후불</ion-option>
+                  <ion-option value="cash-paid">현금-완납</ion-option>                 
+                  <ion-option value="card-pre">카드-선불</ion-option>
+                  <ion-option value="card-after">카드-후불</ion-option>
+                  <ion-option value="card-paid">카드-완납</ion-option>
+                </ion-select>  
+              </ion-item> 
+              </ion-col>
+              <ion-col col-4>
+              </ion-col>           
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                 <ion-item text-right class="save-button no-item-border-bottom">
+                    <button ion-button no-padding no-margin style="background-color:darkgray;" (click)="save()">저장</button>
+                 </ion-item>
+              </ion-col>
+            </ion-row>
+        </ion-col>
+      </ion-row>
+    </ion-grid>

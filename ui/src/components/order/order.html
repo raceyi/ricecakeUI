@@ -10,7 +10,8 @@
             <ion-row>
               <ion-col col-3 no-padding no-margin>
                 <ion-item>
-                  <ion-datetime class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="HH mm" placeholder="배달시간" [(ngModel)]="order.deliveryTime"></ion-datetime>
+                  <ion-datetime *ngIf="order.id" class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="YYYY MM DD HH mm" placeholder="배달시간" [(ngModel)]="deliveryTimeUpdate"></ion-datetime>
+                  <ion-datetime *ngIf="!order.id" class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="  HH mm" placeholder="배달시간" [(ngModel)]="order.deliveryTime"></ion-datetime>
                 </ion-item>
               </ion-col>
               <ion-col col-9 *ngIf="order.addressInputType=='unknown'">
@@ -34,17 +35,31 @@
               <ion-col col-3>
                 &nbsp;
               </ion-col>
-              <ion-col col-9>
-                <ion-item *ngIf="order.addressInputType!='manual'">
+              <ion-col col-9 *ngIf="order.addressInputType=='unknown'">
+                <ion-item >
                   <ion-input type="text" placeholder="상세주소" [(ngModel)]="order.recipientAddressDetail"></ion-input>
-                </ion-item>
-                <ion-item *ngIf="order.addressInputType=='manual'" class="no-item-border-bottom">
+                </ion-item>       
+              </ion-col>              
+              <ion-col col-8 *ngIf="order.addressInputType=='auto'">
+                <ion-item >
+                  <ion-input type="text" placeholder="상세주소" [(ngModel)]="order.recipientAddressDetail"></ion-input>
+                </ion-item>       
+              </ion-col> 
+              <ion-col no-padding no-margin col-1 *ngIf="order.addressInputType=='auto'">
+                <ion-item no-padding no-margin class="manual-input-button no-item-border-bottom">
+                  <button outline ion-button no-padding no-margin (click)="changeManual()" >직접<br>입력</button>
+                </ion-item>       
+              </ion-col> 
+              
+              <ion-col col-9 *ngIf="order.addressInputType=='manual'">           
+                <ion-item  class="no-item-border-bottom">
                   <button ion-button class="getJusoButton" outline (click)="changeAddressInputType('auto')" >도로명 주소 선택</button>
                 </ion-item>          
               </ion-col>
             </ion-row>
             <ion-row>
               <ion-col col-3>
+                {{order.addressInputType}}
                 &nbsp;
               </ion-col>
               <ion-col col-6>
@@ -55,9 +70,9 @@
               </ion-col>
               <ion-col col-3>
                     <ion-item class="no-item-border-bottom">
-                      <ion-select class="payment-select" placeholder="배송방법" interface="popover" [(ngModel)]="order.deliveryMethod">
+                      <ion-select class="payment-select" placeholder="배송방법" interface="popover" [(ngModel)]="deliveryMethod">
                         <ion-option value="픽업">픽업</ion-option>
-                        <ion-option value="배송">배송</ion-option>                  
+                        <ion-option value="배달">배달</ion-option>                  
                         <ion-option value="냉동">냉동</ion-option>
                         <ion-option value="기타">기타</ion-option>
                       </ion-select>
@@ -94,36 +109,51 @@
             </ion-row>
 
             <ion-row>
-              <ion-col col-1 no-padding no-margin class="add-button">
-                <ion-item class="no-item-border-bottom">
-                <button no-padding no-margin ion-button (click)="addMenu()"><ion-icon name="add"></ion-icon></button>
-                </ion-item>
-              </ion-col>
-              
               <ion-col col-3 no-padding no-margin>
                 <ion-item class="no-item-border-bottom">
                   <ion-select no-padding interface="action-sheet" placeholder="메뉴종류" (ionChange)="selectCategory()" [(ngModel)]="categorySelected">
-                  <ion-option [value]="i" *ngFor="let menu of menus;let i=index">{{menu.category}}</ion-option>
+                    <ion-option [value]="-1">추가 메뉴 없음</ion-option>
+                    <ion-option [value]="-2">직접입력</ion-option> 
+                    <ion-option [value]="i" *ngFor="let menu of menus;let i=index">{{menu.category}}</ion-option>
                   </ion-select>
                 </ion-item>
               </ion-col>
-              <ion-col col-4 no-padding no-margin>
-                <ion-item class="no-item-border-bottom" *ngIf="categorySelected!=-1"> 
+              <ion-col col-8 no-padding no-margin *ngIf="categorySelected==-2">
+                <ion-item class="textarea-item no-item-border-bottom">
+                  <ion-textarea type="text" placeholder="메뉴입력" [(ngModel)]="etc"></ion-textarea>
+                </ion-item>                
+              </ion-col>
+              <ion-col col-4 no-padding no-margin *ngIf="categorySelected!=-2">
+                <ion-item class="no-item-border-bottom" *ngIf="categorySelected>=0 && menus[categorySelected].type!='complex-choice'"> 
                   <ion-select interface="action-sheet" placeholder="메뉴이름" [(ngModel)]="menuIndex">
                     <ion-option [value]="i" *ngFor="let menuString of menus[categorySelected].menuStrings,let i=index">{{menuString}}</ion-option>
                   </ion-select>
+                </ion-item>    
+                <ion-item class="no-item-border-bottom" *ngIf="categorySelected>=0 && menus[categorySelected].type=='complex-choice'"> 
+                   떡 종류 선택({{menus[categorySelected].choiceNumber}}개)
                 </ion-item>    
                 <ion-item class="no-item-border-bottom" *ngIf="categorySelected==-1"> 
                   메뉴종류 선택필요
                 </ion-item>                          
               </ion-col>
-              <ion-col col-2 no-padding no-margin>
+              <ion-col col-1 no-padding no-margin *ngIf="categorySelected>=0 && menus[categorySelected].type!='complex-choice'">
+                <ion-item class="no-item-border-bottom unit-selector">
+                  <ion-select no-padding placeholder="포장" interface="popover" [(ngModel)]="package">
+                    <ion-option value="기본">기본</ion-option>
+                    <ion-option value="기계">기계</ion-option>                    
+                    <ion-option value="미니랩">미니랩</ion-option>
+                  </ion-select>
+                </ion-item>                
+              </ion-col>      
+              <ion-col col-1 *ngIf="categorySelected>=0 && menus[categorySelected].type=='complex-choice'"> <!-- 답례떡 포장은 기계로 고정임 -->
+              </ion-col>        
+              <ion-col col-2 no-padding no-margin *ngIf="categorySelected>=0">
                 <ion-item >
-                  <ion-input type="number" placeholder="수량"  text-right [(ngModel)]="amount"></ion-input>
+                  <ion-input class="amount-input" type="number" placeholder="수량"  text-right [(ngModel)]="amount"></ion-input>
                 </ion-item>
               </ion-col>
-              <ion-col col-2 no-padding no-margin>
-                <ion-item class="no-item-border-bottom">
+              <ion-col col-1 no-padding no-margin *ngIf="categorySelected>=0">
+                <ion-item class="no-item-border-bottom unit-selector">
                   <ion-select no-padding placeholder="단위" interface="popover" [(ngModel)]="unit">
                     <ion-option value="kg">kg</ion-option>
                     <ion-option value="말">말</ion-option>
@@ -133,7 +163,28 @@
                   </ion-select>
                 </ion-item>
               </ion-col>
+              <ion-col col-1 no-padding no-margin class="add-button" *ngIf="categorySelected!=-1">
+                <ion-item class="no-item-border-bottom">
+                <button no-padding no-margin ion-button (click)="addMenu()"><ion-icon name="add"></ion-icon></button>
+                </ion-item>
+              </ion-col>
             </ion-row>
+
+            <div *ngIf="categorySelected>=0 && menus[categorySelected].type=='complex-choice'">
+            <ion-row *ngFor="let choice of choices;let i=index;">
+              <ion-col col-3 no-padding no-margin>
+              </ion-col>
+              <ion-col col-4 no-padding no-margin>
+                <ion-item class="no-item-border-bottom"> 
+                  <ion-select interface="action-sheet" placeholder="메뉴이름" (ionChange)="selectChoice(i)"  [(ngModel)]="choices[i]">
+                    <ion-option [value]="j" *ngFor="let menuString of menus[categorySelected].menuStrings,let j=index">{{menuString}}</ion-option>
+                  </ion-select>
+                </ion-item>    
+              </ion-col>
+              <ion-col col-5>
+              </ion-col> 
+            </ion-row>
+            </div>
 
             <ion-row>
               <ion-col col-3>
@@ -167,12 +218,12 @@
           </ion-row>
           <ion-row>
             <ion-item >
-              <ion-input text-right type="number" placeholder="금액" [(ngModel)]="order.price"></ion-input>     
+              <ion-input text-right type="tel" placeholder="금액" (input)="inputPrice()" [(ngModel)]="priceString"></ion-input>     
           </ion-item> 
           </ion-row>
           <ion-row>
           <ion-item >
-            <ion-input text-right type="number" placeholder="배송비" [(ngModel)]="order.deliveryFee"></ion-input>
+            <ion-input text-right type="tel" placeholder="배송비" (input)="inputDeliveryFee()" [(ngModel)]="deliveryFeeString"></ion-input>
           </ion-item>
           </ion-row>
             <ion-row>
@@ -180,14 +231,14 @@
                   <b>&nbsp;&nbsp;합계</b>
               </ion-col>
               <ion-col col-8 style="font-size:large;"  text-right *ngIf="order.price!=undefined || order.deliveryFee!=undefined" >
-                  <amount-display [amount]="sum(order.price,order.deliveryFee)"></amount-display>&nbsp;
+                  <amount-display [amount]="computeTotal()"></amount-display>&nbsp;
               </ion-col>
             </ion-row>
             <ion-row>
               <ion-col col-8>
               <ion-item class="no-item-border-bottom">
-                <ion-select class="payment-select" placeholder="결제방법" interface="popover" [(ngModel)]="order.paymentOption">
-                  <ion-option value="cash-pre">현금-선불</ion-option>
+                <ion-select class="payment-select" placeholder="결제방법" interface="popover" [(ngModel)]="paymentOption">
+                  <ion-option value="cash-pre" >현금-선불</ion-option>
                   <ion-option value="cash-after">현금-후불</ion-option>
                   <ion-option value="cash-paid">현금-완납</ion-option>                 
                   <ion-option value="card-pre">카드-선불</ion-option>

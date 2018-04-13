@@ -1,7 +1,7 @@
-
 let express = require('express');
 let router = express.Router();
 
+let async = require('async');
 var AWS = require("aws-sdk");
 var dynamoDB = require("./dynamo");
 var atomicCounter = require('./atomic-counter');
@@ -18,24 +18,36 @@ router.addOrder=function (param){
         //console.log("addOrder-order:"+JSON.stringify(order));
         var currTime = new Date();
         console.log("currTime:"+currTime.toISOString());
+        let localCurrTime= new Date(currTime.getTime()+9*60*60*1000);
         atomicCounter.increment( "order" ).then(id=>{
+                let recipientAddressDetail=order.recipientAddressDetail;
+                if(!recipientAddressDetail || recipientAddressDetail.length==0)
+                    recipientAddressDetail="  "; //initialize it with blank string...
+                let memo=order.memo
+                if(!memo || memo.length==0){
+                    memo="  ";//initialize it with blank string
+                }
+                    
                 let params={
                     TableName:"order",
                     Item:{
                         "id":id,
-                        "orderedTime": currTime.toISOString(),
+                        "orderedTime": localCurrTime.toISOString(),
                         "deliveryTime":order.deliveryTime,
-                        "recipientAddress":order.recipientAddress,
-                        "recipientAddressDetail":order.recipientAddressDetail,
-                        "buyerName":order.buyerName,
-                        "recipientName":order.recipientName,
-                        "recipientPhoneNumber":order.recipientPhoneNumber,
-                        "buyerPhoneNumber":order.buyerPhoneNumber,
+                        "recipientAddress":order.recipientAddress.trim(),
+                        "recipientAddressDetail":recipientAddressDetail,
+                        "buyerName":order.buyerName.trim(),
+                        "recipientName":order.recipientName.trim(),
+                        "recipientPhoneNumber":order.recipientPhoneNumber.trim(),
+                        "buyerPhoneNumber":order.buyerPhoneNumber.trim(),
                         "menuList":order.menuList,
                         "memo":order.memo,
                         "price":order.price,
                         "paymentMethod":order.paymentMethod,//카드,현금
                         "payment":order.payment, //지불 여부
+                        "deliveryMethod":order.deliveryMethod, //배달 방법(냉동,배송,픽업,기타),
+                        "deliveryFee":order.deliveryFee,//
+                        "totalPrice":order.totalPrice,
                         "hide":false,
                         "carrier":null
                     },
@@ -48,17 +60,12 @@ router.addOrder=function (param){
                 dynamoDB.dynamoInsertItem(params).then((value)=>{
                     // send push message into others for ordr list update
                     // 모든 db update에 대해 push 메시지가 전달되어야 한다.  
-                    resolve(id);
-                    /* sms.notifyOrder requires below fields
-                    let order={
-                        menuList:[{category:'맵떡',name:'이티',amount:1,unit:'kg'},{category:'찰떡',name:'단호박',amount:30,unit:"개"}],
-                        price: 57000,
-                        deliveryFee:6000,
-                        totalPrice: 63000,
-                        deliveryTime:"2018-03-21T09:00:01.553Z"
-                    }
-                    */
-                    sms.notifyOrder(order);
+                    sms.notifyOrder(order).then(()=>{
+                        resolve(id);
+                    },err=>{
+                        console.log("notifyOrder err:"+JSON.stringify(err));
+                        reject(err);
+                    });
                 },err=>{
                     reject(err);
                 });
@@ -74,13 +81,15 @@ router.getOrderWithDeliveryDate=function (param){
         console.log("start:"+start+" end:"+end);
         let params = {
             TableName: "order",
-            FilterExpression: "#deliveryTime between :start and :end",
+            FilterExpression: "(#deliveryTime between :start and :end) AND (#hide=:hide)",
             ExpressionAttributeNames: {
                 "#deliveryTime": "deliveryTime",
+                "#hide":"hide"
             },
             ExpressionAttributeValues: {
                 ":start": start,
-                ":end": end 
+                ":end": end ,
+                ":hide":false
             }
         };
         console.log("getOrderWithDeliveryDate-params:"+JSON.stringify(params));        
@@ -92,27 +101,53 @@ router.getOrderWithDeliveryDate=function (param){
     });
 }
 
-router.deleteOrder=function(param){
-    return new Promise((resolve,reject)=>{        
-        let id=param.id;
-        var params = {
-            TableName:"order",
-            Key:{
-                "id":id
-            },
-            ConditionExpression : "attribute_exists(#id)",
+router.getOrdersWithHide=function(param){
+    return new Promise((resolve,reject)=>{    
+        let params = {
+            TableName: "order",
+            FilterExpression: "#hide=:hide",
             ExpressionAttributeNames: {
-                "#id":"id"
+                "#hide":"hide"
+            },
+            ExpressionAttributeValues: {
+                ":hide":true
             }
         };
-        console.log("deleteOrder-params:"+JSON.stringify(params));                
-        dynamoDB.dynamoDeleteItem(params).then((result)=>{
-            resolve(result);
+        console.log("getOrderWithDeliveryDate-params:"+JSON.stringify(params));        
+        dynamoDB.dynamoScanItem(params).then((result)=>{
+            resolve(result.Items);
         },(err)=>{
-                if(err.code=="ConditionalCheckFailedException")            
-                    reject("invalidOrderId");
-                else
-                    reject(err);
+            reject(err);
+        });
+    });
+}
+
+deleteOrder=function(order,next){
+    var params = {
+        TableName:"order",
+        Key:{
+            "id": order.id
+        }
+    };
+    console.log("deleteOrders-params:"+JSON.stringify(params));                
+    dynamoDB.dynamoDeleteItem(params).then((result)=>{
+            next(null,result);
+    },(err)=>{
+            next(err);
+    });
+}
+
+router.deleteOrders=function(param){
+    return new Promise((resolve,reject)=>{  
+        router.getOrdersWithHide().then((orders)=>{
+                        async.map(orders,deleteOrder,function(err,eachResult){
+                            if(err){
+                                //humm.. Can it happen?
+                                reject(err);
+                            }else{
+                                resolve();
+                            }
+                        });
         });
     });
 }
@@ -120,6 +155,12 @@ router.deleteOrder=function(param){
 router.updateOrder=function (param){
     return new Promise((resolve,reject)=>{        
         let order=param.order;
+        let updateExpression;
+        let expressionAttributeValues;
+        let memo=order.memo
+        if(!memo || memo.length==0){
+            memo="  ";//initialize it with blank string
+        }
         var params = {
             TableName:"order",
             Key:{
@@ -129,11 +170,12 @@ router.updateOrder=function (param){
             ExpressionAttributeNames: {
                 "#id":"id"
             },
-            UpdateExpression: "set deliveryTime = :deliveryTime, recipientAddress=:recipientAddress,\
+            UpdateExpression:"set deliveryTime = :deliveryTime, recipientAddress=:recipientAddress,\
                             recipientAddressDetail=:recipientAddressDetail,buyerName=:buyerName,\
                             recipientName=:recipientName,recipientPhoneNumber=:recipientPhoneNumber,\
                             buyerPhoneNumber=:buyerPhoneNumber,menuList=:menuList,\
-                            memo=:memo,price=:price,paymentMethod=:paymentMethod,payment=:payment",
+                            memo=:memo,price=:price,paymentMethod=:paymentMethod,payment=:payment,\
+                            deliveryMethod=:deliveryMethod,deliveryFee=:deliveryFee,totalPrice=:totalPrice",
             ExpressionAttributeValues:{
                 ":deliveryTime":order.deliveryTime,
                 ":recipientAddress":order.recipientAddress,
@@ -143,15 +185,23 @@ router.updateOrder=function (param){
                 ":recipientPhoneNumber":order.recipientPhoneNumber,
                 ":buyerPhoneNumber":order.buyerPhoneNumber,
                 ":menuList":order.menuList,
-                ":memo":order.memo,
+                ":memo":memo,
                 ":price":order.price,
                 ":paymentMethod":order.paymentMethod,//카드,현금
-                ":payment":order.payment //지불 여부
+                ":payment":order.payment, //지불 여부,
+                ":deliveryMethod":order.deliveryMethod,
+                 ":deliveryFee":order.deliveryFee,
+                 ":totalPrice":order.totalPrice
             },
             ReturnValues:"UPDATED_NEW"
         };
         dynamoDB.dynamoUpdateItem(params).then(result=>{
-                resolve(result);
+                sms.notifyOrder(order).then(()=>{
+                    resolve(result);
+                },err=>{
+                    console.log("notifyOrder err:"+JSON.stringify(err));                    
+                    reject(err); //hum...
+                });            
         },err=>{
                 if(err.code=="ConditionalCheckFailedException")            
                     reject("invalidOrderId");
@@ -226,7 +276,7 @@ router.assignCarrier=function (param){
         if(!param.carrier || !param.orderid ){
             reject("invalidParam");
         }else{
-                carrier.getCarrier(param.carrier).then(value=>{
+                //carrier.getCarrier(param.carrier).then(value=>{
                         var params = {
                             TableName:"order",
                             Key:{
@@ -251,9 +301,9 @@ router.assignCarrier=function (param){
                                 else    
                                     reject(err);
                         });
-                },err=>{
-                    reject(err);
-                });
+                //},err=>{
+                //    reject(err);
+                //});
         }
     });
 }

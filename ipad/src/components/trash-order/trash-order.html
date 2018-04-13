@@ -1,0 +1,60 @@
+<!-- Generated template for the TrashOrderComponent component -->
+ <ion-grid class="orderlist-section" no-padding no-margin>
+   <ion-row>
+     <ion-col col-1 no-margin no-padding>
+       <button full no-margin ion-button color="light" style="border:solid 1px;" (click)="recovery()"><br>복<br><br>구<br></button>       
+     </ion-col>
+   <ion-col co-11 no-margin no-padding style="margin-left:5px;margin-right:5px;">
+      <ion-row>
+            <ion-col col-6 style="color:darkgray;" no-padding>
+             접수일시:{{order.orderedTimeString}}  
+            </ion-col>
+            <ion-col col-6 text-left no-margin no-padding>
+             구매자:{{ order.buyerName}} ({{order.buyerPhoneNumber}})
+            </ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col col-4 no-margin no-padding >
+                <!--{{order.deliveryTime.slice(11,13) + "시 " + order.deliveryTime.slice(14,16) + "분"}}-->
+                배송:{{order.deliveryTime.slice(0,10)+"일"+order.deliveryTime.slice(11,13) + "시" + order.deliveryTime.slice(14,16) + "분"}}
+            </ion-col>
+            <ion-col *ngIf="order.recipientAddressDetail==undefined || order.recipientAddressDetail==null || order.recipientAddressDetail.trim().length==0" col-10 no-margin no-padding>
+                  {{order.recipientAddress}} 
+            </ion-col>               
+            <ion-col *ngIf="order.recipientAddressDetail!=undefined && order.recipientAddressDetail!=null && order.recipientAddressDetail.trim().length>0" col-10 no-margin no-padding>
+                    {{order.recipientAddress}} {{order.recipientAddressDetail}}
+            </ion-col>               
+            </ion-row>
+            <ion-row>
+                  <ion-col col-2 no-margin no-padding >
+                      {{order.deliveryMethod}}
+                  </ion-col>
+                  <ion-col col-4 no-margin no-padding>
+                        {{order.recipientName}}  {{order.recipientPhoneNumber}}  
+                  </ion-col>
+                  <ion-col col-6 *ngIf="order.deliveryFee==undefined || order.deliveryFee==null || order.deliveryFee==0" no-margin no-padding>
+                        {{order.totalPrice.toLocaleString()}}원 {{order.paymentString}}
+                  </ion-col>
+                  <ion-col col-6 *ngIf="order.deliveryFee!=undefined && order.deliveryFee!=null && order.deliveryFee>0" no-margin no-padding>
+                        {{order.totalPrice.toLocaleString()}}원(배송비{{order.deliveryFee.toLocaleString()}} 포함) {{order.paymentString}}
+                  </ion-col>
+              </ion-row>
+              <ion-row>
+                  <ion-col col-12 no-margin no-padding class="menu-style">
+                          <ion-row *ngFor="let menu of order.menuList">
+                                {{menu.category}}-{{menu.menuString}}
+                                {{menu.amount}} {{menu.unit}}
+                          </ion-row>
+                          <ion-row *ngIf="order.memo!=undefined && order.memo!=null && order.memo.trim().length>0" style="border:solid 0.5px;">
+                                {{order.memo}}
+                          </ion-row>
+                  </ion-col>
+      </ion-row>
+   </ion-col>
+   <!--
+     <ion-col col-1 no-margin no-padding text-right>
+       <button full no-margin ion-button color="light" style="border:solid 1px;" (click)="recovery()"><br>복<br><br>구<br></button>       
+     </ion-col>
+     -->
+   </ion-row>
+  </ion-grid>

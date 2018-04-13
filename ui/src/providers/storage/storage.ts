@@ -10,6 +10,7 @@ import {ConfigProvider} from "../config/config";
 @Injectable()
 export class StorageProvider {
   orderList:any=[];
+  trashList:any=[];
 
    carriers=[
         {
@@ -96,6 +97,13 @@ export class StorageProvider {
             "category": "십리향1송이",
             "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
         },
+        ///////////////////////////////////////////////////////////////
+        {
+            "category": "십리향2송이",
+            "menu": "[{\"모듬찰떡(기계)\":1},{\"단호박소담(기계)\":1},{\"완두시루떡(기계)\":1}]",
+            "choiceNumber":2
+        },
+        //////////////////////////////////////////////////////////////
         {
             "category": "제사편",
             "menu": "거피"
@@ -221,7 +229,7 @@ export class StorageProvider {
                     "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
                 }
             ],
-            "deliveryMethod": "배송",
+            "deliveryMethod": "배달",
             "buyerPhoneNumber": "010-2722-8226",
             "hide": false
         },
@@ -242,14 +250,14 @@ export class StorageProvider {
             "id": 66,
             "menuList": [
                 {
-                    "menuString": "모듬찰떡1 단호박소담1 완두시루떡1 ",
-                    "amount": "1",
+                    "menuString": "단호박소담 ",
+                    "amount": "8",
                     "unit": "개",
-                    "category": "십리향1송이",
-                    "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
+                    "category": "맵떡",
+                    "menu": "단호박소담"
                 }
             ],
-            "deliveryMethod": "배송",
+            "deliveryMethod": "픽업",
             "buyerPhoneNumber": "010-2722-8226",
             "hide": false
         },
@@ -277,7 +285,7 @@ export class StorageProvider {
                     "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
                 }
             ],
-            "deliveryMethod": "배송",
+            "deliveryMethod": "배달",
             "buyerPhoneNumber": "010-2722-8226",
             "hide": false
         },
@@ -289,7 +297,7 @@ export class StorageProvider {
             "recipientAddress": "xxxxx",
             "orderedTime": "2018-03-29T10:33:11.721Z",
             "recipientName": "이경주",
-            "payment": "unpaid-pre",
+            "payment": "paid",
             "memo": "맛있게....",
             "paymentMethod": "cash",
             "carrier": null,
@@ -305,12 +313,14 @@ export class StorageProvider {
                     "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
                 }
             ],
-            "deliveryMethod": "배송",
+            "deliveryMethod": "배달",
             "buyerPhoneNumber": "010-2722-8226",
-            "hide": false
+            "hide": true
         }
     ];
 
+    this.trashList=this.orderList; //just test
+    
     this.convertMenuInfo(this.menus);
     this.convertOrderList(this.orderList);
     this.orderList.sort(function(a,b){
@@ -338,26 +348,43 @@ export class StorageProvider {
         })
         let menuInfos=[];
         categories.forEach(category=>{
-            menuInfos.push({category:category,menus:[],menuStrings:[]});
+            menuInfos.push({type:"general",category:category,menus:[],menuStrings:[]});
         })
         menus.forEach(menu=>{
              let menuString=menu.menu;
-             if(menu.menu.indexOf("[")==0){  
-                let menuObjs=JSON.parse(menu.menu);
-                console.log("menuObj:"+JSON.stringify(menuObjs));
-                menuString="";
-                menuObjs.forEach(menuObj=>{
-                   let key:any=Object.keys(menuObj);
-                   menuString+=key+menuObj[key]+" ";
-                });
+             let type="general";
+             if(menu.hasOwnProperty("choiceNumber")){
+                    type="complex-choice";
+                    let menuObjs=JSON.parse(menu.menu);
+                    console.log("menuObj:"+JSON.stringify(menuObjs));
+                    menuObjs.forEach(menuObj=>{
+                        let menuString="";
+                        let key:any=Object.keys(menuObj);
+                        menuString+=key+menuObj[key]+" ";
+                        menuInfos[categories.indexOf(menu.category)].menus.push({menu: key,amount:menuObj[key]});
+                        menuInfos[categories.indexOf(menu.category)].menuStrings.push(menuString); 
+                    });
+                    menuInfos[categories.indexOf(menu.category)].choiceNumber=menu.choiceNumber;
+                    menuInfos[categories.indexOf(menu.category)].type=type;
+             }else{
+                    if(menu.menu.indexOf("[")==0){
+                        type="complex";  
+                        let menuObjs=JSON.parse(menu.menu);
+                        console.log("menuObj:"+JSON.stringify(menuObjs));
+                        menuString="";
+                        menuObjs.forEach(menuObj=>{
+                        let key:any=Object.keys(menuObj);
+                        menuString+=key+menuObj[key]+" ";
+                        });
+                    }
+                    console.log("menuString:"+menuString);
+                    menuInfos[categories.indexOf(menu.category)].type=type;
+                    menuInfos[categories.indexOf(menu.category)].menus.push(menu.menu);
+                    menuInfos[categories.indexOf(menu.category)].menuStrings.push(menuString); 
+                    menuInfos[categories.indexOf(menu.category)].type=type;                    
              }
-                console.log("menuString:"+menuString);
-
-                menuInfos[categories.indexOf(menu.category)].menus.push(menu.menu);
-                menuInfos[categories.indexOf(menu.category)].menuStrings.push(menuString);
                 console.log("index:"+categories.indexOf(menu.category));
                 console.log(JSON.stringify(menuInfos[categories.indexOf(menu.category)].menus));
-
         })     
         
           this.menus = menuInfos;

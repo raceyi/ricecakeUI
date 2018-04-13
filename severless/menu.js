@@ -9,12 +9,10 @@ router.addMenu=function (param){
                 let params={
                     TableName:"menu",
                     Item:{
-                        "name":param.name
+                        "category":param.category,
+                        "menu":param.name
                     },
-                    ConditionExpression : "attribute_not_exists(#name)",
-                    ExpressionAttributeNames: {
-                        "#name":"name"
-                    }
+                    ReturnValues:"NONE"
                 };
                 console.log("addOrder-params:"+JSON.stringify(params));
                 dynamoDB.dynamoInsertItem(params).then((value)=>{
@@ -29,7 +27,8 @@ router.addMenu=function (param){
                         reject(err);
                     });
                 },err=>{
-                    if(err.code=="ConditionalCheckFailedException"){
+                    console.log("err code"+JSON.stringify(err)); //Please check error code here
+                    if(err.code){
                         reject("AlreadyExist");
                     }else
                         reject(err);
@@ -42,12 +41,11 @@ router.deleteMenu=function(param){
         var params = {
             TableName:"menu",
             Key:{
-                "name":param.name
+                        "category":param.category,
+                        "menu":param.name
             },
-            ConditionExpression : "attribute_exists(#name)",
-            ExpressionAttributeNames: {
-                "#name":"name"
-            }
+            ReturnValues:"NONE"
+
         };
         console.log("deleteMenu-params:"+JSON.stringify(params));                
         dynamoDB.dynamoDeleteItem(params).then((result)=>{
@@ -60,6 +58,7 @@ router.deleteMenu=function(param){
                         reject(err);
                 });
         },(err)=>{
+            console.log("err code"+JSON.stringify(err)); //Please check error code here???
             if(err.code=="ConditionalCheckFailedException"){
                 reject("AlreadyDeleted");
             }else
@@ -74,6 +73,7 @@ router.getMenus=function (param){
                         TableName: "menu"
                     };
                     dynamoDB.dynamoScanItem(params).then((result)=>{
+                        // let sort menus group by category and sort by category & name                        
                         resolve(result.Items);
                     },err=>{
                         reject(err);

@@ -21,15 +21,17 @@ router.dynamoInsertItem=function(params){
                 console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
                 reject(err);
             } else {
-                console.log("Added item:", JSON.stringify(data, null, 2));
+                console.log("dynamoInsertItem:", JSON.stringify(data, null, 2));
                 //resolve(data);
-                if(params.TableName!="devices"){
+                if(params.TableName!="devices" && params.TableName!="transactions" && params.TableName!="AtomicCounters"){
+                    console.log("notifyAll");                    
                     device.notifyAll(params.TableName).then(()=>{
                         resolve(data);
                     },err=>{
                         resolve(data);
                     });
-                }
+                }else
+                    resolve(data);
             }
         });   
     }); 
@@ -56,14 +58,16 @@ router.dynamoUpdateItem=function(params){
                 console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
                 reject(err);
             } else {
-                console.log("item:", JSON.stringify(data, null, 2));
-                //resolve(data);
-                if(params.TableName!="devices"){
+                console.log("dynamoUpdateItem:", JSON.stringify(data, null, 2));
+                if(params.TableName!="devices" && params.TableName!="transactions"&& params.TableName!="AtomicCounters"){
+                    console.log("notifyAll");
                     device.notifyAll(params.TableName).then(()=>{
                         resolve(data);
                     },err=>{
                         resolve(data);
                     });
+                }else{
+                    resolve(data);
                 }
             }
         });   
@@ -77,15 +81,18 @@ router.dynamoDeleteItem=function (params){
                 console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
                 reject(err);
             } else {
-                console.log("item:", JSON.stringify(data, null, 2));
+                console.log("dynamoDeleteItem:", JSON.stringify(data, null, 2));
                 //resolve(data);
-                if(params.TableName!="devices"){
+                if(params.TableName!="devices" && params.TableName!="transactions"&& params.TableName!="AtomicCounters"){
+                    console.log("notifyAll");
                     device.notifyAll(params.TableName).then(()=>{
                         resolve(data);
                     },err=>{
                         resolve(data);
                     });
-                }               
+                }else{
+                    resolve(data);
+                }              
             }
         });   
     }); 

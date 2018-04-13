@@ -11,6 +11,8 @@ var menu = require('./menu');
 var carrier = require('./carrier');
 var bankda = require('./bankda');
 var device = require('./device');
+var manager =require('./manager');
+
 var atomicCounter = require('./atomic-counter');
 
 //var bankda = JSON.parse(require('fs').readFileSync('./bankda.json', 'utf8'));
@@ -50,6 +52,7 @@ app.post('/addOrder',(req,res) =>{
             console.log("value:"+value);
             res.json({result:"success",id:value});
         },err=>{
+            console.log("addOrder err:"+JSON.stringify(err));
             res.json({result:"failure",error:JSON.stringify(err)});
         });
 });
@@ -63,9 +66,17 @@ app.post('/getOrderWithDeliveryDate',(req,res) =>{
         })
 });
 
-app.post('/deleteOrder',(req,res) =>{
-        console.log("deleteOrder:",req.body);
-        order.deleteOrder(req.body).then(value=>{
+app.post('/getOrdersWithHide',(req,res) =>{
+        order.getOrdersWithHide(req.body).then(value=>{
+            res.json({result:"success",orders:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        })
+});
+
+app.post('/deleteOrders',(req,res) =>{
+        console.log("deleteOrders:",req.body);
+        order.deleteOrders(req.body).then(value=>{
             res.json({result:"success"});
         },err=>{
             res.json({result:"failure",error:JSON.stringify(err)});
@@ -178,14 +189,46 @@ app.post('/getCarriers',(req,res) =>{
 });
 
 app.post('/registerDeviceRegistrationId',(req,res) =>{
-        console.log("registerDeviceRegistrationId:",req.body);
-        carrier.putRegistrationId(req.body).then(value=>{
-            console.log("value:"+value);
+        console.log("registerDeviceRegistrationId:",req.body.registrationId);
+        device.putRegistrationId(req.body.registrationId).then((value)=>{
+            console.log("value:"+value);            
             res.json({result:"success"});
         },err=>{
             res.json({result:"failure",error:JSON.stringify(err)});
         });
 });
 
+app.post('/checkPIN',(req,res) =>{
+        console.log("checkPIN:",req.body);
+        manager.checkPIN(req.body).then(pinNumber=>{
+            console.log("value:"+pinNumber);
+            if(req.body.pin!=pinNumber){
+                res.json({result:"failure",error:"invalidPIN"});
+            }else
+                res.json({result:"success"});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
+
+app.post('/getSalesWithBuyer',(req,res) =>{
+        console.log("getSalesWithBuyer:",req.body);
+        manager.getSalesWithBuyer(req.body).then(value=>{
+            console.log("value:"+value);
+            res.json({result:"success",sales:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
+
+app.post('/getSales',(req,res) =>{
+        console.log("getSales:",req.body);
+        manager.getSales(req.body).then(value=>{
+            console.log("value:"+value);
+            res.json({result:"success",sales:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
 module.exports = app
 
