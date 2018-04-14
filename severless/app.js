@@ -118,22 +118,45 @@ app.post('/assignCarrier',(req,res) =>{
             res.json({result:"failure",error:JSON.stringify(err)});
         });
 });
-
-
-app.post('/addMenu',(req,res) =>{
-        console.log("addMenu:",req.body);
-        menu.addMenu(req.body).then(value=>{
-            console.log("value:"+value);
+app.post('/addComplexMenu',(req,res) =>{
+        console.log("addComplexMenu:",req.body);
+        menu.addComplexMenu(req.body).then((value)=>{
             res.json({result:"success",menus:value});
         },err=>{
             res.json({result:"failure",error:JSON.stringify(err)});
         });
 });
 
-app.post('/deleteMenu',(req,res) =>{
-        console.log("deleteMenu:",req.body);
-        menu.deleteMenu(req.body).then(value=>{
-            console.log("value:"+value);
+app.post('/addMenu',(req,res) =>{
+        console.log("addMenu:",req.body);
+        menu.addMenu(req.body).then((value)=>{
+            res.json({result:"success",menus:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
+
+app.post('/changeSequence',(req,res)=>{
+        menu.changeSequences(req.body).then((value)=>{
+            res.json({result:"success",menus:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});            
+        })
+})
+
+app.post('/removeMenu',(req,res) =>{
+        console.log("removeMenu:",req.body);
+        menu.deleteMenu(req.body).then((value)=>{
+            res.json({result:"success",menus:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
+
+
+app.post('/removeCategory',(req,res) =>{
+        console.log("removeCategory:",req.body);
+        menu.removeCategory(req.body).then((value)=>{
             res.json({result:"success",menus:value});
         },err=>{
             res.json({result:"failure",error:JSON.stringify(err)});
@@ -142,8 +165,17 @@ app.post('/deleteMenu',(req,res) =>{
 
 app.post('/getMenus',(req,res) =>{
         console.log("getMenus:",req.body);
-        menu.getMenus(req.body).then(value=>{
+        menu.getMenus().then(value=>{
             console.log("value:"+value);
+            res.json({result:"success",menus:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
+
+app.post('/addCategory',(req,res)=>{
+        console.log("addCategory:",req.body);
+        menu.addCategory(req.body).then((value)=>{
             res.json({result:"success",menus:value});
         },err=>{
             res.json({result:"failure",error:JSON.stringify(err)});
