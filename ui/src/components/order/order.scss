@@ -87,4 +87,18 @@ order {
     .no-item-border-bottom.item-ios.item-block .item-inner{
             border-bottom: 0px !important;
     }
+    ////////////////////////////////////////////
+    .searchbar-ios .searchbar-search-icon {
+        display:none;
+        width:0;
+        height:0;
+        .label-ios {
+            margin:0px !important;
+        }
+    }
+
+    .searchbar-ios.searchbar-left-aligned .searchbar-input {
+        padding-left: 0px;
+    }
+
 }

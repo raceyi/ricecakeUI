@@ -23,7 +23,7 @@ export class ExistingOrderComponent {
   };
 
   getPaymentBackground(paymentString){
-    console.log("getPaymentBackground");
+    //console.log("getPaymentBackground");
     if(paymentString=="현금-완납")
         return {"color":'#ff0000'};
     else 
