@@ -5,8 +5,7 @@ let async = require('async');
 var AWS = require("aws-sdk");
 
 let device = require('./device');
-//var dynamoDB = require("./dynamo");
-var dynamoDB = require('./dynamo.test');
+var dynamoDB = require("./dynamo");
 
 updateEachMenu=function(menu,next){
     console.log("updateEachMenu-menu:"+JSON.stringify(menu));
@@ -61,8 +60,11 @@ updateMenuSequences=function(menus){   //menu: category, menu, categorySeq,menuS
 }
 
 router.changeSequences=function(param){
-        console.log("sequences:"+JSON.stringify(param.sequences));
-        return new Promise((resolve,reject)=>{            
+        console.log("..registrationId:"+param.registrationId);
+        return new Promise((resolve,reject)=>{     
+                    console.log("!!changeSequence with "+param.registrationId); 
+                    console.log("param: "+JSON.stringify(param)); // How can it happen?
+
                     notifyMenusAndReturn(param).then((data)=>{
                         resolve(data);
                         },err=>{
@@ -122,9 +124,10 @@ router.removeCategory=function(param){
 
 notifyMenusAndReturn=function(param){  // sequence변경이 필요하다면 변경하고 notifyAll호출이후 getMenus를 호출하여 변경된 menu를 return한다.
         return new Promise((resolve,reject)=>{
+                        console.log("param.registrationId:"+param.registrationId);
                         if(param.sequences && param.sequences.length>0){
                         updateMenuSequences(param.sequences).then(()=>{
-                            device.notifyAll("menu").then(()=>{
+                            device.notifyAll("menu",param.registrationId).then(()=>{
                                 // return all menu table
                                 router.getMenus().then((data)=>{
                                     resolve(data);
@@ -138,7 +141,7 @@ notifyMenusAndReturn=function(param){  // sequence변경이 필요하다면 변�
                             reject(err);
                         });
                     }else{
-                            device.notifyAll("menu").then(()=>{
+                            device.notifyAll("menu",param.registrationId).then(()=>{
                                 // return all menu table
                                 router.getMenus().then((data)=>{
                                     resolve(data);

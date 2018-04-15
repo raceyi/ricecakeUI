@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable,EventEmitter } from '@angular/core';
 import {ConfigProvider} from "../config/config";
 import {HTTP} from '@ionic-native/http'
 import { NavController,LoadingController,AlertController,Platform } from 'ionic-angular';
@@ -19,9 +19,11 @@ export class ServerProvider {
   registrationId;
   pushNotification:PushObject;
 
-  timeout:number=5; //in seconds;
+  timeout:number=30; //in seconds;
   public progressBarLoader : any;
   
+  event=new EventEmitter();
+
   constructor(public http: HTTP,
               private push: Push,
               private platform: Platform,  
@@ -59,13 +61,13 @@ export class ServerProvider {
             });
             this.pushNotification.on('notification').subscribe((data:any)=>{
                 console.log("pushNotification.on-data:"+JSON.stringify(data));
-
-                //if(data.additionalData.registrationId==this.registrationId){
-                //    console.log("just ignore it");
-                    //this.events.publish('update',data.additionalData.table); // test code                    
-                //}else{
+                if(data.additionalData.registrationId && data.additionalData.registrationId==this.registrationId){
+                    console.log("just ignore it");
+                }else{
+                    console.log("publish update");
                     this.events.publish('update',data.additionalData.table);
-                //}
+                    this.event.emit(data.additionalData.table); // 이 코드가 들어가야 위에 코드가 수행되는것같다 ㅜㅜ 
+                }
             });
             this.pushNotification.on('error').subscribe((e:any)=>{
                 console.log(e.message);
@@ -472,7 +474,7 @@ export class ServerProvider {
   //////////////////////
   addMenu(category,name){
       return new Promise((resolve,reject)=>{    
-          let body = {category:category,name:name,registrationId:this.registrationId};
+          let body = {category:category,menu:name,registrationId:this.registrationId};
           this.http.setDataSerializer("json"); 
           this.http.setRequestTimeout(this.timeout);
           let progressBarLoader = this.loadingCtrl.create({
@@ -503,7 +505,7 @@ export class ServerProvider {
 
   deleteMenu(category,name){
       return new Promise((resolve,reject)=>{    
-          let body = {category:category,name:name,registrationId:this.registrationId};
+          let body = {category:category,menu:name,registrationId:this.registrationId};
           console.log("body:"+JSON.stringify(body));
           this.http.setDataSerializer("json"); 
           this.http.setRequestTimeout(this.timeout);
@@ -656,5 +658,37 @@ checkPIN(pin){
       });
   }
   
+  post(request,bodyIn){
+      return new Promise((resolve,reject)=>{ 
+          let body=bodyIn;
+          body["registrationId"]=this.registrationId;
+          console.log("server-post body:"+JSON.stringify(body));
+          this.http.setDataSerializer("json"); 
+          this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          console.log("serverAddr: "+this.configProvider.serverAddress+request);
+
+          this.http.post(this.configProvider.serverAddress+"/"+request,body, {"Content-Type":"application/json"}).then((res:any)=>{
+                  progressBarLoader.dismiss();
+                  let response=JSON.parse(res.data);            
+                  if(response.result=="success"){
+                      resolve(response);
+                  }else{
+                    if(response.error)
+                      reject(response.error);
+                    else
+                      reject("unknown error in server");
+                  }
+          },(err)=>{
+                progressBarLoader.dismiss();            
+                console.log("err:"+JSON.stringify(err));
+                reject(err);            
+          });            
+      });
+  }
   
 }

@@ -1,6 +1,5 @@
 let express = require('express');
 let router = express.Router();
-let device = require('./device');
 var AWS = require("aws-sdk");
 
 AWS.config.loadFromPath('./dynamo.config.json');
@@ -22,15 +21,6 @@ router.dynamoInsertItem=function(params){
                 reject(err);
             } else {
                 console.log("dynamoInsertItem:", JSON.stringify(data, null, 2));
-                //resolve(data);
-                if(params.TableName!="devices" && params.TableName!="transactions" && params.TableName!="AtomicCounters"){
-                    console.log("notifyAll");                    
-                    device.notifyAll(params.TableName).then(()=>{
-                        resolve(data);
-                    },err=>{
-                        resolve(data);
-                    });
-                }else
                     resolve(data);
             }
         });   
@@ -44,7 +34,7 @@ router.dynamoScanItem=function (params){
                 console.error("Unable to get item. Error JSON:", JSON.stringify(err, null, 2));
                 reject(err);
             } else {
-                console.log("item:", JSON.stringify(data, null, 2));
+                //console.log("item:", JSON.stringify(data, null, 2));
                 resolve(data);
             }
         });   
@@ -59,16 +49,7 @@ router.dynamoUpdateItem=function(params){
                 reject(err);
             } else {
                 console.log("dynamoUpdateItem:", JSON.stringify(data, null, 2));
-                if(params.TableName!="devices" && params.TableName!="transactions"&& params.TableName!="AtomicCounters"){
-                    console.log("notifyAll");
-                    device.notifyAll(params.TableName).then(()=>{
-                        resolve(data);
-                    },err=>{
-                        resolve(data);
-                    });
-                }else{
-                    resolve(data);
-                }
+                resolve(data);
             }
         });   
     }); 
@@ -83,16 +64,8 @@ router.dynamoDeleteItem=function (params){
             } else {
                 console.log("dynamoDeleteItem:", JSON.stringify(data, null, 2));
                 //resolve(data);
-                if(params.TableName!="devices" && params.TableName!="transactions"&& params.TableName!="AtomicCounters"){
                     console.log("notifyAll");
-                    device.notifyAll(params.TableName).then(()=>{
-                        resolve(data);
-                    },err=>{
-                        resolve(data);
-                    });
-                }else{
                     resolve(data);
-                }              
             }
         });   
     }); 

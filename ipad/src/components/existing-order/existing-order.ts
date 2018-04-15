@@ -30,4 +30,13 @@ export class ExistingOrderComponent {
  deleteOrder(){
       this.output.emit({operation:"delete",order:this.order});
  }
+
+ getPaymentBackground(paymentString){
+    //console.log("getPaymentBackground");
+    if(paymentString=="현금-완납")
+        return {"color":'#ff0000'};
+    else 
+        return {};     
+ }
+
 }

@@ -7,9 +7,21 @@ var dynamoDB = require("./dynamo");
 var atomicCounter = require('./atomic-counter');
 var carrier = require('./carrier');
 var sms = require('./sms');
+let device = require('./device');
 
 AWS.config.loadFromPath('./dynamo.config.json');
 AWS.config.update({region:'ap-northeast-2'});
+
+notifyAndReturn=function(param){  // sequence변경이 필요하다면 변경하고 notifyAll호출이후 getMenus를 호출하여 변경된 menu를 return한다.
+        return new Promise((resolve,reject)=>{
+                console.log("param.registrationId:"+param.registrationId);
+                device.notifyAll("order",param.registrationId).then(()=>{
+                    resolve();
+                },err=>{
+                    reject(err);
+                });
+        });
+} 
 
 router.addOrder=function (param){
     return new Promise((resolve,reject)=>{
@@ -59,9 +71,13 @@ router.addOrder=function (param){
                 console.log("addOrder-params:"+JSON.stringify(params));
                 dynamoDB.dynamoInsertItem(params).then((value)=>{
                     // send push message into others for ordr list update
-                    // 모든 db update에 대해 push 메시지가 전달되어야 한다.  
+                    // 모든 db update에 대해 push 메시지가 전달되어야 한다. 
                     sms.notifyOrder(order).then(()=>{
-                        resolve(id);
+                        notifyAndReturn(param).then(()=>{
+                            resolve(id);
+                        },err=>{
+                            reject(err);
+                        })  
                     },err=>{
                         console.log("notifyOrder err:"+JSON.stringify(err));
                         reject(err);
@@ -145,69 +161,173 @@ router.deleteOrders=function(param){
                                 //humm.. Can it happen?
                                 reject(err);
                             }else{
-                                resolve();
+                                notifyAndReturn(param).then(()=>{
+                                    resolve();
+                                },err=>{
+                                    reject(err);
+                                })  
                             }
                         });
         });
     });
 }
 
-router.updateOrder=function (param){
-    return new Promise((resolve,reject)=>{        
-        let order=param.order;
-        let updateExpression;
-        let expressionAttributeValues;
-        let memo=order.memo
-        if(!memo || memo.length==0){
-            memo="  ";//initialize it with blank string
-        }
-        var params = {
-            TableName:"order",
-            Key:{
-                "id": order.id
-            },
-            ConditionExpression : "attribute_exists(#id)",
-            ExpressionAttributeNames: {
-                "#id":"id"
-            },
-            UpdateExpression:"set deliveryTime = :deliveryTime, recipientAddress=:recipientAddress,\
-                            recipientAddressDetail=:recipientAddressDetail,buyerName=:buyerName,\
-                            recipientName=:recipientName,recipientPhoneNumber=:recipientPhoneNumber,\
-                            buyerPhoneNumber=:buyerPhoneNumber,menuList=:menuList,\
-                            memo=:memo,price=:price,paymentMethod=:paymentMethod,payment=:payment,\
-                            deliveryMethod=:deliveryMethod,deliveryFee=:deliveryFee,totalPrice=:totalPrice",
-            ExpressionAttributeValues:{
-                ":deliveryTime":order.deliveryTime,
-                ":recipientAddress":order.recipientAddress,
-                ":recipientAddressDetail":order.recipientAddressDetail,
-                ":buyerName":order.buyerName,
-                ":recipientName":order.recipientName,
-                ":recipientPhoneNumber":order.recipientPhoneNumber,
-                ":buyerPhoneNumber":order.buyerPhoneNumber,
-                ":menuList":order.menuList,
-                ":memo":memo,
-                ":price":order.price,
-                ":paymentMethod":order.paymentMethod,//카드,현금
-                ":payment":order.payment, //지불 여부,
-                ":deliveryMethod":order.deliveryMethod,
-                 ":deliveryFee":order.deliveryFee,
-                 ":totalPrice":order.totalPrice
-            },
-            ReturnValues:"UPDATED_NEW"
-        };
-        dynamoDB.dynamoUpdateItem(params).then(result=>{
-                sms.notifyOrder(order).then(()=>{
-                    resolve(result);
-                },err=>{
-                    console.log("notifyOrder err:"+JSON.stringify(err));                    
-                    reject(err); //hum...
-                });            
+getOrderInfo=function(orderId){
+    return new Promise((resolve,reject)=>{
+        let params = {
+                TableName : "order",
+                KeyConditionExpression: "#id = :id",
+                ExpressionAttributeNames:{
+                    "#id": "id"
+                },
+                ExpressionAttributeValues: {
+                    ":id":orderId
+                }
+            };
+        dynamoDB.dynamoQueryItem(params).then(result=>{
+            if(result.Items.length==1){
+                let order=result.Items[0];
+                resolve(order)
+            }
+            reject("dynamoDB error");
         },err=>{
-                if(err.code=="ConditionalCheckFailedException")            
-                    reject("invalidOrderId");
-                else
-                    reject(err);
+            reject(err);
         });
+
+    });  
+
+}
+
+function isEquivalent(a, b) {
+    // Create arrays of property names
+    var aProps = Object.getOwnPropertyNames(a);
+    var bProps = Object.getOwnPropertyNames(b);
+
+    // If number of properties is different,
+    // objects are not equivalent
+    if (aProps.length != bProps.length) {
+        return false;
+    }
+
+    for (var i = 0; i < aProps.length; i++) {
+        var propName = aProps[i];
+
+        // If values of same property are not equal,
+        // objects are not equivalent
+        if (a[propName] !== b[propName]) {
+            return false;
+        }
+    }
+
+    // If we made it this far, objects
+    // are considered equivalent
+    return true;
+}
+
+function isEqualMenuList(menuA,menuB){
+    if(menuA.length!=menuB.length)
+        return false;
+
+    for(let i=0;i<menuA.length;i++){
+        if(!isEquivalent(menuA[i], menuB[i]))
+            return false;
+    }
+    return true;
+}
+
+onlyPaymentChange=function(a,b){
+   if(a.deliveryTime==b.deliveryTime &&
+     // a.recipientAddress==b.recipientAddress &&
+     // a.recipientAddressDetail==b.recipientAddressDetail &&
+     // a.buyerName==b.buyerName &&
+      a.recipientName==b.recipientName &&
+      a.buyerPhoneNumber==b.buyerPhoneNumber &&
+      isEqualMenuList(a.menuList,b.menuList) &&
+    //  a.memo==b.memo &&
+      a.price==b.price &&
+   //   a.deliveryMethod==b.deliveryMethod &&
+      a.deliveryFee==b.deliveryFee &&
+      a.totalPrice==b.totalPrice){
+        console.log("onlyPaymentChange returns true");
+        return true;
+      }
+   console.log("onlyPaymentChange returns false");      
+   return false;
+}
+
+router.updateOrder=function (param){
+    return new Promise((resolve,reject)=>{
+        getOrderInfo(param.order.id).then((orderInfo)=>{
+                let order=param.order;
+                let updateExpression;
+                let expressionAttributeValues;
+                let memo=order.memo
+                if(!memo || memo.length==0){
+                    memo="  ";//initialize it with blank string
+                }
+                var params = {
+                    TableName:"order",
+                    Key:{
+                        "id": order.id
+                    },
+                    ConditionExpression : "attribute_exists(#id)",
+                    ExpressionAttributeNames: {
+                        "#id":"id"
+                    },
+                    UpdateExpression:"set deliveryTime = :deliveryTime, recipientAddress=:recipientAddress,\
+                                    recipientAddressDetail=:recipientAddressDetail,buyerName=:buyerName,\
+                                    recipientName=:recipientName,recipientPhoneNumber=:recipientPhoneNumber,\
+                                    buyerPhoneNumber=:buyerPhoneNumber,menuList=:menuList,\
+                                    memo=:memo,price=:price,paymentMethod=:paymentMethod,payment=:payment,\
+                                    deliveryMethod=:deliveryMethod,deliveryFee=:deliveryFee,totalPrice=:totalPrice",
+                    ExpressionAttributeValues:{
+                        ":deliveryTime":order.deliveryTime,
+                        ":recipientAddress":order.recipientAddress,
+                        ":recipientAddressDetail":order.recipientAddressDetail,
+                        ":buyerName":order.buyerName,
+                        ":recipientName":order.recipientName,
+                        ":recipientPhoneNumber":order.recipientPhoneNumber,
+                        ":buyerPhoneNumber":order.buyerPhoneNumber,
+                        ":menuList":order.menuList,
+                        ":memo":memo,
+                        ":price":order.price,
+                        ":paymentMethod":order.paymentMethod,//카드,현금
+                        ":payment":order.payment, //지불 여부,
+                        ":deliveryMethod":order.deliveryMethod,
+                        ":deliveryFee":order.deliveryFee,
+                        ":totalPrice":order.totalPrice
+                    },
+                    ReturnValues:"UPDATED_NEW"
+                };
+                dynamoDB.dynamoUpdateItem(params).then(result=>{
+                        //기존 주문 정보와 차이가 payment,paymentMethod일 경우 문자를 전달하지 않는다. 
+                        if(!onlyPaymentChange(orderInfo,order)){
+                            sms.notifyOrder(order).then(()=>{
+                                notifyAndReturn(param).then(()=>{
+                                    resolve(result);
+                                },err=>{
+                                    reject(err);
+                                })  
+                            },err=>{
+                                console.log("notifyOrder err:"+JSON.stringify(err));                    
+                                reject(err); //hum...
+                            });            
+                        }else{
+                                notifyAndReturn(param).then(()=>{
+                                    resolve(result);
+                                },err=>{
+                                    reject(err);
+                                })  
+                        }
+                },err=>{
+                        if(err.code=="ConditionalCheckFailedException")            
+                            reject("invalidOrderId");
+                        else
+                            reject(err);
+                });
+        },err=>{
+            reject(err);
+        })        
     });
 }
 
@@ -231,7 +351,11 @@ router.hideOrder=function (param){
         };
         console.log("hideOrder-params:"+JSON.stringify(params));                
         dynamoDB.dynamoUpdateItem(params).then(result=>{
-                resolve(result);
+                    notifyAndReturn(param).then(()=>{
+                        resolve(result);
+                    },err=>{
+                        reject(err);
+                    })                  
         },err=>{
                 if(err.code=="ConditionalCheckFailedException")            
                     reject("invalidOrderId");
@@ -260,7 +384,11 @@ router.showOrder=function (param){
         };
         console.log("showOrder-params:"+JSON.stringify(params));                
         dynamoDB.dynamoUpdateItem(params).then(result=>{
-                resolve(result);
+                    notifyAndReturn(param).then(()=>{
+                        resolve(result);
+                    },err=>{
+                        reject(err);
+                    })  
         },err=>{
                 if(err.code=="ConditionalCheckFailedException")            
                     reject("invalidOrderId");
@@ -295,6 +423,11 @@ router.assignCarrier=function (param){
                         console.log("assignCarrier-params:"+JSON.stringify(params));                
                         dynamoDB.dynamoUpdateItem(params).then(result=>{
                                 resolve(result);
+                                notifyAndReturn(param).then(()=>{
+                                    resolve(result);
+                                },err=>{
+                                    reject(err);
+                                })  
                         },err=>{
                                 if(err.code=="ConditionalCheckFailedException")
                                     reject("invalidId");

@@ -1,8 +1,20 @@
 let express = require('express');
 let router = express.Router();
+var dynamoDB = require("./dynamo");
+let device = require('./device');
 
 var AWS = require("aws-sdk");
-var dynamoDB = require("./dynamo");
+
+function notifyAndReturnCarrier(param){  // sequence변경이 필요하다면 변경하고 notifyAll호출이후 getMenus를 호출하여 변경된 menu를 return한다.
+        return new Promise((resolve,reject)=>{
+                console.log("carrier.js-param.registrationId:"+param.registrationId);
+                device.notifyAll("carrier",param.registrationId).then(()=>{
+                    resolve();
+                },err=>{
+                    reject(err);
+                });
+        });
+} 
 
 router.addCarrier=function (param){
     return new Promise((resolve,reject)=>{
@@ -17,7 +29,11 @@ router.addCarrier=function (param){
                 dynamoDB.dynamoInsertItem(params).then((value)=>{
                     // send push message into others for ordr list update
                     // 모든 db update에 대해 push 메시지가 전달되어야 한다.
-                    resolve(value);
+                        notifyAndReturnCarrier(param).then(()=>{
+                            resolve();
+                        },err=>{
+                            reject(err);
+                        })  
                 },err=>{
                     if(err.code=="ConditionalCheckFailedException"){
                         reject("AlreadyExist");
@@ -39,7 +55,11 @@ router.deleteCarrier=function(param){
         };
         console.log("deleteCarrier-params:"+JSON.stringify(params));                
         dynamoDB.dynamoDeleteItem(params).then((result)=>{
-            resolve(result);
+                notifyAndReturnCarrier(param).then(()=>{
+                    resolve();
+                },err=>{
+                    reject(err);
+                })  
         },(err)=>{
             if(err.code=="ConditionalCheckFailedException"){
                 reject("AlreadyDeleted");
@@ -78,5 +98,7 @@ router.getCarriers=function (param){
 
 module.exports = router;
 
+//device.notifyAll("carrier","1234");
 
+//router.deleteCarrier({date:"2018-04-15" ,name:"둘리"})
 

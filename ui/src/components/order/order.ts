@@ -278,6 +278,7 @@ export class OrderComponent implements OnInit {
               return;      
           }
     }
+    
     console.log("..."+this.menus[this.categorySelected].type);
     console.log("bool:"+this.menus[this.categorySelected].type=="complex-choice");
     if(this.menus[this.categorySelected].type=="complex-choice"){ //각 선택 메뉴가 정확한지 확인한다.
@@ -337,7 +338,7 @@ export class OrderComponent implements OnInit {
                 });
                 menuWithPackage=JSON.stringify(menuObjsWithPackage);
     }else{ //단일 메뉴
-        menuWithPackage=this.menus[this.categorySelected].menu[this.menuIndex].menuString+"("+this.package+")";
+        menuWithPackage=this.menus[this.categorySelected].menus[this.menuIndex].menuString+"("+this.package+")";
         menuStringWithPackage=menuWithPackage;
     }
     console.log("menuWithPackage:"+menuWithPackage);

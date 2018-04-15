@@ -40,6 +40,16 @@ export class OrderComponent implements OnInit {
   done:boolean=false;
   redirectUrl="http://www.takit.biz";
 
+
+  //////////////////////////////////////////
+  // menu변경 코드 -begin
+  choices=[];
+  choiceOptions=[];
+  choiceOption=[];
+  etc:string; //기타 
+  package:string;
+  // menu변경 코드 -end
+  ///////////////////////////////////////////
   constructor(public alertCtrl:AlertController
               ,private iab: InAppBrowser 
               ,public platform:Platform    
@@ -152,16 +162,56 @@ export class OrderComponent implements OnInit {
     }
   }
 
-
-  selectCategory(){
+selectCategory(){
     if(this.categorySelected==-1){
       console.log("categorySelected is -1. How can it happen?");
       return;
     }
-    console.log("selectCategory:"+this.order.categorySelected);
+    if(this.categorySelected==-2){
+      return;
+    }
+    console.log("selectCategory:"+this.categorySelected);
     if(this.menus[this.categorySelected].menus.length==1){
           this.menuIndex=0;
     }
+    if(this.menus[this.categorySelected].type.startsWith("complex")){
+        this.unit="개";
+    }
+    if(this.menus[this.categorySelected].type=="complex-choice"){
+          this.choices=[];
+          let choiceNumber=this.menus[this.categorySelected].menus[0].choiceNumber;
+          for(let i=0;i<choiceNumber;i++)
+              this.choices.push({option:"",index:-1});
+          let choiceOption=[];
+          let menus=JSON.parse(this.menus[this.categorySelected].menus[0].menu);          
+          menus.forEach((option)=>{
+              console.log("option:"+option);
+              let menuString="";
+              let key:any=Object.keys(option);
+               menuString+=key+option[key]+" ";
+               choiceOption.push(menuString);
+          })
+          console.log("choiceOptions:"+JSON.stringify(choiceOption));
+          this.choiceOption=choiceOption;
+          for(let i=0;i<choiceNumber;i++)
+            this.choiceOptions.push(choiceOption);
+    }
+  }
+
+  onInput(ev,i){
+    let val = ev.target.value;
+
+    if (val && val.trim() !== '') {
+      console.log("value:"+val+'len:'+val.length);
+      if(val.length>=1)
+      this.choiceOptions[i] = this.choiceOption.filter(function(menu) {
+        return menu.toLowerCase().includes(val.toLowerCase());
+      });
+    }
+  }
+  selectChoice(val,i){
+    this.choices[i].option=val;
+    this.choiceOptions[i]=[];
   }
 
   addMenu(){
@@ -171,23 +221,53 @@ export class OrderComponent implements OnInit {
               buttons: ['확인']
             });
             alert.present();
-        return;
-    }    
-    if(this.menuIndex==-1 ){
+        return false;
+    }   
+ 
+    if(this.categorySelected==-2){
+      if(!this.etc ||this.etc.trim().length==0){
             let alert = this.alertCtrl.create({
-              title: '메뉴를 선택해 주시기 바랍니다.',
+              title: '메뉴를 입력해 주시기 바랍니다.',
               buttons: ['확인']
             });
             alert.present();
-        return;
-    }    
+            return false;
+      }
+      let menu={category:"주문메뉴", menuString:this.etc, menu:this.etc};
+
+      this.order.menuList.push(menu);              
+      console.log("menu:"+JSON.stringify(menu));          
+      this.categorySelected=-1;
+      this.etc="";
+      return false;
+    }
+
+   if(this.menus[this.categorySelected].type!="complex-choice" ){
+        if(this.menuIndex==-1 ){
+                let alert = this.alertCtrl.create({
+                  title: '메뉴를 선택해 주시기 바랍니다.',
+                  buttons: ['확인']
+                });
+                alert.present();
+            return false;
+        }    
+        if(!this.package || this.package.length ==0){
+                let alert = this.alertCtrl.create({
+                  title: '포장을 선택해 주시기 바랍니다.',
+                  buttons: ['확인']
+                });
+                alert.present();
+                return false;
+        }
+   }
+
     if(!this.amount || this.amount==0){
             let alert = this.alertCtrl.create({
               title: '수량을 선택해 주시기 바랍니다.',
               buttons: ['확인']
             });
             alert.present();
-        return;
+        return false;
     }
     if(this.unit==undefined || this.unit.length==0){
             let alert = this.alertCtrl.create({
@@ -195,28 +275,97 @@ export class OrderComponent implements OnInit {
               buttons: ['확인']
             });
             alert.present();
-        return;
+        return false;
     }
-    if(this.menus[this.categorySelected].menuStrings[this.menuIndex]!=this.menus[this.categorySelected].menus[this.menuIndex]){
+    if(this.menus[this.categorySelected].type.startsWith("complex")){
           if(this.unit!="개"){
               let alert = this.alertCtrl.create({
                 title: '복합 메뉴의 단위는 개만 선택가능합니다.',
                 buttons: ['확인']
               });
               alert.present();
-              return;      
+              return false;      
           }
     }    
-    let menu={category:this.menus[this.categorySelected].category,
-              menuString:this.menus[this.categorySelected].menuStrings[this.menuIndex],
-              menu:this.menus[this.categorySelected].menus[this.menuIndex], 
+    console.log("..."+this.menus[this.categorySelected].type);
+    console.log("bool:"+this.menus[this.categorySelected].type=="complex-choice");
+    if(this.menus[this.categorySelected].type=="complex-choice"){ //각 선택 메뉴가 정확한지 확인한다.
+        for(let j=0;j<this.choices.length;j++){
+            if(this.choices[j].option.trim().length==0){
+                let alert = this.alertCtrl.create({
+                  title: (j+1)+'번째 메뉴를 입력해주세요.',
+                  buttons: ['확인']
+                });
+                alert.present();
+                return false;      
+            }
+            let i=0;
+            for(i=0;i<this.choiceOption.length;i++){
+                  if(this.choiceOption[i]==this.choices[j].option){
+                      this.choices[j].index=i;
+                      break;
+                  }
+            }
+            if(i==this.choiceOption.length){
+              let alert = this.alertCtrl.create({
+                title: this.choices[j].option+'은 선택가능한 옵션이 아닙니다.',
+                buttons: ['확인']
+              });
+              alert.present();
+              return false;      
+            }
+        }
+    } 
+
+   let menuStringWithPackage="";
+   let menuWithPackage;
+
+    if(this.menus[this.categorySelected].type=="complex-choice"){
+                console.log("this.menus[this.categorySelected]:"+JSON.stringify(this.menus[this.categorySelected]));
+                let menus=JSON.parse(this.menus[this.categorySelected].menus[0].menu);          
+                let menuObjsWithPackage=[];
+                for(let i=0;i<this.choices.length ;i++){
+                   menuObjsWithPackage.push(menus[this.choices[i].index]);
+                   let menuObj=menus[this.choices[i].index];
+                   let key:any=Object.keys(menuObj)[0];
+                   menuStringWithPackage+=key+menuObj[key]+" ";//표기될 메뉴 문자열
+                }
+                menuWithPackage=JSON.stringify(menuObjsWithPackage); //저장될 객체의 문자열
+    }else if(this.menus[this.categorySelected].type=="complex"){ //복합메뉴
+                console.log("menu:"+ this.menus[this.categorySelected].menus[this.menuIndex]);
+                let menuObjs=JSON.parse(this.menus[this.categorySelected].menus[this.menuIndex].menu);
+                let menuObjsWithPackage=[];
+                menuObjs.forEach(menuObj=>{
+                   let key:any=Object.keys(menuObj)[0];
+                   console.log("key:"+key);
+                   menuStringWithPackage+=key+"("+this.package+")"+menuObj[key]+" ";
+                   let keyName:string=key+"("+this.package+")";
+                   let object={};
+                   object[keyName]=menuObj[key];
+                   menuObjsWithPackage.push(object);
+                });
+                menuWithPackage=JSON.stringify(menuObjsWithPackage);
+    }else{ //단일 메뉴
+        menuWithPackage=this.menus[this.categorySelected].menus[this.menuIndex].menuString+"("+this.package+")";
+        menuStringWithPackage=menuWithPackage;
+    }
+    console.log("menuWithPackage:"+menuWithPackage);
+    console.log("menuStringWithPackage:"+menuStringWithPackage);
+
+  let menu={category:this.menus[this.categorySelected].category,
+              menuString:menuStringWithPackage,
+              menu:menuWithPackage, 
               amount:this.amount, unit: this.unit}
+
     this.order.menuList.push(menu);              
     console.log("menu:"+JSON.stringify(menu));          
     this.categorySelected=-1;
     this.unit="";
     this.amount=null; //undefined doesn't work for initialization.
     this.menuIndex=-1;
+    this.package="";
+    this.choices=[];
+    return true;
   }
 
  removeMenu(i){
@@ -328,12 +477,8 @@ autoHypenPhone(str){
     }
 
     if(this.order.menuList==undefined || this.order.menuList.length==0){
-      let alert = this.alertCtrl.create({
-        title: '떡 종류를 선택하세요. (떡 종류 / 수량 / 단위 선택 후 떡 추가 버튼 누르기)',
-        buttons: ['확인']
-      });
-      alert.present();
-      return ;
+        if(!this.addMenu())
+            return;        
     }
 
     if(this.order.price == undefined || this.order.price==0){

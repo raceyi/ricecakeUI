@@ -25,10 +25,10 @@
             </ion-col>               
           </ion-row>
           <ion-row>
-            <ion-col col-2 no-margin no-padding >
+            <ion-col text-left col-2 no-margin no-padding >
               {{order.deliveryMethod}}
             </ion-col>
-            <ion-col no-margin no-padding>
+            <ion-col *ngIf="order.deliveryMethod!='픽업'" no-margin no-padding>
             {{order.recipientName}}  {{order.recipientPhoneNumber}}  
             </ion-col>
             <ion-col *ngIf="order.deliveryFee==undefined || order.deliveryFee==null || order.deliveryFee==0" no-margin no-padding>

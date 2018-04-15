@@ -22,7 +22,12 @@ export class CarrierManagementPage {
   constructor(public navCtrl: NavController, 
               public navParams: NavParams,
               public alertCtrl:AlertController,
+              public events: Events,                
               public storageProvider:StorageProvider) {
+
+         events.subscribe('update', (tablename) => {
+            console.log("CarrierManagementPage receive update event");
+         });               
   }
 
   ionViewDidLoad() {
@@ -50,7 +55,7 @@ export class CarrierManagementPage {
                     console.log('agree clicked');
                     this.storageProvider.deleteCarrier(name).then(()=>{
                         console.log("deleteCarrier success ");
-                        this.storageProvider.refresh();
+                        this.storageProvider.refresh("carrier");
                     },(err:any)=>{
                       if(typeof err==="string" && err.indexOf("AlreadyDeleted")>=0){
                             let alert = this.alertCtrl.create({
@@ -79,7 +84,7 @@ export class CarrierManagementPage {
 
     this.storageProvider.addCarrier(this.newCarrier).then(()=>{
           this.newCarrier="";
-          this.storageProvider.refresh();
+          this.storageProvider.refresh("carrier");
       },(err)=>{
           if(typeof err==="string" && err.indexOf("AlreadyExist")>=0){
                 let alert = this.alertCtrl.create({

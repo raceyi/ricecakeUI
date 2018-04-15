@@ -137,6 +137,7 @@ app.post('/addMenu',(req,res) =>{
 });
 
 app.post('/changeSequence',(req,res)=>{
+        console.log("changeSequence with "+JSON.stringify(req.body.registrationId));
         menu.changeSequences(req.body).then((value)=>{
             res.json({result:"success",menus:value});
         },err=>{
@@ -187,9 +188,8 @@ app.post('/addCarrier',(req,res) =>{
         if(!req.body.name){
                 res.json({result:"failure",error:"invalid Param"});
         }else{
-            carrier.addCarrier(req.body).then(value=>{
-                console.log("value:"+value);
-                res.json({result:"success",carriers:value});
+            carrier.addCarrier(req.body).then(()=>{
+                res.json({result:"success"});
             },err=>{
                 res.json({result:"failure",error:JSON.stringify(err)});
             });
@@ -201,9 +201,8 @@ app.post('/deleteCarrier',(req,res) =>{
         if(!req.body.name){
                 res.json({result:"failure",error:"invalid Param"});
         }else{        
-            carrier.deleteCarrier(req.body).then(value=>{
-                console.log("value:"+value);
-                res.json({result:"success",carriers:value});
+            carrier.deleteCarrier(req.body).then(()=>{
+                res.json({result:"success"});
             },err=>{
                 res.json({result:"failure",error:JSON.stringify(err)});
             });

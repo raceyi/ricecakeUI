@@ -72,9 +72,9 @@ export class HomePage {
                             title: '주문정보가 변경되었습니다.',
                             buttons: ['확인']
                         });
-                        alert.present();   
-              */          
-            this.storageProvider.refresh();
+                        alert.present();
+             */              
+         //this.storageProvider.refresh();
         });
     }
     
@@ -307,7 +307,7 @@ export class HomePage {
                                             console.log('agree clicked');
                                             //배달일 수정하기
                                             this.storageProvider.setDeliveryDate(order.deliveryTime);
-                                            this.storageProvider.refresh();
+                                            this.storageProvider.refresh("order");
                                             return;
                                         }
                                         }]
@@ -334,7 +334,7 @@ export class HomePage {
                                             console.log('agree clicked');
                                             //배달일 수정하기
                                             this.storageProvider.setDeliveryDate(order.deliveryTime);
-                                            this.storageProvider.refresh();
+                                            this.storageProvider.refresh("order");
                                             return;
                                         }
                                         }]
@@ -396,7 +396,7 @@ export class HomePage {
     assingCarrier(order) {
         //please Update carrier, sort order list again
         this.storageProvider.assignCarrier(order.id,order.carrier).then(()=>{
-            this.storageProvider.refresh();
+            this.storageProvider.refresh("order");
         },err=>{
             if(typeof err==="string" && err.indexOf("invalidId")>=0){
                     let alert = this.alertCtrl.create({
@@ -431,7 +431,7 @@ export class HomePage {
     modifyCarrier(order) {
         //please Update carrier, sort order list again
         this.storageProvider.assignCarrier(order.id,order.updateCarrier).then(()=>{
-            this.storageProvider.refresh();
+            this.storageProvider.refresh("order");
         },err=>{
             if(typeof err==="string" && err.indexOf("invalidId")>=0){
                     let alert = this.alertCtrl.create({
@@ -501,16 +501,21 @@ export class HomePage {
     }
 
     refresh(){
+        /*
           let progressBarLoader = this.loadingCtrl.create({
             content: "진행중입니다.",
             duration: 5*1000
-            });
+        });
           progressBarLoader.present();        
-        this.storageProvider.refresh().then(()=>{
+        this.storageProvider.refresh("order").then(()=>{
               progressBarLoader.dismiss();
         },err=>{
               progressBarLoader.dismiss();
         });
+        */
+        this.storageProvider.refresh("order");
+        this.storageProvider.refresh("menu");
+        this.storageProvider.refresh("carrier");
     }
 
     print(){
@@ -559,7 +564,9 @@ export class HomePage {
             let list=" ";
             let totalLine="";
             item.amount.forEach(amount=>{
-                totalLine+=amount.amount+'('+amount.time+'),';
+                if(amount.amount) totalLine+=amount.amount;
+                if(amount.menu) totalLine+=amount.menu;
+                totalLine+='('+amount.time+'),';
             });
             totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
             let remain=totalLine.length;
@@ -592,7 +599,7 @@ export class HomePage {
         let currentPageNums=0;
         let currentPageItems=[];
         eachItems.forEach((item)=>{
-            if(currentPageNums+item.number>linesPerPage){
+            if(currentPageNums+item.number>linesPerPage){  ///Please verify this line............
                 //move into next pages
                 tables.push({page:pageNumber,items:currentPageItems})
                 pageNumber++;
@@ -623,8 +630,8 @@ export class HomePage {
                       this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+"("+(index+1)+"/"+pageNumber+")"+"</H1>";
             pages+="<table style=\"width:100%\;border-collapse:collapse;\">";          
             tables[index].items.forEach(item=>{
-                pages+="<tr><td style=\"border: solid 1px; font-size:2em;\">"+item.name+"</td>"+
-                            "<td style=\"border: solid 1px; font-size:2em;\">"+item.lines+"</td>"+"</tr>";
+                pages+="<tr><td style=\"border: solid 1px; font-size:1.6em;\">"+item.name+"</td>"+
+                            "<td style=\"border: solid 1px; font-size:1.6em;\">"+item.lines+"</td>"+"</tr>";
             })
             pages+="</table>";
         }
@@ -680,7 +687,9 @@ export class HomePage {
             }
             let menus="";
             item.menuList.forEach(menu=>{
-                menus+=menu.category+menu.menuString+menu.amount+menu.unit+",";
+                menus+=menu.category+"-["+menu.menuString+"]";
+                if(menu.amount) menus+=menu.amount;
+                if(menu.unit) menus+=menu.unit+",";
             })
             console.log("!!!menus:"+menus);
             menus=menus.substr(0,menus.length-1);
@@ -827,8 +836,11 @@ printPages(titleHead,orders,pageBreakFirst){
             }
             let menus="";
             item.menuList.forEach(menu=>{
-                menus+=menu.category+menu.menuString+menu.amount+menu.unit+",";
+                menus+=menu.category+"-["+menu.menuString+"]";
+                if(menu.amount) menus+=menu.amount;
+                if(menu.unit) menus+=menu.unit+",";
             })
+
             console.log("!!!menus:"+menus);
             menus=menus.substr(0,menus.length-1);
             {

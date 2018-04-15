@@ -1,9 +1,4 @@
 <!-- Generated template for the OrderComponent component -->
-<!--
-    <ion-row>
-      <ion-col text-right>  <button ion-button (click)="orderCancel()">입력취소</button></ion-col>
-    </ion-row>
--->
     <ion-grid class="order-input-section" no-padding>
       <ion-row>
         <ion-col col-9>
@@ -118,6 +113,7 @@
                   </ion-select>
                 </ion-item>
               </ion-col>
+              
               <ion-col col-8 no-padding no-margin *ngIf="categorySelected==-2">
                 <ion-item class="textarea-item no-item-border-bottom">
                   <ion-textarea type="text" placeholder="메뉴입력" [(ngModel)]="etc"></ion-textarea>
@@ -145,7 +141,7 @@
                   </ion-select>
                 </ion-item>                
               </ion-col>      
-              <ion-col col-1 *ngIf="categorySelected>=0 && menus[categorySelected].type=='complex-choice'"> <!-- 답례떡 포장은 기계로 고정임 -->
+              <ion-col col-1 *ngIf="categorySelected>=0 && menus[categorySelected].type=='complex-choice'"> 
               </ion-col>        
               <ion-col col-2 no-padding no-margin *ngIf="categorySelected>=0">
                 <ion-item >
@@ -176,19 +172,11 @@
               </ion-col>
               <ion-col col-4 no-padding no-margin>
                 <ion-item class="no-item-border-bottom">
-
-              <!--                  
-                  <ion-select interface="action-sheet" placeholder="메뉴이름" (ionChange)="selectChoice(i)"  [(ngModel)]="choices[i].option">
-                    <ion-option  *ngFor="let menu of choiceOption,let j=index">{{menu}}</ion-option>
-                  </ion-select>
-                -->
                 <ion-searchbar  placeholder="메뉴이름" [(ngModel)]="choices[i].option" (ionInput)="onInput($event,i)">
                 </ion-searchbar>
                 <div [hidden]="choices[i].option==undefined || choices[i].option.length==0" *ngFor="let menu of choiceOptions[i]">
                 <button ion-button clear color="black" (click)="selectChoice(menu,i)"  >{{menu}}</button>    
                 </div>
-
-
                 </ion-item>    
               </ion-col>
               <ion-col col-5>

@@ -84,17 +84,23 @@ sendGCM=function(params,next){
     let sender = new gcm.Sender(API_KEY);
     console.log("tableName content:"+tableName);
     let message;
+    let data;
 
+      if(params.registrationId){
+          data={  
+            table: tableName,
+            registrationId:params.registrationId
+        };
+      }else{
+        data={table:tableName};
+      }
       message = {
 			"to" : pushId,
 			priority: 'high',
             collapseKey: 'takit',
             timeToLive: 3,
             "content_available": true,
-            data: {
-                table: tableName,
-                registrationId:pushId
-            },
+            data: data,
             notification: {
                 //title: "주문테이블 변경",
                 //body: tableName
@@ -154,14 +160,18 @@ sendGCM=function(params,next){
         });
 }
 
-router.notifyAll=function(tableName){
+router.notifyAll=function(name,registrationId){
     return new Promise((resolve,reject)=>{ 
-        console.log("notifyAll comes!!!");   
+        console.log("notifyAll comes!!!"+registrationId+"table:"+name);   
         getRegistrationIds().then(ids=>{
             let params=[];
             ids.forEach((id)=>{
-                params.push({tableName:tableName,pushId:id});
+                if(registrationId)
+                    params.push({tableName:name,pushId:id,registrationId:registrationId});
+                else
+                    params.push({tableName:name,pushId:id});                    
             })
+            console.log(JSON.stringify(params));
             async.map(params,sendGCM,function(err,eachResult){
                     if(err){
                         reject(err);

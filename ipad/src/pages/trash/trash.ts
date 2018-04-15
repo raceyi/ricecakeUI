@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController,AlertController, NavParams } from 'ionic-angular';
+import { IonicPage, NavController,AlertController, NavParams,Platform } from 'ionic-angular';
 import {StorageProvider} from "../../providers/storage/storage";
 import {ServerProvider} from "../../providers/server/server";
 
@@ -22,23 +22,38 @@ export class TrashPage {
   constructor(public navCtrl: NavController, public navParams: NavParams,
               public events: Events,
               public alertCtrl:AlertController,
+              public platform:Platform,
               public serverProvider:ServerProvider,
               public storageProvider:StorageProvider) {
 
         events.subscribe('update', (tablename) => {
-            console.log("TrashPage receive update event");
-            this.serverProvider.getOrdersInTrash().then((orders)=>{
-                this.storageProvider.trashList=orders;
-                this.storageProvider.convertOrderList(this.storageProvider.trashList);
-            },err=>{
-
-            })
-        });
-
+            console.log("TrashPage receive update event "+tablename);
+            /*
+            if(tablename=="order"){
+                        let alert = this.alertCtrl.create({
+                            title: '주문정보가 변경되었습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();      
+            }*/
+     });
   }
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad TrashPage');
+        this.platform.ready().then(() => {
+            this.serverProvider.getOrdersInTrash().then((orders)=>{
+                this.storageProvider.trashList=orders;
+                this.storageProvider.trashList.sort(function(a,b){
+                                if (a.id > b.id) return -1;
+                                if (a.id < b.id) return 1;
+                                return 0;
+                });                
+                this.storageProvider.convertOrderList(this.storageProvider.trashList);
+            },err=>{
+
+            })    
+        });
   }
 
   ionViewWillUnload(){

@@ -22,6 +22,17 @@ var config=require('./bankda.config');
 
 var last_bkcode; 
 
+notifyOrderAndReturn=function(param){  // sequence변경이 필요하다면 변경하고 notifyAll호출이후 getMenus를 호출하여 변경된 menu를 return한다.
+        return new Promise((resolve,reject)=>{
+                console.log("param.registrationId:"+param.registrationId);
+                device.notifyAll("order",param.registrationId).then(()=>{
+                    resolve();
+                },err=>{
+                    reject(err);
+                });
+        });
+} 
+
 router.bankda=function(response){
 //read last_bkcode from dynamoDB
     let params = {
@@ -77,7 +88,11 @@ updatePayment=function(param,next){
         dynamoDB.dynamoUpdateItem(params).then(result=>{
                 console.log("updatePayment success");
                 console.log("next type:"+typeof next);
-                next(null);
+                notifyOrderAndReturn().then(()=>{
+                    next(null);
+                },err=>{
+                    next(err);
+                })
         },err=>{
                 console.log("updatePayment failure");            
                 if(err.code=="ConditionalCheckFailedException")            
@@ -166,10 +181,6 @@ addTransactionRecord=function(record,next){
                 "bkinput":record.$.bkinput,
                 "bkjango":record.$.bkjango
             },
-            //ConditionExpression : "attribute_not_exists(#bkcode)",
-            //ExpressionAttributeNames: {
-            //    "#bkcode":"bkcode"
-            //}
         };
         console.log("addTransactions-params???:"+JSON.stringify(params));
         dynamoDB.dynamoInsertItem(params).then((value)=>{
@@ -240,21 +251,6 @@ addTransactionRecord=function(record,next){
                                 orders.push({order:order,payment:"paid",bkcode:record.$.bkcode,time:time});
                             })
                         }
-                        /*
-                        for(i=0;i<result.Items.length;i++){
-                            if(!result.Items[i].payment.startsWith("paid")){
-                                sum+=parseInt(result.Items[i].totalPrice);
-                                multipleOrders.push({order:result.Items[i],payment:"paid",bkcode:record.$.bkcode,time:time});                                
-                            }
-                            console.log("price sum:"+sum+" deposit:"+record.$.bkinput);                            
-                            if(sum==record.$.bkinput){
-                                multipleOrders.push({order:result.Items[i],payment:"paid",bkcode:record.$.bkcode,time:time});
-                                break;
-                            }    
-                        }
-                        if(sum==record.$.bkinput && sum!=0){
-                            orders=multipleOrders;
-                        }*/
                     }
                     console.log("update orders:"+JSON.stringify(orders));
                     if(orders.length>0){

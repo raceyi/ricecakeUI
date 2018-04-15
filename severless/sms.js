@@ -90,7 +90,12 @@ router.notifyOrder=function(order){
 
             let i;
             for(i=0;i<order.menuList.length;i++){
-                content+= order.menuList[i].category+"-"+order.menuList[i].menuString+" "+order.menuList[i].amount+order.menuList[i].unit+"\n";
+              content+= order.menuList[i].category+"-"+order.menuList[i].menuString+" ";
+              if(order.menuList[i].amount)
+                  content+= order.menuList[i].amount;
+              if(order.menuList[i].unit) 
+                  content+=order.menuList[i].unit;
+              content+="\n";
             }
 
             content+=order.price.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+"원\n"; // Why toLocaleString doesn't work?

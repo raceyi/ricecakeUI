@@ -29,10 +29,10 @@
                   <ion-col no-margin no-padding>
                         {{order.recipientName}}  {{order.recipientPhoneNumber}}  
                   </ion-col>
-                  <ion-col *ngIf="order.deliveryFee==undefined || order.deliveryFee==null || order.deliveryFee==0" no-margin no-padding>
+                  <ion-col *ngIf="order.deliveryFee==undefined || order.deliveryFee==null || order.deliveryFee==0" [ngStyle]="getPaymentBackground(order.paymentString)" no-margin no-padding>
                         {{order.totalPrice.toLocaleString()}}원 {{order.paymentString}}
                   </ion-col>
-                  <ion-col *ngIf="order.deliveryFee!=undefined && order.deliveryFee!=null && order.deliveryFee>0" no-margin no-padding>
+                  <ion-col *ngIf="order.deliveryFee!=undefined && order.deliveryFee!=null && order.deliveryFee>0" [ngStyle]="getPaymentBackground(order.paymentString)" no-margin no-padding>
                         {{order.totalPrice.toLocaleString()}}원(배송비{{order.deliveryFee.toLocaleString()}} 포함) {{order.paymentString}}
                   </ion-col>
               </ion-row>

@@ -5,7 +5,6 @@
             <ion-row>
               <ion-col col-3 no-padding no-margin>
                 <ion-item>
-                  ...
                   <ion-datetime *ngIf="order.id" class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="YYYY MM DD HH mm" placeholder="배달시간" [(ngModel)]="deliveryTimeUpdate"></ion-datetime>
                   <ion-datetime *ngIf="!order.id" class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="  HH mm" placeholder="배달시간" [(ngModel)]="order.deliveryTime"></ion-datetime>
                 </ion-item>
@@ -105,36 +104,59 @@
             </ion-row>
 
             <ion-row>
+              <!--
               <ion-col col-1 no-padding no-margin class="add-button">
                 <ion-item class="no-item-border-bottom">
                 <button no-padding no-margin ion-button (click)="addMenu()"><ion-icon name="add"></ion-icon></button>
                 </ion-item>
               </ion-col>
-              
+              -->
               <ion-col col-3 no-padding no-margin>
                 <ion-item class="no-item-border-bottom">
                   <ion-select no-padding interface="action-sheet" placeholder="메뉴종류" (ionChange)="selectCategory()" [(ngModel)]="categorySelected">
+                    <ion-option [value]="-1">추가 메뉴 없음</ion-option>
+                    <ion-option [value]="-2">주문메뉴</ion-option> 
                   <ion-option [value]="i" *ngFor="let menu of menus;let i=index">{{menu.category}}</ion-option>
                   </ion-select>
                 </ion-item>
               </ion-col>
-              <ion-col col-4 no-padding no-margin>
-                <ion-item class="no-item-border-bottom" *ngIf="categorySelected!=-1"> 
+
+               <ion-col col-8 no-padding no-margin *ngIf="categorySelected==-2">
+                <ion-item class="textarea-item no-item-border-bottom">
+                  <ion-textarea type="text" placeholder="메뉴입력" [(ngModel)]="etc"></ion-textarea>
+                </ion-item>                
+              </ion-col>
+              <ion-col col-4 no-padding no-margin *ngIf="categorySelected!=-2">
+                <ion-item class="no-item-border-bottom" *ngIf="categorySelected>=0 && menus[categorySelected].type!='complex-choice'"> 
                   <ion-select interface="action-sheet" placeholder="메뉴이름" [(ngModel)]="menuIndex">
-                    <ion-option [value]="i" *ngFor="let menuString of menus[categorySelected].menuStrings,let i=index">{{menuString}}</ion-option>
+                    <ion-option [value]="i" *ngFor="let menu of menus[categorySelected].menus,let i=index">{{menu.menuString}}</ion-option>
                   </ion-select>
+                </ion-item>    
+                <ion-item class="no-item-border-bottom" *ngIf="categorySelected>=0 && menus[categorySelected].type=='complex-choice'"> 
+                   떡 종류 선택({{menus[categorySelected].menus[0].choiceNumber}}개)
                 </ion-item>    
                 <ion-item class="no-item-border-bottom" *ngIf="categorySelected==-1"> 
                   메뉴종류 선택필요
                 </ion-item>                          
               </ion-col>
-              <ion-col col-2 no-padding no-margin>
+              <ion-col col-1 no-padding no-margin *ngIf="categorySelected>=0 && menus[categorySelected].type!='complex-choice'">
+                <ion-item class="no-item-border-bottom unit-selector">
+                  <ion-select no-padding placeholder="포장" interface="popover" [(ngModel)]="package">
+                    <ion-option value="기본">기본</ion-option>
+                    <ion-option value="기계">기계</ion-option>                    
+                    <ion-option value="미니랩">미니랩</ion-option>
+                  </ion-select>
+                </ion-item>                
+              </ion-col>      
+              <ion-col col-1 *ngIf="categorySelected>=0 && menus[categorySelected].type=='complex-choice'"> 
+              </ion-col>        
+              <ion-col col-2 no-padding no-margin *ngIf="categorySelected>=0">
                 <ion-item >
-                  <ion-input type="number" placeholder="수량"  text-right [(ngModel)]="amount"></ion-input>
+                  <ion-input class="amount-input" type="number" placeholder="수량"  text-right [(ngModel)]="amount"></ion-input>
                 </ion-item>
               </ion-col>
-              <ion-col col-2 no-padding no-margin>
-                <ion-item class="no-item-border-bottom">
+              <ion-col col-1 no-padding no-margin *ngIf="categorySelected>=0">
+                <ion-item class="no-item-border-bottom unit-selector">
                   <ion-select no-padding placeholder="단위" interface="popover" [(ngModel)]="unit">
                     <ion-option value="kg">kg</ion-option>
                     <ion-option value="말">말</ion-option>
@@ -144,7 +166,30 @@
                   </ion-select>
                 </ion-item>
               </ion-col>
+              <ion-col col-1 no-padding no-margin class="add-button" *ngIf="categorySelected!=-1">
+                <ion-item class="no-item-border-bottom">
+                <button no-padding no-margin ion-button (click)="addMenu()"><ion-icon name="add"></ion-icon></button>
+                </ion-item>
+              </ion-col>
             </ion-row>
+            <div *ngIf="categorySelected>=0 && menus[categorySelected].type=='complex-choice' && choices && choices.length>0">
+            <ion-row *ngFor="let choice of choices;let i=index;">
+              <ion-col col-3 no-padding no-margin>
+              </ion-col>
+              <ion-col col-4 no-padding no-margin>
+                <ion-item class="no-item-border-bottom">
+                <ion-searchbar  placeholder="메뉴이름" [(ngModel)]="choices[i].option" (ionInput)="onInput($event,i)">
+                </ion-searchbar>
+                <div [hidden]="choices[i].option==undefined || choices[i].option.length==0" *ngFor="let menu of choiceOptions[i]">
+                <button ion-button clear color="black" (click)="selectChoice(menu,i)"  >{{menu}}</button>    
+                </div>
+                </ion-item>    
+              </ion-col>
+              <ion-col col-5>
+              </ion-col> 
+            </ion-row>
+            </div>
+
 
             <ion-row>
               <ion-col col-3>
