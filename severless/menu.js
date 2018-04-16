@@ -53,6 +53,7 @@ updateMenuSequences=function(menus){   //menu: category, menu, categorySeq,menuS
                         if(err){
                             reject(err);
                         }else{
+                            console.log("updateMenuSequences is done");
                             resolve();
                         }
                 });
@@ -124,9 +125,10 @@ router.removeCategory=function(param){
 
 notifyMenusAndReturn=function(param){  // sequence변경이 필요하다면 변경하고 notifyAll호출이후 getMenus를 호출하여 변경된 menu를 return한다.
         return new Promise((resolve,reject)=>{
-                        console.log("param.registrationId:"+param.registrationId);
+                        //console.log("param.registrationId:"+param.registrationId);
                         if(param.sequences && param.sequences.length>0){
                         updateMenuSequences(param.sequences).then(()=>{
+                            console.log("call device.notifyAll with menu");
                             device.notifyAll("menu",param.registrationId).then(()=>{
                                 // return all menu table
                                 router.getMenus().then((data)=>{
@@ -742,15 +744,15 @@ sortMenu=[{"category":"기타","menu":"견과류강정"},
 
   console.log("output:"+JSON.stringify(menusWithSeq));
 
-router.addCategory({category:"십리향2송이" ,categorySeq: 0, type:"complex", sequences:[]});
-router.addCategory({category: "백리향2송이",categorySeq: 1, type:"complex", sequences:[]});
-router.addCategory({category: "십리향3송이(흑임자)",categorySeq: 2,type:"complex",  sequences:[]});
-router.addCategory({category: "백리향1송이",categorySeq: 3, type:"complex", sequences:[]});
+router.addCategory({category:"십리향2송이" ,categorySeq: 6, type:"complex", sequences:[]});
+router.addCategory({category: "백리향2송이",categorySeq: 3, type:"complex", sequences:[]});
+router.addCategory({category: "십리향3송이(흑임자)",categorySeq: 8,type:"complex",  sequences:[]});
+router.addCategory({category: "백리향1송이",categorySeq: 2, type:"complex", sequences:[]});
 router.addCategory({category: "백리향2송이(이티)",categorySeq: 4, type:"complex", sequences:[]});
-router.addCategory({category: "멥떡",categorySeq: 5, type:"general", sequences:[]});
-router.addCategory({category: "십리향1송이",categorySeq: 6,type:"complex",  sequences:[]});
+router.addCategory({category: "멥떡",categorySeq: 1, type:"general", sequences:[]});
+router.addCategory({category: "십리향1송이",categorySeq: 5,type:"complex",  sequences:[]});
 router.addCategory({category: "찰떡",categorySeq: 7, type:"general",sequences:[]});
-router.addCategory({category: "기타",categorySeq: 8, type:"general",sequences:[]});
+router.addCategory({category: "기타",categorySeq: 0, type:"general",sequences:[]});
 router.addCategory({category: "십리향3송이(이티)",categorySeq: 9, type:"complex", sequences:[]});
 
 menusWithSeq.forEach(menu=>{

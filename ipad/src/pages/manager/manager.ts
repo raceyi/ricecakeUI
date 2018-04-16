@@ -86,11 +86,16 @@ export class ManagerPage {
                             this.currentCategoryMenus=this.storageProvider.menus[0];
                         }else{
                             //update currentCategoryMenus
-                            let categoryIndex=this.storageProvider.menus.findIndex(function(val){return val.category==gPage.currentCategoryMenus.category}); 
-                            if(categoryIndex==-1)
-                                categoryIndex=0;    
-                            this.currentCategoryMenus=this.storageProvider.menus[categoryIndex];
-                            console.log("optionStrings:"+JSON.stringify(this.currentCategoryMenus.optionStrings));
+                            if(this.currentCategoryMenus.category){
+                                let categoryIndex=this.storageProvider.menus.findIndex(function(val){return val.category==gPage.currentCategoryMenus.category}); 
+                                if(categoryIndex==-1)
+                                    categoryIndex=0;    
+                                this.currentCategoryMenus=this.storageProvider.menus[categoryIndex];
+                                console.log("optionStrings:"+JSON.stringify(this.currentCategoryMenus.optionStrings));
+                            }else{
+                                console.log("fix currentCategoryMenus when menu is empty");
+                                gPage.currentCategoryMenus=this.storageProvider.menus[0];
+                            }
                         }
                         if(this.currentCategoryMenus.type.startsWith("complex")){
                                     //선택옵션의 경우 newComplexMenuItems사용을 위해 초기회가 필요하다.
@@ -126,6 +131,12 @@ export class ManagerPage {
          }else if(val[1].id.startsWith("menu_")){
               this.scrollMenuEnable=false;
          }
+
+        setTimeout(() => { //drag이후 아무 event도 오지 않는 경우가 있다. 3초후에 풀어준다
+            this.scrollCategoryEnable=true;
+            this.scrollMenuEnable=true; 
+        }, 3*1000); //  3 seconds     
+
       });
 
       // Subscribe to the drop event for the list component once it has
@@ -142,6 +153,18 @@ export class ManagerPage {
              this.scrollMenuEnable=true;
              this.restructMenus(val[2]);
          }
+      });
+
+      this.drag.over.subscribe((val) => {
+        console.log(`hum...over comes`);
+        //     this.scrollCategoryEnable=true;
+        //     this.scrollMenuEnable=true; 
+      });
+
+      this.drag.out.subscribe((val) => {
+        console.log(`hum....out comes`);
+         //    this.scrollCategoryEnable=true;
+         //    this.scrollMenuEnable=true; 
       });
   }
 

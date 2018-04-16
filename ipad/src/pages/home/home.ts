@@ -513,6 +513,7 @@ export class HomePage {
               progressBarLoader.dismiss();
         });
         */
+        console.log("refresh come");
         this.storageProvider.refresh("order");
         this.storageProvider.refresh("menu");
         this.storageProvider.refresh("carrier");
@@ -525,6 +526,7 @@ export class HomePage {
         }else if(this.section == 'delivery'){
             page=this.constructDeliveryPrint();
         }else if(this.section == 'produce'){
+            console.log("produce print");
             page=this.constructProducePrint();
         }
         let options: PrintOptions = {
@@ -544,9 +546,9 @@ export class HomePage {
 
 
     constructProducePrint(){
-        let rightCharacters:number=25;
-        let leftCharacters:number=9;
-        let linesPerPage=20;
+        let rightCharacters:number=27;
+        let leftCharacters:number=11;
+        let linesPerPage=25;
         let title=this.storageProvider.deliveryDate.substr(0,4)+"년"+
                       this.storageProvider.deliveryDate.substr(5,2)+"월"+
                       this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay;
@@ -554,13 +556,30 @@ export class HomePage {
         let currentLines=0;
         let eachItems=[];
         let totalLinesNumber=0;
-
+        console.log("constrcutProducePrint");
         this.storageProvider.produceList.forEach(item=>{
             let name="";
             let nameLength=1;
+            console.log("item.menu.length:"+item.menu.length);
             if(item.menu.length>leftCharacters){
-                nameLength++;
+                let remain=item.menu.length;
+                let index=0;
+                console.log("remain>leftCharacters");
+                while(remain>=leftCharacters){
+                    name+=item.menu.substr(index,leftCharacters)+"<br>";
+                    index+=leftCharacters;
+                    remain-=leftCharacters;
+                    nameLength++;
+                    console.log("name:"+name+"index:"+index);
+                }
+                if(remain>0){
+                    name+=item.menu.substr(index);
+                }                
+            }else{
+                name=item.menu;
             }
+            console.log("name:"+name);
+
             let list=" ";
             let totalLine="";
             item.amount.forEach(amount=>{
@@ -589,7 +608,7 @@ export class HomePage {
                 ++lineNumber;
             }
             totalLinesNumber+=lineNumber;
-            eachItems.push({lines:list, name:item.menu,number:lineNumber});    
+            eachItems.push({lines:list, name:name,number:lineNumber});    
         })
 
         console.log("eachItems:"+JSON.stringify(eachItems));

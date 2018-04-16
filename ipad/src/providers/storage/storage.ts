@@ -293,18 +293,9 @@ export class StorageProvider {
         var yesterday = new Date(this.deliveryDate).getTime() - 24 * 60 * 60 * 1000;
         console.log("order move yesterday:" + this.getISOtime(yesterday));
         this.setDeliveryDate(yesterday);
-        this.serverProvider.getOrders(this.deliveryDate.substr(0,10)).then((orders)=>{
-                this.orderList=orders;
-                this.convertOrderList(this.orderList);
-                this.orderList.sort(function(a,b){
-                        if (a.id < b.id) return -1;
-                        if (a.id > b.id) return 1;
-                        return 0;
-                } );
-                this.reconfigureDeliverySection();
-                this.configureProduceSection();
-                this.newOrderInputShown=false;
-                console.log("orderList.length:"+this.orderList.length);
+        this.refresh("order").then(()=>{
+            this.refresh("carrier")
+            this.newOrderInputShown=false;
         },err=>{
 
         });
@@ -314,18 +305,9 @@ export class StorageProvider {
         var tomorrow = new Date(this.deliveryDate).getTime() + 24 * 60 * 60 * 1000;
         console.log("order move tomorrow:" + this.getISOtime(tomorrow));
         this.setDeliveryDate(tomorrow);
-        this.serverProvider.getOrders(this.deliveryDate.substr(0,10)).then((orders)=>{
-                this.orderList=orders;
-                this.convertOrderList(this.orderList);
-                this.orderList.sort(function(a,b){
-                        if (a.id < b.id) return -1;
-                        if (a.id > b.id) return 1;
-                        return 0;
-                } );
-                this.reconfigureDeliverySection();
-                this.configureProduceSection(); 
-                this.newOrderInputShown=false;               
-                console.log("orderList.length:"+this.orderList.length);
+                this.refresh("order").then(()=>{
+            this.refresh("carrier")
+            this.newOrderInputShown=false;
         },err=>{
 
         });
@@ -501,7 +483,8 @@ export class StorageProvider {
                     return false;
                 });
                 console.log("hum... please check error -1")
-                this.assignOrderList[index].orders.push(order);
+                if(index!=-1)
+                        this.assignOrderList[index].orders.push(order);
                 console.log("hum... please check error -2")
             }
             else {
@@ -619,120 +602,6 @@ export class StorageProvider {
 
    /////////////////////////////////////////////////////
    // 메뉴 수정 -begin
-
-
-/*   
-    convertMenuInfo(menus){
-      let categories=[]; 
-      menus.forEach(menu=>{
-          if(categories.findIndex(function(value){
-                return menu.category==value.category;
-             })==-1){
-               if(menu.type)
-                  categories.push({category:menu.category, categorySeq:menu.categorySeq,type:menu.type});
-               else 
-                  categories.push({category:menu.category, categorySeq:menu.categorySeq});
-          }
-      })
-      console.log("categories:"+JSON.stringify(categories));
-
-      categories.sort(function(a,b){
-          if(a.categorySeq<b.categorySeq)
-              return -1;
-          if(a.categorySeq>b.categorySeq)
-              return 1;
-          return 0;                
-      });
-      console.log("menus.sort:"+JSON.stringify(menus));
-
-
-      let menuInfos=[];
-      categories.forEach(category=>{
-          let type;
-          if(category.type)
-            type=category.type;
-          else
-            type="general";
-          menuInfos.push({type:type,category:category.category, id: "category_"+category.category, categorySeq:category.categorySeq,ids:[],menus:[],optionStrings:[]});
-      })
-       
-        menus.forEach(menu=>{
-          if(menu.menu!="empty"){
-             let menuString=menu.menu;
-             let type="general";
-             let categoryIndex=categories.findIndex(function(value){
-                  if(menu.category==value.category)
-                    return true;
-                  return false;  
-             })
-             if(menu.hasOwnProperty("choiceNumber") && menu.choiceNumber>0){
-                    type="complex-choice";
-                    let menuObjs=JSON.parse(menu.menu);
-                    console.log("menuObj:"+JSON.stringify(menuObjs));
-                    let index=0;
-                    menuObjs.forEach(menuObj=>{
-                        let menuString="";
-                        let key:any=Object.keys(menuObj);
-                        menuString+=key+menuObj[key]+" ";
-                        menuInfos[categoryIndex].optionStrings.push(menuString); 
-                        ++index;
-                    });
-                    menuInfos[categoryIndex].menus.push(menu);
-                    menuInfos[categoryIndex].choiceNumber=menu.choiceNumber;
-                    menuInfos[categoryIndex].type=type;
-             }else if(menu.menu.indexOf("[")==0){ 
-                        type="complex";  
-                        let menuObjs=JSON.parse(menu.menu);
-                        console.log("menuObj:"+JSON.stringify(menuObjs));
-                        menuString="";
-                        menuObjs.forEach(menuObj=>{
-                        let key:any=Object.keys(menuObj);
-                        menuString+=key+menuObj[key]+" ";
-                        });
-                    menuInfos[categoryIndex].type=type;
-                    menuInfos[categoryIndex].menus.push(menu);
-                    menuInfos[categoryIndex].optionStrings.push(menuString); 
-             }else{
-                    menuInfos[categoryIndex].ids.push("menu_"+this.maxMenuId++);
-                    menuInfos[categoryIndex].menus.push(menu);
-                    menuInfos[categoryIndex].optionStrings.push(menuString); 
-                    //console.log("!!!menuids: "+JSON.stringify(menuInfos[categoryIndex]));
-             }
-          }
-        })     
-        
-        menuInfos.forEach(category=>{
-          category.menus.sort(function(a,b){
-              if(a.menuSeq<b.menuSeq)
-                  return -1;
-              if(a.menuSeq>b.menuSeq)
-                  return 1;
-              return 0;   
-            });
-           // menuString도 변경되어야 한다. 순서에 영향받는 General에 대해서만 변경해주면 된다. 
-           category.optionStrings=[];
-           category.menus.forEach(menu=>{
-              category.optionStrings.push(menu.menu);
-           });
-        });
-
-       // 카테고리 정렬. 왜 두번해야 할까?
-        menuInfos.sort(function(a,b){
-           if(a.categorySeq<b.categorySeq)
-              return -1;
-          if(a.categorySeq>b.categorySeq)
-              return 1;
-          return 0;                
-        });
-
-      if(!this.categorySelected && categories.length>0)
-          this.categorySelected=categories[0].category;
-
-        this.menus = menuInfos;
-        console.log("menus: " + JSON.stringify(this.menus));
-        this.events.publish('updated','menu');
-  }
-*/
   convertMenuInfo(menus){
       let categories=[]; 
       menus.forEach(menu=>{
@@ -850,9 +719,6 @@ export class StorageProvider {
         console.log("menus: " + JSON.stringify(this.menus));
         this.events.publish('updated','menu');
   }
-
-
-
 
   removeGeneralMenu(reqbody){
         return new Promise((resolve,reject)=>{   

@@ -9,7 +9,7 @@ var fs = require('fs');
 let async = require('async');
 const assert = require('assert');
 var dynamoDB = require('./dynamo');
-//var dynamoDB = require('./dynamo.test');
+var device =require("./device");
 var combination = require('./combination');
 var config=require('./bankda.config');
 
@@ -22,10 +22,9 @@ var config=require('./bankda.config');
 
 var last_bkcode; 
 
-notifyOrderAndReturn=function(param){  // sequence변경이 필요하다면 변경하고 notifyAll호출이후 getMenus를 호출하여 변경된 menu를 return한다.
+notifyOrderAndReturn=function(){  // sequence변경이 필요하다면 변경하고 notifyAll호출이후 getMenus를 호출하여 변경된 menu를 return한다.
         return new Promise((resolve,reject)=>{
-                console.log("param.registrationId:"+param.registrationId);
-                device.notifyAll("order",param.registrationId).then(()=>{
+                device.notifyAll("order").then(()=>{
                     resolve();
                 },err=>{
                     reject(err);
