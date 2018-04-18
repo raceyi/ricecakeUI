@@ -242,6 +242,16 @@ app.post('/checkPIN',(req,res) =>{
         });
 });
 
+app.post("/modifyPIN",(req,res)=>{
+        console.log("modifyPIN:",req.body);
+        manager.modifyPIN(req.body).then(()=>{
+            res.json({result:"success"});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+    
+});
+
 app.post('/getSalesWithBuyer',(req,res) =>{
         console.log("getSalesWithBuyer:",req.body);
         manager.getSalesWithBuyer(req.body).then(value=>{

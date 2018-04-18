@@ -42,8 +42,9 @@
               <ion-row>
                   <ion-col col-12 no-margin no-padding class="menu-style">
                           <ion-row *ngFor="let menu of order.menuList">
-                                {{menu.category}}-{{menu.menuString}}
-                                {{menu.amount}} {{menu.unit}}
+                                <span *ngIf="menu.type=='complex'" > {{menu.category}} {{menu.amount}} {{menu.unit}}</span>
+                                <span *ngIf="menu.type=='complex-choice'" > {{menu.category}}({{menu.menuString}}) {{menu.amount}}{{menu.unit}}</span>
+                                <span *ngIf="menu.type=='general'" > {{menu.category}}-{{menu.menuString}} {{menu.amount}} {{menu.unit}}</span>
                           </ion-row>
                           <ion-row *ngIf="order.memo!=undefined && order.memo!=null && order.memo.trim().length>0" style="border:solid 0.5px;">
                                 {{order.memo}}

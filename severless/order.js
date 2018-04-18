@@ -300,8 +300,8 @@ router.updateOrder=function (param){
                     ReturnValues:"UPDATED_NEW"
                 };
                 dynamoDB.dynamoUpdateItem(params).then(result=>{
-                        //기존 주문 정보와 차이가 payment,paymentMethod일 경우 문자를 전달하지 않는다. 
-                        if(!onlyPaymentChange(orderInfo,order)){
+                        //모든 변경에 대해 문자를 전달한다. 
+                        //if(!onlyPaymentChange(orderInfo,order)){
                             sms.notifyOrder(order).then(()=>{
                                 notifyAndReturn(param).then(()=>{
                                     resolve(result);
@@ -312,13 +312,13 @@ router.updateOrder=function (param){
                                 console.log("notifyOrder err:"+JSON.stringify(err));                    
                                 reject(err); //hum...
                             });            
-                        }else{
-                                notifyAndReturn(param).then(()=>{
-                                    resolve(result);
-                                },err=>{
-                                    reject(err);
-                                })  
-                        }
+                        //}else{
+                        //        notifyAndReturn(param).then(()=>{
+                        //            resolve(result);
+                        //        },err=>{
+                        //            reject(err);
+                        //        })  
+                        //}
                 },err=>{
                         if(err.code=="ConditionalCheckFailedException")            
                             reject("invalidOrderId");

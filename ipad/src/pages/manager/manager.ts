@@ -4,6 +4,7 @@ import {StorageProvider} from "../../providers/storage/storage";
 import {ServerProvider} from "../../providers/server/server";
 import { Events } from 'ionic-angular';
 import { DragulaService } from 'ng2-dragula/ng2-dragula';
+import {ManagerPasswordPage} from "../manager-password/manager-password";
 
 var gPage;
 
@@ -49,6 +50,9 @@ export class ManagerPage {
   scrollMenuEnable:boolean=true;
 
   currentCategoryMenus;
+  
+  editSequence:boolean=false;
+
   // 메뉴에 sequence 적용 코드-end
   ///////////////////////////////////////////////////////////////////////////////
 
@@ -305,7 +309,19 @@ export class ManagerPage {
     })
  }
  
-    addComplexMenuItem(){
+     modifySequence(){
+        this.editSequence=true;    
+    }
+
+    cancelSequence(){
+        this.editSequence=false;
+        // menu정보를 다시 불러온다.
+        this.storageProvider.refresh("menu").then(()=>{
+                this.saveButtonHidden=true;
+        })
+    }
+
+    addComplexMenuItem(type){
       if(!this.newName || this.newName.trim().length==0){
                 let alert = this.alertCtrl.create({
                   title: '이름을 입력해주시기 바랍니다.',
@@ -314,22 +330,26 @@ export class ManagerPage {
                 alert.present();
                 return;
       }
-      if( !this.newAmount|| this.newAmount.trim().length==0){
-                let alert = this.alertCtrl.create({
-                  title: '수량을 입력해 주시기 바랍니다.',
-                  buttons: ['확인']
-                });
-                alert.present();        
-                return;
-      }
-      if(parseInt(this.newAmount)<=0){
-                let alert = this.alertCtrl.create({
-                  title: '수량은 0보다 커야만 합니다.',
-                  buttons: ['확인']
-                });
-                alert.present();        
-                return;
-           
+      if(type=="complex"){
+            if( !this.newAmount|| this.newAmount.trim().length==0){
+                        let alert = this.alertCtrl.create({
+                        title: '수량을 입력해 주시기 바랍니다.',
+                        buttons: ['확인']
+                        });
+                        alert.present();        
+                        return;
+            }
+            if(parseInt(this.newAmount)<=0){
+                        let alert = this.alertCtrl.create({
+                        title: '수량은 0보다 커야만 합니다.',
+                        buttons: ['확인']
+                        });
+                        alert.present();        
+                        return;
+                
+            }
+      }else{
+          this.newAmount=1;
       }
       let object={};
       object[this.newName.trim()]=parseInt(this.newAmount);
@@ -833,4 +853,8 @@ export class ManagerPage {
 
  // 메뉴에 sequence 적용 코드-end
  /////////////////////////////////////////////////////////////////////////////// 
+ openConfig(){
+   console.log("push ManagerPasswordPage");
+   this.navCtrl.push(ManagerPasswordPage);
+ }
 }

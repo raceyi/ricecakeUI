@@ -21,6 +21,12 @@ export class UnassignedCarrierOrderComponent {
     console.log('Hello UnassignedCarrierOrderComponent Component');
   }
 
+  IsComplexMenu(menu){
+    if(menu.type && menu.type=="complex")
+        return true;
+    return false;    
+  }
+
   assingCarrier(order){
         if(order.carrier){
               this.output.emit(this.order);      

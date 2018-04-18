@@ -31,6 +31,12 @@ export class ExistingOrderComponent {
       this.output.emit({operation:"delete",order:this.order});
  }
 
+  IsComplexMenu(menu){
+    if(menu.type && menu.type=="complex")
+        return true;
+    return false;    
+  }
+
  getPaymentBackground(paymentString){
     //console.log("getPaymentBackground");
     if(paymentString=="현금-완납")

@@ -90,7 +90,13 @@ router.notifyOrder=function(order){
 
             let i;
             for(i=0;i<order.menuList.length;i++){
-              content+= order.menuList[i].category+"-"+order.menuList[i].menuString+" ";
+              if(order.menuList[i].type=="complex"){ //complex menu
+                    content+= order.menuList[i].category;    
+              }else if(order.menuList[i].type=="complex-choice"){
+                    content+= order.menuList[i].category+"("+order.menuList[i].menuString+") ";
+              }else if(order.menuList[i].type=="general"){
+                    content+= order.menuList[i].category+"-"+order.menuList[i].menuString+" ";
+              }
               if(order.menuList[i].amount)
                   content+= order.menuList[i].amount;
               if(order.menuList[i].unit) 

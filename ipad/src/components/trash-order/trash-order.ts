@@ -24,6 +24,12 @@ export class TrashOrderComponent {
     this.order = Object.assign({}, this.orderIn); // copy object. Very important!!!! 아주 중요하다. 입력값은 사용하지 않는다.
   }
 
+  IsComplexMenu(menu){
+    if(menu.type && menu.type=="complex")
+        return true;
+    return false;    
+  }
+
   recovery(){
         this.output.emit(this.order);
   }

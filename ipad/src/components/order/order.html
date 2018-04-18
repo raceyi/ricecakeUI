@@ -139,12 +139,14 @@
                   메뉴종류 선택필요
                 </ion-item>                          
               </ion-col>
-              <ion-col col-1 no-padding no-margin *ngIf="categorySelected>=0 && menus[categorySelected].type!='complex-choice'">
+              <ion-col col-1 no-padding no-margin *ngIf="categorySelected>=0 && menus[categorySelected].type=='general'">
                 <ion-item class="no-item-border-bottom unit-selector">
                   <ion-select no-padding placeholder="포장" interface="popover" [(ngModel)]="package">
                     <ion-option value="기본">기본</ion-option>
                     <ion-option value="기계">기계</ion-option>                    
                     <ion-option value="미니랩">미니랩</ion-option>
+                    <ion-option value="팩">팩</ion-option>
+                    <ion-option value="제사용">제사용</ion-option>
                   </ion-select>
                 </ion-item>                
               </ion-col>      

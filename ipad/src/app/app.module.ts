@@ -24,6 +24,7 @@ import {TrashPageModule} from '../pages/trash/trash.module';
 import {ManagerPageModule} from '../pages/manager/manager.module';
 import { CalendarModule } from 'ionic3-calendar-en';
 import { DragulaModule } from 'ng2-dragula/ng2-dragula';
+import {ManagerPasswordPageModule} from '../pages/manager-password/manager-password.module';
 
 import {MyErrorHandler} from '../classes/my-error-handler';
 
@@ -37,6 +38,7 @@ import {MyErrorHandler} from '../classes/my-error-handler';
     CalendarModule, //just testing 
     ManagerPageModule,
     ManagerEntrancePageModule,
+    ManagerPasswordPageModule,
     TrashPageModule,
     CarrierManagementPageModule,    
     HttpClientModule,

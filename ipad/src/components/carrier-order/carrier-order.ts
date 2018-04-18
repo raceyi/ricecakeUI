@@ -32,6 +32,12 @@ export class CarrierOrderComponent {
     this.modification=true;
   }
 
+  IsComplexMenu(menu){
+    if(menu.type && menu.type=="complex")
+        return true;
+    return false;    
+  }
+
   saveCarrier(){
     if(this.order.carrier==this.carrier){
       let alert = this.alertCtrl.create({

@@ -233,13 +233,13 @@ selectCategory(){
             alert.present();
             return false;
       }
-      let menu={category:"주문메뉴", menuString:this.etc, menu:this.etc};
+      let menu={category:"주문메뉴",type:"general", menuString:this.etc, menu:this.etc};
 
       this.order.menuList.push(menu);              
-      console.log("menu:"+JSON.stringify(menu));          
+      console.log("addMenu-주문메뉴-menu:"+JSON.stringify(menu));          
       this.categorySelected=-1;
       this.etc="";
-      return false;
+      return true;
     }
 
    if(this.menus[this.categorySelected].type!="complex-choice" ){
@@ -251,7 +251,7 @@ selectCategory(){
                 alert.present();
             return false;
         }    
-        if(!this.package || this.package.length ==0){
+        if(this.menus[this.categorySelected].type=="general" &&(!this.package || this.package.length ==0)){
                 let alert = this.alertCtrl.create({
                   title: '포장을 선택해 주시기 바랍니다.',
                   buttons: ['확인']
@@ -338,8 +338,8 @@ selectCategory(){
                 menuObjs.forEach(menuObj=>{
                    let key:any=Object.keys(menuObj)[0];
                    console.log("key:"+key);
-                   menuStringWithPackage+=key+"("+this.package+")"+menuObj[key]+" ";
-                   let keyName:string=key+"("+this.package+")";
+                   menuStringWithPackage+=key+menuObj[key]+" ";
+                   let keyName:string=key;
                    let object={};
                    object[keyName]=menuObj[key];
                    menuObjsWithPackage.push(object);
@@ -353,6 +353,7 @@ selectCategory(){
     console.log("menuStringWithPackage:"+menuStringWithPackage);
 
   let menu={category:this.menus[this.categorySelected].category,
+              type:this.menus[this.categorySelected].type,
               menuString:menuStringWithPackage,
               menu:menuWithPackage, 
               amount:this.amount, unit: this.unit}
@@ -476,7 +477,7 @@ autoHypenPhone(str){
       return ;
     }
 
-    if(this.order.menuList==undefined || this.order.menuList.length==0){
+    if(this.categorySelected!=-1 || this.order.menuList==undefined || this.order.menuList.length==0){
         if(!this.addMenu())
             return;        
     }
