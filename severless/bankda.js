@@ -195,7 +195,7 @@ addTransactionRecord=function(record,next){
             console.log("!!!buyerName:"+record.$.bkjukyo);
             let params = {
                 TableName: "order",
-                FilterExpression: "(#orderedTime between :start and :end) AND #buyerName=:buyerName AND #paymentMethod=:cash AND #payment<>:payment",
+                FilterExpression: "(#orderedTime between :start and :end) AND #buyerName=:buyerName AND #paymentMethod=:cash AND #payment=:payment",
                 ExpressionAttributeNames: {
                     "#orderedTime": "orderedTime",
                     "#buyerName":"buyerName",
@@ -206,7 +206,7 @@ addTransactionRecord=function(record,next){
                     ":start": start,
                     ":end": end ,
                     ":buyerName": record.$.bkjukyo,
-                    ":payment":"paid",
+                    ":payment":"unpaid-transaction",
                     ":cash":"cash"
                 }
             };

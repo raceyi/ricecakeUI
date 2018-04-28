@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {ConfigProvider} from "../config/config";
 import { NavController,AlertController,Platform ,Events} from 'ionic-angular';
-
+import * as moment from 'moment';
 /*
   Generated class for the StorageProvider provider.
 
@@ -43,21 +43,32 @@ export class StorageProvider {
   menus:any=[{"category":"검증(세트-선택)","menuSeq":0,"menu":"[{\"두텁\":2},{\"호박(기계)\":1},{\"떡꾹\":1},{\"찰떡\":3}]","categorySeq":10,"choiceNumber":"3"},{"category":"검증(세트-선택)","menu":"empty","categorySeq":10,"type":"complex-choice"},{"category":"십리향2송이","menuSeq":0,"menu":"[{\"완두(기계)\":3},{\"모듬(기계)\":3},{\"밤콩(기계)\":3},{\"쑥밤콩(기계)\":3},{\"약식(기계)\":3},{\"호박(기계)\":3}]","categorySeq":6},{"category":"십리향2송이","menuSeq":-1,"menu":"empty","categorySeq":6,"type":"complex"},{"category":"백리향2송이","menuSeq":0,"menu":"[{\"쑥밤콩(미니랩)\":3},{\"호박(미니랩)\":3},{\"모듬(미니랩)\":3},{\"약식(미니랩)\":3},{\"콩영양(미니랩)\":3},{\"완두(미니랩)\":3},{\"딸기(미니랩)\":9},{\"고구마호박찰(미니랩)\":12}]","categorySeq":3},{"category":"백리향2송이","menuSeq":-1,"menu":"empty","categorySeq":3,"type":"complex"},{"category":"십리향3송이(흑임자)","menuSeq":0,"menu":"[{\"완두(기계)\":3},{\"호박(기계)\":3},{\"모듬(기계)\":3},{\"약식(기계)\":3},{\"밤콩(기계)\":3},{\"쑥밤콩(기계)\":3}]","categorySeq":8},{"category":"십리향3송이(흑임자)","menuSeq":-1,"menu":"empty","categorySeq":8,"type":"complex"},{"category":"백리향1송이","menuSeq":0,"menu":"[{\"호박(미니랩)\":3},{\"쑥밤콩(미니랩)\":3},{\"밤콩(미니랩)\":3},{\"고구마호박찰(미니랩)\":3},{\"완두(미니랩)\":3},{\"약식(미니랩)\":3},{\"콩영양(미니랩)\":3},{\"모듬(미니랩)\":3}]","categorySeq":2},{"category":"백리향1송이","menuSeq":-1,"menu":"empty","categorySeq":2,"type":"complex"},{"category":"백리향2송이(이티)","menuSeq":0,"menu":"[{\"고구마호박찰(미니랩)\":12},{\"호박(미니랩)\":3},{\"쑥밤콩(미니랩)\":3},{\"완두(미니랩)\":3},{\"모듬(미니랩)\":3},{\"약식(미니랩)\":3},{\"콩영양(미니랩)\":3}]","categorySeq":4},{"category":"백리향2송이(이티)","menuSeq":-1,"menu":"empty","categorySeq":4,"type":"complex"},{"category":"멥떡","menuSeq":-1,"menu":"empty","categorySeq":5,"type":"general"},{"category":"멥떡","menuSeq":0,"menu":"가래떡","categorySeq":5},{"category":"멥떡","menuSeq":1,"menu":"꿀떡","categorySeq":5},{"category":"멥떡","menuSeq":2,"menu":"녹두호박설기","categorySeq":5},{"category":"멥떡","menuSeq":3,"menu":"단호박소담","categorySeq":5},{"category":"멥떡","menuSeq":4,"menu":"대추편","categorySeq":5},{"category":"멥떡","menuSeq":5,"menu":"딸기설기","categorySeq":5},{"category":"멥떡","menuSeq":6,"menu":"멥편 (팥)","categorySeq":5},{"category":"멥떡","menuSeq":7,"menu":"멥편(기피)","categorySeq":5},{"category":"멥떡","menuSeq":8,"menu":"멥편(녹두)","categorySeq":5},{"category":"멥떡","menuSeq":9,"menu":"멥편(콩)","categorySeq":5},{"category":"멥떡","menuSeq":10,"menu":"무지개설기","categorySeq":5},{"category":"멥떡","menuSeq":11,"menu":"미니설기(100)","categorySeq":5},{"category":"멥떡","menuSeq":12,"menu":"미니설기(무지)","categorySeq":5},{"category":"멥떡","menuSeq":13,"menu":"미니설기(첫돌)","categorySeq":5},{"category":"멥떡","menuSeq":14,"menu":"미니설기(하트)","categorySeq":5},{"category":"멥떡","menuSeq":15,"menu":"바람떡","categorySeq":5},{"category":"멥떡","menuSeq":16,"menu":"밤콩설기","categorySeq":5},{"category":"멥떡","menuSeq":17,"menu":"백설기","categorySeq":5},{"category":"멥떡","menuSeq":18,"menu":"송편","categorySeq":5},{"category":"멥떡","menuSeq":19,"menu":"쑥밤콩설기","categorySeq":5},{"category":"멥떡","menuSeq":20,"menu":"잣설기","categorySeq":5},{"category":"멥떡","menuSeq":21,"menu":"절편(2색)","categorySeq":5},{"category":"멥떡","menuSeq":22,"menu":"절편(쑥)","categorySeq":5},{"category":"멥떡","menuSeq":23,"menu":"절편(흰)","categorySeq":5},{"category":"멥떡","menuSeq":24,"menu":"초코설기","categorySeq":5},{"category":"멥떡","menuSeq":25,"menu":"현미설기","categorySeq":5},{"category":"멥떡","menuSeq":26,"menu":"흑임자설기","categorySeq":5},{"category":"십리향1송이","menuSeq":0,"menu":"[{\"완두(기계)\":3},{\"호박(기계)\":3},{\"모듬(기계)\":3}]","categorySeq":5},{"category":"십리향1송이","menuSeq":-1,"menu":"empty","categorySeq":5,"type":"complex"},{"category":"찰떡","menuSeq":-1,"menu":"empty","categorySeq":7,"type":"general"},{"category":"찰떡","menuSeq":0,"menu":"고구마호박찰","categorySeq":7},{"category":"찰떡","menuSeq":1,"menu":"기피인절미","categorySeq":7},{"category":"찰떡","menuSeq":2,"menu":"기피편","categorySeq":7},{"category":"찰떡","menuSeq":3,"menu":"깨편","categorySeq":7},{"category":"찰떡","menuSeq":4,"menu":"녹두편","categorySeq":7},{"category":"찰떡","menuSeq":5,"menu":"모듬영양","categorySeq":7},{"category":"찰떡","menuSeq":6,"menu":"시루떡","categorySeq":7},{"category":"찰떡","menuSeq":7,"menu":"쑥인절미","categorySeq":7},{"category":"찰떡","menuSeq":8,"menu":"약식","categorySeq":7},{"category":"찰떡","menuSeq":9,"menu":"완두시루","categorySeq":7},{"category":"찰떡","menuSeq":10,"menu":"이티","categorySeq":7},{"category":"찰떡","menuSeq":11,"menu":"콩깨편","categorySeq":7},{"category":"찰떡","menuSeq":12,"menu":"콩영양","categorySeq":7},{"category":"찰떡","menuSeq":13,"menu":"콩인절미","categorySeq":7},{"category":"찰떡","menuSeq":14,"menu":"콩편","categorySeq":7},{"category":"찰떡","menuSeq":15,"menu":"함시루","categorySeq":7},{"category":"찰떡","menuSeq":16,"menu":"현미모듬","categorySeq":7},{"category":"찰떡","menuSeq":17,"menu":"현미쑥인절미","categorySeq":7},{"category":"찰떡","menuSeq":18,"menu":"현미인절미","categorySeq":7},{"category":"찰떡","menuSeq":19,"menu":"흑임자인절미","categorySeq":7},{"category":"찰떡","menuSeq":20,"menu":"흰인절미","categorySeq":7},{"category":"기타","menuSeq":-1,"menu":"empty","categorySeq":8,"type":"general"},{"category":"기타","menuSeq":1,"menu":"견과류강정","categorySeq":8},{"category":"기타","menuSeq":2,"menu":"멥밥","categorySeq":8},{"category":"기타","menuSeq":3,"menu":"미숫가루(고품격)","categorySeq":8},{"category":"기타","menuSeq":4,"menu":"미숫가루(오곡)","categorySeq":8},{"category":"기타","menuSeq":5,"menu":"미숫가루(흑임자)","categorySeq":8},{"category":"기타","menuSeq":6,"menu":"수수팥(2색)","categorySeq":8},{"category":"기타","menuSeq":7,"menu":"수수팥(카스테라)","categorySeq":8},{"category":"기타","menuSeq":8,"menu":"수수팥(팥)","categorySeq":8},{"category":"기타","menuSeq":9,"menu":"약과","categorySeq":8},{"category":"기타","menuSeq":0,"menu":"오곡밥","categorySeq":8},{"category":"기타","menuSeq":10,"menu":"오곡밥(팥만)","categorySeq":8},{"category":"십리향3송이(이티)","menuSeq":0,"menu":"[{\"호박(기계)\":3},{\"모듬(기계)\":3},{\"약식(기계)\":3},{\"쑥밤콩(기계)\":3},{\"밤콩(기계)\":3},{\"완두(기계)\":3}]","categorySeq":7},{"category":"십리향3송이(이티)","menuSeq":-1,"menu":"empty","categorySeq":7,"type":"complex"}];
   categorySelected;
   maxMenuId:number=0;
+  deliveryDate;
 
   constructor(public http: HttpClient,
               public events: Events, 
               public configProvider:ConfigProvider) {
     console.log('Hello StorageProvider Provider');
+
+    var d = new Date();
+    var mm = d.getMonth() < 9 ? "0" + (d.getMonth() + 1) : (d.getMonth() + 1); // getMonth() is zero-based
+    var dd = d.getDate() < 10 ? "0" + d.getDate() : d.getDate();
+    var hh = d.getHours() < 10 ? "0" + d.getHours() : d.getHours();
+    var min = d.getMinutes() < 10 ? "0" + d.getMinutes() : d.getMinutes();
+    var dString = d.getFullYear() + '-' + (mm) + '-' + dd + 'T' + hh + ":" + min + moment().format("Z");
+    this.deliveryDate = dString;
+
     this.orderList=   [
         {
             "buyerName": "이경주",
             "totalPrice": 34000,
             "deliveryFee": 4000,
-            "deliveryTime": "2018-03-29T03:00:00.000Z",
+            "deliveryTime":    "2018-03-29T02:00:00.000Z",
+            "deliveryTimeEnd": "2018-03-29T05:00:00.000Z",
             "recipientAddress": "xxxxx",
             "orderedTime": "2018-03-29T10:33:13.985Z",
             "recipientName": "이경주",
-            "payment": "unpaid-pre",
+            "payment": "paid-pre",
             "memo": "맛있게....",
             "paymentMethod": "cash",
             "carrier": null,
@@ -85,7 +96,7 @@ export class StorageProvider {
             "recipientAddress": "xxxxx",
             "orderedTime": "2018-03-29T10:32:34.440Z",
             "recipientName": "이경주",
-            "payment": "unpaid-pre",
+            "payment": "unpaid-after",
             "memo": "맛있게....",
             "paymentMethod": "cash",
             "carrier": null,
@@ -113,7 +124,7 @@ export class StorageProvider {
             "recipientAddress": "xxxxx",
             "orderedTime": "2018-03-29T10:33:12.849Z",
             "recipientName": "이경주",
-            "payment": "unpaid-pre",
+            "payment": "unpaid-transaction",
             "memo": "맛있게....",
             "paymentMethod": "cash",
             "carrier": null,
@@ -141,7 +152,7 @@ export class StorageProvider {
             "recipientAddress": "xxxxx",
             "orderedTime": "2018-03-29T10:33:11.721Z",
             "recipientName": "이경주",
-            "payment": "paid",
+            "payment": "unknown",
             "memo": "맛있게....",
             "paymentMethod": "cash",
             "carrier": null,
@@ -160,18 +171,197 @@ export class StorageProvider {
             "deliveryMethod": "배달",
             "buyerPhoneNumber": "010-2722-8226",
             "hide": true
+        },
+        {
+            "buyerName": "이경주",
+            "totalPrice": 34000,
+            "deliveryFee": 4000,
+            "deliveryTime": "2018-03-29T03:00:00.000Z",
+            "recipientAddress": "xxxxx",
+            "orderedTime": "2018-03-29T10:33:11.721Z",
+            "recipientName": "이경주",
+            "payment": "month",
+            "memo": "맛있게....",
+            "paymentMethod": "cash",
+            "carrier": null,
+            "recipientPhoneNumber": "010-2722-8226",
+            "price": 30000,
+            "id": 65,
+            "menuList": [
+                {
+                    "menuString": "모듬찰떡1 단호박소담1 완두시루떡1 ",
+                    "amount": "1",
+                    "unit": "개",
+                    "category": "십리향1송이",
+                    "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
+                }
+            ],
+            "deliveryMethod": "배달",
+            "buyerPhoneNumber": "010-2722-8226",
+            "hide": true
+        },
+        {
+            "buyerName": "이경주",
+            "totalPrice": 34000,
+            "deliveryFee": 4000,
+            "deliveryTime": "2018-03-29T03:00:00.000Z",
+            "recipientAddress": "xxxxx",
+            "orderedTime": "2018-03-29T10:33:11.721Z",
+            "recipientName": "이경주",
+            "payment": "paid",
+            "memo": "맛있게....",
+            "paymentMethod": "card",
+            "carrier": null,
+            "recipientPhoneNumber": "010-2722-8226",
+            "price": 30000,
+            "id": 64,
+            "menuList": [
+                {
+                    "menuString": "모듬찰떡1 단호박소담1 완두시루떡1 ",
+                    "amount": "1",
+                    "unit": "개",
+                    "category": "십리향1송이",
+                    "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
+                }
+            ],
+            "deliveryMethod": "배달",
+            "buyerPhoneNumber": "010-2722-8226",
+            "hide": true
+        },
+        {
+            "buyerName": "이경주",
+            "totalPrice": 34000,
+            "deliveryFee": 4000,
+            "deliveryTime": "2018-03-29T03:00:00.000Z",
+            "recipientAddress": "xxxxx",
+            "orderedTime": "2018-03-29T10:33:11.721Z",
+            "recipientName": "이경주",
+            "payment": "unpaid",
+            "memo": "맛있게....",
+            "paymentMethod": "card",
+            "carrier": null,
+            "recipientPhoneNumber": "010-2722-8226",
+            "price": 30000,
+            "id": 63,
+            "menuList": [
+                {
+                    "menuString": "모듬찰떡1 단호박소담1 완두시루떡1 ",
+                    "amount": "1",
+                    "unit": "개",
+                    "category": "십리향1송이",
+                    "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
+                }
+            ],
+            "deliveryMethod": "배달",
+            "buyerPhoneNumber": "010-2722-8226",
+            "hide": true
+        },
+        {
+            "buyerName": "이경주",
+            "totalPrice": 34000,
+            "deliveryFee": 4000,
+            "deliveryTime": "2018-03-29T03:00:00.000Z",
+            "recipientAddress": "xxxxx",
+            "orderedTime": "2018-03-29T10:33:11.721Z",
+            "recipientName": "이경주",
+            "payment": "paid",
+            "memo": "맛있게....",
+            "paymentMethod": "cash",
+            "carrier": null,
+            "recipientPhoneNumber": "010-2722-8226",
+            "price": 30000,
+            "id": 62,
+            "menuList": [
+                {
+                    "menuString": "모듬찰떡1 단호박소담1 완두시루떡1 ",
+                    "amount": "1",
+                    "unit": "개",
+                    "category": "십리향1송이",
+                    "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
+                }
+            ],
+            "deliveryMethod": "배달",
+            "buyerPhoneNumber": "010-2722-8226",
+            "hide": true
+        },
+        {
+            "buyerName": "이경주",
+            "totalPrice": 34000,
+            "deliveryFee": 4000,
+            "deliveryTime": "2018-03-29T03:00:00.000Z",
+            "recipientAddress": "xxxxx",
+            "orderedTime": "2018-03-29T10:33:11.721Z",
+            "recipientName": "이경주",
+            "payment": "paid",
+            "memo": "맛있게....",
+            "paymentMethod": "card",
+            "carrier": null,
+            "recipientPhoneNumber": "010-2722-8226",
+            "price": 30000,
+            "id": 61,
+            "menuList": [
+                {
+                    "menuString": "모듬찰떡1 단호박소담1 완두시루떡1 ",
+                    "amount": "1",
+                    "unit": "개",
+                    "category": "십리향1송이",
+                    "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
+                }
+            ],
+            "deliveryMethod": "배달",
+            "buyerPhoneNumber": "010-2722-8226",
+            "hide": true
+        },
+        {
+            "buyerName": "이경주",
+            "totalPrice": 34000,
+            "deliveryFee": 4000,
+            "deliveryTime": "2018-03-29T03:00:00.000Z",
+            "recipientAddress": "xxxxx",
+            "orderedTime": "2018-03-29T10:33:11.721Z",
+            "recipientName": "이경주",
+            "payment": "paid-after",
+            "memo": "맛있게....",
+            "paymentMethod": "cash",
+            "carrier": null,
+            "recipientPhoneNumber": "010-2722-8226",
+            "price": 30000,
+            "id": 60,
+            "menuList": [
+                {
+                    "menuString": "모듬찰떡1 단호박소담1 완두시루떡1 ",
+                    "amount": "1",
+                    "unit": "개",
+                    "category": "십리향1송이",
+                    "menu": "[{\"모듬찰떡\":1},{\"단호박소담\":1},{\"완두시루떡\":1}]"
+                }
+            ],
+            "deliveryMethod": "배달",
+            "buyerPhoneNumber": "010-2722-8226",
+            "hide": true
         }
+
     ];
 
     this.trashList=this.orderList; //just test
     
     this.convertMenuInfo(this.menus);
     this.convertOrderList(this.orderList);
+    /*
     this.orderList.sort(function(a,b){
             if (a.id < b.id) return -1;
             if (a.id > b.id) return 1;
             return 0;
     } );
+    */
+    this.orderList.sort(function(a,b){
+            let a_delivery=new Date(a.deliveryTime);
+            let b_delivery=new Date(b.deliveryTime);
+            if (a_delivery.getTime() < b_delivery.getTime()) return -1;
+            if (a_delivery.getTime() > b_delivery.getTime()) return 1;
+            return 0;
+    } );
+
     console.log("orderList.length:"+this.orderList.length);
   }
  
@@ -300,24 +490,23 @@ export class StorageProvider {
                                     order.orderedTime.substr(14,2)+"분";
            console.log(order.orderedTime+"orderedTimeString:"+order.orderedTimeString);
            if(order.paymentMethod=="cash"){
-               if(order.payment.startsWith("paid")){
-                    order.paymentString="현금-완납";
-               }else if(order.payment.startsWith("unpaid")){ //must be unpaid
-                    let strs=order.payment.split("-");
-                    if(strs[1]=="pre")
-                        order.paymentString="현금-선불";
-                    else if(strs[1]=="after")    
-                        order.paymentString="현금-후불";
+
+               if(order.payment=="paid-pre"){
+                    order.paymentString="현금선불";
+               }else if(order.payment=="unpaid-after" || order.payment=="paid-after"){
+                    order.paymentString="현금후불";                    
+               }else if(order.payment=="unpaid-transaction" || order.payment=="paid"){
+                    order.paymentString="현금이체";
+               }else if(order.payment=="unknown"){
+                    order.paymentString="현금보류";
+               }else if(order.payment=="month"){
+                    order.paymentString="월말정산";
                }
            }else if(order.paymentMethod=="card"){ //must be card
-               if(order.payment.startsWith("paid")){
-                    order.paymentString="카드-완납";
-               }else if(order.payment.startsWith("unpaid")){ //must be unpaid
-                    let strs=order.payment.split("-");
-                    if(strs[1]=="pre")
-                        order.paymentString="카드-선불(미납)";
-                    else if(strs[1]=="after")   
-                        order.paymentString="카드-후불(미납)";
+               if(order.payment=="paid-pre"){
+                    order.paymentString="카드선불";
+               }else if(order.payment=="paid" || order.payment=="unpaid"){
+                    order.paymentString="카드기";
                }
            }
     });

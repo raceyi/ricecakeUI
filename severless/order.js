@@ -46,6 +46,7 @@ router.addOrder=function (param){
                         "id":id,
                         "orderedTime": localCurrTime.toISOString(),
                         "deliveryTime":order.deliveryTime,
+                        "deliveryTimeEnd":order.deliveryTimeEnd,
                         "recipientAddress":order.recipientAddress.trim(),
                         "recipientAddressDetail":recipientAddressDetail,
                         "buyerName":order.buyerName.trim(),
@@ -274,7 +275,7 @@ router.updateOrder=function (param){
                     ExpressionAttributeNames: {
                         "#id":"id"
                     },
-                    UpdateExpression:"set deliveryTime = :deliveryTime, recipientAddress=:recipientAddress,\
+                    UpdateExpression:"set deliveryTime = :deliveryTime, deliveryTimeEnd =:deliveryTimeEnd, recipientAddress=:recipientAddress,\
                                     recipientAddressDetail=:recipientAddressDetail,buyerName=:buyerName,\
                                     recipientName=:recipientName,recipientPhoneNumber=:recipientPhoneNumber,\
                                     buyerPhoneNumber=:buyerPhoneNumber,menuList=:menuList,\
@@ -282,6 +283,7 @@ router.updateOrder=function (param){
                                     deliveryMethod=:deliveryMethod,deliveryFee=:deliveryFee,totalPrice=:totalPrice",
                     ExpressionAttributeValues:{
                         ":deliveryTime":order.deliveryTime,
+                        ":deliveryTimeEnd":order.deliveryTimeEnd,
                         ":recipientAddress":order.recipientAddress,
                         ":recipientAddressDetail":order.recipientAddressDetail,
                         ":buyerName":order.buyerName,

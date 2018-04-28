@@ -31,6 +31,7 @@ export class StorageProvider {
   ///////////////////
   // produceSection
     produceList=[];
+    produceTables=[];
 
   newOrderInputShown:boolean=false;
 
@@ -202,9 +203,11 @@ export class StorageProvider {
                         this.orderList=orders;
                         this.convertOrderList(this.orderList);
                         this.orderList.sort(function(a,b){
-                                if (a.id > b.id) return -1;
-                                if (a.id < b.id) return 1;
-                                return 0;
+                            let a_delivery=new Date(a.deliveryTime);
+                            let b_delivery=new Date(b.deliveryTime);
+                            if (a_delivery.getTime() < b_delivery.getTime()) return -1;
+                            if (a_delivery.getTime() > b_delivery.getTime()) return 1;
+                            return 0;
                         } );
                         let now=new Date();
                         this.lastOrderUpdateTime=now.toString();
@@ -321,9 +324,11 @@ export class StorageProvider {
                 this.orderList=orders;
                 this.convertOrderList(this.orderList);
                 this.orderList.sort(function(a,b){
-                        if (a.id < b.id) return -1;
-                        if (a.id > b.id) return 1;
-                        return 0;
+                    let a_delivery=new Date(a.deliveryTime);
+                    let b_delivery=new Date(b.deliveryTime);
+                    if (a_delivery.getTime() < b_delivery.getTime()) return -1;
+                    if (a_delivery.getTime() > b_delivery.getTime()) return 1;
+                    return 0;
                 } );
                 this.reconfigureDeliverySection();
                 this.configureProduceSection(); 
@@ -340,25 +345,30 @@ export class StorageProvider {
                                     order.orderedTime.substr(8,2)+"일"+order.orderedTime.substr(11,2)+"시"+ 
                                     order.orderedTime.substr(14,2)+"분";
            console.log(order.orderedTime+"orderedTimeString:"+order.orderedTimeString);
-           if(order.paymentMethod=="cash"){
-               if(order.payment.startsWith("paid")){
-                    order.paymentString="현금-완납";
-               }else if(order.payment.startsWith("unpaid")){ //must be unpaid
-                    let strs=order.payment.split("-");
-                    if(strs[1]=="pre")
-                        order.paymentString="현금-선불";
-                    else if(strs[1]=="after")    
-                        order.paymentString="현금-후불";
+            if(order.paymentMethod=="cash"){
+
+               if(order.payment=="paid-pre"){
+                    order.paymentString="현금선불-완납";
+               }else if(order.payment=="unpaid-after"){
+                    order.paymentString="현금후불";                    
+               }else if(order.payment=="paid-after"){
+                    order.paymentString="현금후불-완납";                    
+               }else if(order.payment=="unpaid-transaction"){ 
+                    order.paymentString="현금이체";
+               }else if(order.payment=="paid"){
+                    order.paymentString="현금이체-완납";
+               }else if(order.payment=="unknown"){
+                    order.paymentString="현금보류";
+               }else if(order.payment=="month"){
+                    order.paymentString="월말정산";
                }
            }else if(order.paymentMethod=="card"){ //must be card
-               if(order.payment.startsWith("paid")){
-                    order.paymentString="카드-완납";
-               }else if(order.payment.startsWith("unpaid")){ //must be unpaid
-                    let strs=order.payment.split("-");
-                    if(strs[1]=="pre")
-                        order.paymentString="카드-선불(미납)";
-                    else if(strs[1]=="after")   
-                        order.paymentString="카드-후불(미납)";
+               if(order.payment=="paid-pre"){
+                    order.paymentString="카드선불";
+               }else if(order.payment=="unpaid"){
+                    order.paymentString="카드기";
+               }else if(order.payment=="paid"){
+                   order.paymentString="카드기-완납";
                }
            }
     });
@@ -518,7 +528,7 @@ export class StorageProvider {
         if(customerMenu){
             let index = this.produceList.findIndex(function (val) {
                 console.log("val.menu:" + JSON.stringify(val));
-                if (val.menu == "주문메뉴")
+                if (val.menu == "직접입력")
                     return true;
                 else
                     return false;
@@ -526,7 +536,7 @@ export class StorageProvider {
             console.log("index:" + index);
             if (index < 0) {
                 console.log
-                this.produceList.push({ menu: "주문메뉴", amount: [{ amount: amount + menu.unit, time: hhmm, min: min ,menu: menu.menu}] });
+                this.produceList.push({ menu: "직접입력", amount: [{ amount: amount + menu.unit, time: hhmm, min: min ,menu: menu.menu}] });
             }
             else {
                 this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, min: min,menu:menu.menu });
@@ -543,10 +553,10 @@ export class StorageProvider {
             console.log("index:" + index);
             if (index < 0) {
                 console.log
-                this.produceList.push({ menu: menu.menu, amount: [{ amount: amount + menu.unit, time: hhmm, min: min }] });
+                this.produceList.push({ menu: menu.menu, amount: [{ amount: amount + menu.unit, time: hhmm, min: min ,unit:menu.unit,amountNum:amount}] });
             }
             else {
-                this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, min: min });
+                this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, min: min ,unit:menu.unit,amountNum:amount});
             }
             console.log("produceList:" + JSON.stringify(this.produceList));
         }
@@ -557,7 +567,7 @@ export class StorageProvider {
         this.orderList.forEach( (order)=> {
             order.menuList.forEach( (menu) =>{
                 console.log("produceSection- menu:"+JSON.stringify(menu));
-                if(menu.category=="주문메뉴"){
+                if(menu.category=="직접입력"){
                     this.addMenuInList(menu, order.deliveryTime, menu.amount,true);
                 }else if (menu.menu.indexOf("[") == 0) {
                     var menuObjs = JSON.parse(menu.menu);
@@ -584,13 +594,41 @@ export class StorageProvider {
                     return 1;
                 return 0;
             });
+            let kg=0;
+            let mal=0;
+            let doi=0;
+            let jyupsi=0;
+            let gae=0;
+            menu.amount.forEach(amount=>{
+                if(amount.unit=='kg'){
+                    if(Number(amount.amountNum)!=NaN)
+                        kg+=Number(amount.amountNum);
+                }else if(amount.unit =='말'){
+                    if(Number(amount.amountNum)!=NaN)
+                        mal+=Number(amount.amountNum);
+                }else if( amount.unit=='되'){
+                    if(Number(amount.amountNum)!=NaN)
+                        doi+=Number(amount.amountNum);
+                }else if( amount.unit=='접시'){
+                    if(Number(amount.amountNum)!=NaN)
+                        jyupsi+=Number(amount.amountNum);
+                }else if( amount.unit=='개'){
+                    if(Number(amount.amountNum)!=NaN)
+                        gae+=Number(amount.amountNum);
+                }
+            })
+            menu.kg=kg;
+            menu.mal=mal;
+            menu.doi=doi;
+            menu.jyupsi=jyupsi;
+            menu.gae=gae;
         });
         this.produceList.sort(function(a,b){
-            if(a.menu=="주문메뉴" && b.menu=="주문메뉴")
+            if(a.menu=="직접입력" && b.menu=="직접입력")
                   return 0;
-            if(a.menu=="주문메뉴")
+            if(a.menu=="직접입력")
                   return 1;
-            if(b.menu=="주문메뉴")
+            if(b.menu=="직접입력")
                   return -1;
             if(a.menu <b.menu)
                   return -1;
@@ -598,7 +636,44 @@ export class StorageProvider {
                   return 1;
             return 0;           
         })
+
+        if(this.produceList.length==0)
+            return;
+
+        // humm... produceList의 각 메뉴별 합을 구한다. 이건 쉽다.
+        this.produceTables=[];
+        let table={menus:[]}
+
+        table.menus.push(this.produceList[0]);
+        let prefix=this.getPrefix(this.produceList[0].menu);
+        console.log("prefix:"+prefix);          
+        for(let i=1;i< this.produceList.length;i++){
+            let nextPrefix=this.getPrefix(this.produceList[i].menu);  
+            console.log("nextPrefix:"+nextPrefix);          
+            if(nextPrefix==prefix){
+                  table.menus.push(this.produceList[i]);  
+            }else{
+                  this.produceTables.push(table);
+                  table={menus:[]};
+                  prefix=nextPrefix;
+                  table.menus.push(this.produceList[i]);
+                  this.produceList[i-1].delimeter=true;
+            }            
+        }
+        this.produceTables.push(table);
+        console.log("this.produceTables:"+JSON.stringify(this.produceTables));        
     };
+
+   getPrefix(menu){
+        let prefix;
+
+        if(menu.indexOf('(')>=0){
+            let splits=menu.split('(');   
+            prefix=splits[0];
+        }else
+            prefix=menu;
+        return prefix;
+   }
 
    /////////////////////////////////////////////////////
    // 메뉴 수정 -begin
@@ -685,6 +760,13 @@ export class StorageProvider {
                     menuInfos[categoryIndex].optionStrings.push(menuString); 
                     //console.log("!!!menuids: "+JSON.stringify(menuInfos[categoryIndex]));
              }
+          }else{//"empty"
+             let categoryIndex=categories.findIndex(function(value){
+                  if(menu.category==value.category)
+                    return true;
+                  return false;  
+             })
+              menuInfos[categoryIndex].deactive = menu.deactive;
           }
         })     
         
@@ -828,6 +910,25 @@ export class StorageProvider {
           })          
         });       
  }
-   // 메뉴 수정 -end
-   /////////////////////////////////////////////////////
+
+  deactivateMenu(reqbody){
+        return new Promise((resolve,reject)=>{   
+             this.serverProvider.post("deactivateMenu",reqbody).then((res:any)=>{
+              if(res.result=="success"){
+                  this.convertMenuInfo(res.menus);
+                  resolve();
+              }else{
+                  if(res.error)
+                      reject(res.error);
+                  else 
+                      reject("failure");   
+              }
+          },err=>{
+              reject(err);
+          })         
+        });      
+  }
+// 메뉴 수정 -end
+/////////////////////////////////////////////////////
+
 }

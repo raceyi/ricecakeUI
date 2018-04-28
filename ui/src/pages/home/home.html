@@ -56,7 +56,7 @@
             <order *ngIf="newOrderInputShown" [order]="newOrder" [menus]="storageProvider.menus" (output)="saveOrder($event)"></order>
             
             <div *ngFor="let order of storageProvider.orderList;let i=index;">
-                <existing-order *ngIf="!order.modification" [order]="order" (output)="modifyOrder($event)"></existing-order>        
+                <existing-order *ngIf="!order.modification" [order]="order" (output)="modifyOrder($event)" (modify)="savePayment($event)"></existing-order>        
                 <order *ngIf="order.modification" [order]="configureOrderInput(order)" [menus]="storageProvider.menus" (output)="saveOrder($event,order)"></order>        
             </div>
       </div>
@@ -86,15 +86,28 @@
 </div>
 
 <div [hidden]="section!='produce'">
-      <ion-grid style="font-size:large;">
-          <ion-row *ngFor="let menu of produceList" style="border:solid 1px darkgray;">
-                <ion-col col-3 style="border-right:solid 1px darkgray;">
+        <ion-grid  style="font-size:large;" *ngFor="let table of produceTables" >
+          <ion-row *ngFor="let menu of table.menus,let k=index" [ngStyle]="rowStyles(k)" >
+                <ion-col  col-3 style="border-right:solid 1px darkgray;">
                     {{menu.menu}}
                 </ion-col>
-                <ion-col col-9>
-                    <span *ngFor="let item of menu.amount">{{item.amount}}({{item.time}}),</span>
+                <ion-col  col-7 *ngIf="menu.menu!='직접입력'">
+                    <span *ngFor="let item of menu.amount"><b>{{item.amount}}</b>({{item.time}}),</span>
                 </ion-col>
+                <ion-col  col-2 *ngIf="menu.menu!='직접입력'" style="border-left: solid 1px darkgray;">
+                    <span *ngIf="menu.kg>0"> {{menu.kg}}kg<br></span>
+                    <span *ngIf="menu.mal>0"> {{menu.mal}}말<br></span>
+                    <span *ngIf="menu.doi>0"> {{menu.doi}}되<br></span>
+                    <span *ngIf="menu.jyupsi>0"> {{menu.jyupsi}}접시<br></span>
+                    <span *ngIf="menu.gae>0"> {{menu.gae}}개 <br></span>
+                </ion-col>
+                <ion-col col-9 *ngIf="menu.menu=='직접입력'">
+                    <span *ngFor="let item of menu.amount">{{item.menu}}({{item.time}}),</span>
+                </ion-col>                
           </ion-row>
+    </ion-grid>
+
+      <ion-grid style="font-size:large;">
           <ion-row *ngIf="etcProduceList.length>0" >
               *기타
           </ion-row>

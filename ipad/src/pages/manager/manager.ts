@@ -850,9 +850,52 @@ export class ManagerPage {
             this.navCtrl.pop();
       }
   }
-
  // 메뉴에 sequence 적용 코드-end
  /////////////////////////////////////////////////////////////////////////////// 
+
+ //////////////////////////////////////////////
+ // 메뉴 비활성화-begin 
+  deactivateCategory(category){
+      let reqBody={category:category.category,menu:"empty", deactive:true};
+      console.log("reqBody:"+JSON.stringify(reqBody));
+      this.storageProvider.deactivateMenu(reqBody).then(()=>{
+                let alert = this.alertCtrl.create({
+                        title: category.category+'를 비활성화 하였습니다.',
+                        buttons: ['확인']
+                });
+                alert.present();                        
+
+      },err=>{
+                let alert = this.alertCtrl.create({
+                        title: category.category+'메뉴 비활성화에 실패했습니다.',
+                        subTitle: JSON.stringify(err),
+                        buttons: ['확인']
+                });
+                alert.present();                        
+      })
+  }
+
+  activateCategory(category){
+      let reqBody={category:category.category,menu:"empty", deactive:false};
+      this.storageProvider.deactivateMenu(reqBody).then(()=>{
+                let alert = this.alertCtrl.create({
+                        title: category.category+'를 활성화 하였습니다.',
+                        buttons: ['확인']
+                });
+                alert.present();                        
+
+      },err=>{
+                let alert = this.alertCtrl.create({
+                        title: category.category+'메뉴 활성화에 실패했습니다.',
+                        subTitle: JSON.stringify(err),
+                        buttons: ['확인']
+                });
+                alert.present();                        
+      })
+  }  
+ // 메뉴 비활성화-end 
+ //////////////////////////////////////////////
+
  openConfig(){
    console.log("push ManagerPasswordPage");
    this.navCtrl.push(ManagerPasswordPage);

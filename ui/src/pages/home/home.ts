@@ -24,6 +24,7 @@ export class HomePage {
     filter=[];
     produceList;
     etcProduceList;
+    produceTables;
 
     deliveryDate;
     deliveyDay;
@@ -222,28 +223,17 @@ export class HomePage {
             order.addressInputType = "auto";
         }
         //결제 방법 변환(?)
-        if (order.paymentMethod == "cash") {
-            if (order.payment.startsWith("paid")) {
-                order.paymentOption = "cash-paid";
-            }
-            else if (order.payment.indexOf("pre") >= 0) {
-                order.paymentOption = "cash-pre";
-            }
-            else if (order.payment.indexOf("after") >= 0) {
-                order.paymentOption = "cash-after";
-            }
-        }
-        else if (order.paymentMethod == "card") {
-            if (order.payment.startsWith("paid")) {
-                order.paymentOption = "card-paid";
-            }
-            else if (order.payment.indexOf("pre") >= 0) {
-                order.paymentOption = "card-pre";
-            }
-            else if (order.payment.indexOf("after") >= 0) {
-                order.paymentOption = "card-after";
-            }
-        }
+      /*현금선불:paid-pre
+        현금후불:unpaid-after =>paid-after
+        현금이체:unpaid-transaction
+        현금보류:unknown
+        월말정산:month 
+        카드선불:paid-pre
+        카드기 :unpaid=>paid
+        */
+        order.paymentOption=order.paymentMethod+order.payment;
+        console.log("order.paymentOption:"+order.paymentOrder);
+
         if (order.menuList == undefined) {
             order.menuList = [];
         }
@@ -265,6 +255,42 @@ export class HomePage {
         //2. show order input area
         this.newOrderInputShown = true;
     };
+
+    savePayment(order){
+        if(order.paymentMethod=="cash"){
+              order.payment="paid-after";
+        }else if(order.paymentMethod=="card"){
+              order.payment="paid"; 
+        } 
+        /*    
+        this.storageProvider.saveOrder(order).then(()=>{///
+            },err=>{
+                console.log("err:"+JSON.stringify(err));
+                if(typeof err==="string" && err.indexOf("SMS-")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '문자발송에 실패했습니다.',
+                        buttons: ['확인']
+                    });
+                    alert.present();
+                }else if(typeof err==="string" ){
+                    let alert = this.alertCtrl.create({
+                        title: '주문 수정에 실패했습니다.',
+                        subTitle:err,
+                        buttons: ['확인']
+                    });
+                    alert.present();
+
+                }else{
+                    let alert = this.alertCtrl.create({
+                        title: '주문 수정에 실패했습니다.',
+                        subTitle:JSON.stringify(err),
+                        buttons: ['확인']
+                    });
+                    alert.present();
+                }
+         });
+         */
+    }
 
     saveOrder (order, existing) {
         console.log("saveOrder-output:" + JSON.stringify(order));
@@ -387,10 +413,10 @@ export class HomePage {
         });
         console.log("index:" + index);
         if (index < 0) {
-            this.produceList.push({ menu: menu.menu, amount: [{ amount: amount + menu.unit, time: hhmm, min: min }] });
+            this.produceList.push({ menu: menu.menu, amount: [{ amount: amount + menu.unit, time: hhmm, min: min ,unit:menu.unit,amountNum:amount }] });
         }
         else {
-            this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, min: min });
+            this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, min: min ,unit:menu.unit,amountNum:amount});
         }
         console.log("produceList:" + JSON.stringify(this.produceList));
     };
@@ -436,6 +462,35 @@ export class HomePage {
                     return 1;
                 return 0;
             });
+
+            let kg=0;
+            let mal=0;
+            let doi=0;
+            let jyupsi=0;
+            let gae=0;
+            menu.amount.forEach(amount=>{
+                if(amount.unit=='kg'){
+                    if(Number(amount.amountNum)!=NaN)
+                        kg+=Number(amount.amountNum);
+                }else if(amount.unit =='말'){
+                    if(Number(amount.amountNum)!=NaN)
+                        mal+=Number(amount.amountNum);
+                }else if( amount.unit=='되'){
+                    if(Number(amount.amountNum)!=NaN)
+                        doi+=Number(amount.amountNum);
+                }else if( amount.unit=='접시'){
+                    if(Number(amount.amountNum)!=NaN)
+                        jyupsi+=Number(amount.amountNum);
+                }else if( amount.unit=='개'){
+                    if(Number(amount.amountNum)!=NaN)
+                        gae+=Number(amount.amountNum);
+                }
+            })
+            menu.kg=kg;
+            menu.mal=mal;
+            menu.doi=doi;
+            menu.jyupsi=jyupsi;
+            menu.gae=gae;
         });
 
         this.etcProduceList.sort(function (a, b) {
@@ -445,7 +500,44 @@ export class HomePage {
                     return 1;
                 return 0;
             });
+
+        if(this.produceList.length==0)
+            return;
+
+        // humm... produceList의 각 메뉴별 합을 구한다. 이건 쉽다.
+        this.produceTables=[];
+        let table={menus:[]}
+
+        table.menus.push(this.produceList[0]);
+        let prefix=this.getPrefix(this.produceList[0].menu);
+        console.log("prefix:"+prefix);          
+        for(let i=1;i< this.produceList.length;i++){
+            let nextPrefix=this.getPrefix(this.produceList[i].menu);  
+            console.log("nextPrefix:"+nextPrefix);          
+            if(nextPrefix==prefix){
+                  table.menus.push(this.produceList[i]);  
+            }else{
+                  this.produceTables.push(table);
+                  table={menus:[]};
+                  prefix=nextPrefix;
+                  table.menus.push(this.produceList[i]);
+            }            
+        }
+        this.produceTables.push(table);
+        console.log("this.produceTables:"+JSON.stringify(this.produceTables));        
     };
+
+   getPrefix(menu){
+        let prefix;
+
+        if(menu.indexOf('(')>=0){
+            let splits=menu.split('(');   
+            prefix=splits[0];
+        }else
+            prefix=menu;
+        return prefix;
+   }
+
     ////////////////////////////////////////
     // move into other pages
     adminPage(){
@@ -484,4 +576,30 @@ export class HomePage {
         this.setDeliveryDate(now);
 
     }
+
+  topRowStyles = {
+    'border-style':'solid',
+    'border-width':'1px',
+    'border-color': 'darkgray'
+  };
+
+  otherRowStyles = {
+    'border-left-style':'solid',
+    'border-left-width':'1px',
+    'border-left-color': 'darkgray',
+    'border-right-style':'solid',
+    'border-right-width':'1px',
+    'border-right-color': 'darkgray',
+    'border-bottom-style':'solid',
+    'border-botoom-width':'1px',
+    'border-bottom-color': 'darkgray'
+  };
+
+    rowStyles(k){
+        if(k==0){
+            return this.topRowStyles;
+        }else
+            return this.otherRowStyles;
+    }
+    //style="border-left:solid 1px darkgray;border-right:solid 1px darkgray;border-bottom:solid 1px darkgray;"
 }

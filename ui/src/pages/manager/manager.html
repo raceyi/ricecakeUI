@@ -15,10 +15,19 @@
 </ion-header>
 <ion-content class="no-scroll">
 <div text-center style="font-size:x-large;">
-  <button  *ngIf="section=='sales'" style="color:#488aff;font-size:x-large;" ion-button clear large> <매출> </button>
-  <button  *ngIf="section!='sales'" style="color:black;font-size:x-large;" ion-button clear large (click)="salesSection()"><매출></button>
-  <button  *ngIf="section=='menu'" style="color:#488aff;font-size:x-large;" ion-button clear large> <메뉴></button>   
-  <button  *ngIf="section!='menu'" style="color:black;font-size:x-large;" ion-button clear large (click)="menuSection()"> <메뉴></button>
+  <ion-row>
+    <ion-col col-2>
+      <button [hidden]="section!='sales'" color="black" ion-button clear large (click)="openConfig()" ><ion-icon name="md-settings"></ion-icon><span style="font-size: smaller;">비밀번호</span></button>
+    </ion-col>
+    <ion-col col-8>
+      <button  *ngIf="section=='sales'" style="color:#488aff;font-size:x-large;" ion-button clear large> <매출> </button>
+      <button  *ngIf="section!='sales'" style="color:black;font-size:x-large;" ion-button clear large (click)="salesSection()"><매출></button>
+      <button  *ngIf="section=='menu'" style="color:#488aff;font-size:x-large;" ion-button clear large> <메뉴></button>   
+      <button  *ngIf="section!='menu'" style="color:black;font-size:x-large;" ion-button clear large (click)="menuSection()"> <메뉴></button>
+    </ion-col>
+    <ion-col col-2>
+    </ion-col>
+  </ion-row>
 </div>
 
 <div [hidden]="section!='sales'">

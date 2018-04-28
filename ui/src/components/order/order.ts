@@ -1,5 +1,6 @@
 import { Component,Input,NgZone,Output,EventEmitter,OnInit } from '@angular/core';
 import { NavController,AlertController } from 'ionic-angular';
+import {StorageProvider} from '../../providers/storage/storage';
 import * as moment from 'moment';
 
 var gComponent;
@@ -16,10 +17,11 @@ var gComponent;
 })
 export class OrderComponent implements OnInit {
  @Input('order') orderIn:any;
- @Input('menus') menus:any;
+ @Input('menus') menusIn:any;
 
  @Output("output") output= new EventEmitter();
 
+  menus;
   categorySelected:number=-1;
   unit:string;
   amount:number;
@@ -42,13 +44,29 @@ export class OrderComponent implements OnInit {
   done:boolean=false;
   redirectUrl="http://www.takit.biz";
 
+  ///////////////////
+  deliveryStartHour;
+  deliveryStartMin;
+  deliveryEndHour;
+  deliveryEndMin;
+
   constructor(public alertCtrl:AlertController
+              ,public storageProvider:StorageProvider
               ,private ngZone:NgZone) {
     gComponent=this;
   }
 
   ngOnInit() { 
    this.order = Object.assign({}, this.orderIn); // copy object. Very important!!!! 아주 중요하다. 입력값은 사용하지 않는다.
+   
+   this.menus=[];
+   this.menusIn.forEach(menu=>{
+      if(!menu.deactive){
+        this.menus.push(menu);
+      }
+   });
+
+
    if(this.order.price)
        this.priceString=this.order.price.toLocaleString();
    if(this.order.deliveryFee)   
@@ -59,7 +77,18 @@ export class OrderComponent implements OnInit {
     this.paymentOption=this.order.paymentOption; //workaround solution. 왜 ion-select의 ngModel값이 초기화가 안될까?
     this.deliveryMethod=this.order.deliveryMethod;
     this.deliveryTimeUpdate=this.order.deliveryTime;
-    console.log("this.deliveryMethod:"+this.deliveryMethod);
+
+    /////////////////////////////////////////////
+    if(this.order.deliveryTime){
+      this.deliveryStartHour=this.order.deliveryTime.substr(11,2);
+      this.deliveryStartMin=this.order.deliveryTime.substr(14,2);
+    }
+    if(this.order.deliveryTimeEnd){
+      this.deliveryEndHour=this.order.deliveryTimeEnd.substr(11,2);
+      this.deliveryEndMin=this.order.deliveryTimeEnd.substr(14,2);
+    }
+    /////////////////////////////////////////////
+    //console.log("this.deliveryMethod:"+this.deliveryMethod);
   }
 
   getJuso(){
@@ -206,15 +235,15 @@ export class OrderComponent implements OnInit {
   }
 */
   addMenu(){
-    if(this.categorySelected==-1 ){
+      if(this.categorySelected==-1 ){
             let alert = this.alertCtrl.create({
               title: '종류를 선택해 주시기 바랍니다.',
               buttons: ['확인']
             });
             alert.present();
-        return;
-    }  
-
+        return false;
+    }   
+ 
     if(this.categorySelected==-2){
       if(!this.etc ||this.etc.trim().length==0){
             let alert = this.alertCtrl.create({
@@ -222,15 +251,15 @@ export class OrderComponent implements OnInit {
               buttons: ['확인']
             });
             alert.present();
-            return;
+            return false;
       }
-      let menu={category:"기타", menuString:this.etc, menu:this.etc};
+      let menu={category:"주문메뉴", menuString:this.etc, menu:this.etc};
 
       this.order.menuList.push(menu);              
-      console.log("menu:"+JSON.stringify(menu));          
+      console.log("addMenu-주문메뉴-menu:"+JSON.stringify(menu));          
       this.categorySelected=-1;
       this.etc="";
-      return;
+      return true;
     }
 
    if(this.menus[this.categorySelected].type!="complex-choice" ){
@@ -240,15 +269,15 @@ export class OrderComponent implements OnInit {
                   buttons: ['확인']
                 });
                 alert.present();
-            return;
+            return false;
         }    
-        if(!this.package || this.package.length ==0){
+        if(this.menus[this.categorySelected].type=="general" &&(!this.package || this.package.length ==0)){
                 let alert = this.alertCtrl.create({
                   title: '포장을 선택해 주시기 바랍니다.',
                   buttons: ['확인']
                 });
                 alert.present();
-                return;
+                return false;
         }
    }
 
@@ -258,7 +287,7 @@ export class OrderComponent implements OnInit {
               buttons: ['확인']
             });
             alert.present();
-        return;
+        return false;
     }
     if(this.unit==undefined || this.unit.length==0){
             let alert = this.alertCtrl.create({
@@ -266,7 +295,7 @@ export class OrderComponent implements OnInit {
               buttons: ['확인']
             });
             alert.present();
-        return;
+        return false;
     }
     if(this.menus[this.categorySelected].type.startsWith("complex")){
           if(this.unit!="개"){
@@ -275,10 +304,9 @@ export class OrderComponent implements OnInit {
                 buttons: ['확인']
               });
               alert.present();
-              return;      
+              return false;      
           }
-    }
-    
+    }    
     console.log("..."+this.menus[this.categorySelected].type);
     console.log("bool:"+this.menus[this.categorySelected].type=="complex-choice");
     if(this.menus[this.categorySelected].type=="complex-choice"){ //각 선택 메뉴가 정확한지 확인한다.
@@ -289,7 +317,7 @@ export class OrderComponent implements OnInit {
                   buttons: ['확인']
                 });
                 alert.present();
-                return;      
+                return false;      
             }
             let i=0;
             for(i=0;i<this.choiceOption.length;i++){
@@ -304,7 +332,7 @@ export class OrderComponent implements OnInit {
                 buttons: ['확인']
               });
               alert.present();
-              return;      
+              return false;      
             }
         }
     } 
@@ -330,8 +358,8 @@ export class OrderComponent implements OnInit {
                 menuObjs.forEach(menuObj=>{
                    let key:any=Object.keys(menuObj)[0];
                    console.log("key:"+key);
-                   menuStringWithPackage+=key+"("+this.package+")"+menuObj[key]+" ";
-                   let keyName:string=key+"("+this.package+")";
+                   menuStringWithPackage+=key+menuObj[key]+" ";
+                   let keyName:string=key;
                    let object={};
                    object[keyName]=menuObj[key];
                    menuObjsWithPackage.push(object);
@@ -345,6 +373,7 @@ export class OrderComponent implements OnInit {
     console.log("menuStringWithPackage:"+menuStringWithPackage);
 
   let menu={category:this.menus[this.categorySelected].category,
+              type:this.menus[this.categorySelected].type,
               menuString:menuStringWithPackage,
               menu:menuWithPackage, 
               amount:this.amount, unit: this.unit}
@@ -357,7 +386,8 @@ export class OrderComponent implements OnInit {
     this.menuIndex=-1;
     this.package="";
     this.choices=[];
-  }
+    return true;
+}
 
  removeMenu(i){
     this.order.menuList.splice(i,1);
@@ -402,149 +432,254 @@ autoHypenPhone(str){
     }
   }
 
-  save(){
-
-    if(this.order.addressInputType=="unknown"){
-      let alert = this.alertCtrl.create({
-        title: '주소 형식을 선택해주세요.',
-        buttons: ['확인']
-      });
-      alert.present();
-      return ;
-    }
-
-    if(this.order.addressInputType=="auto" && (!this.order.recipientAddressDetail || this.order.recipientAddressDetail.trim().length==0)){
-      let alert = this.alertCtrl.create({
-        title:'상세주소를 입력하세요.',
-        buttons: ['확인']
-      });
-      alert.present();
-      return ;
-    }
-
-    if(this.order.addressInputType=="manual" && (!this.order.recipientAddress || this.order.recipientAddress.trim().length==0)){
-      let alert = this.alertCtrl.create({
-        title:'주소를 입력하세요.',
-        buttons: ['확인']
-      });
-      alert.present();
-      return ;
-    }
-
-    if(!this.order.recipientName){
-      let alert = this.alertCtrl.create({
-        title: '받는사람 이름을 입력하세요.',
-        buttons: ['확인']
-      });
-      alert.present();
-      return ;
-    }
-
-    if(!this.order.recipientPhoneNumber){
-      let alert = this.alertCtrl.create({
-        title: '받는사람 전화번호를 입력하세요.',
-        buttons: ['확인']
-      });
-      alert.present();
-      return ;
-    }
-
-    if(!this.order.buyerName){
-      let alert = this.alertCtrl.create({
-        title: '구매자 이름을 입력하세요.',
-        buttons: ['확인']
-      });
-      alert.present();
-      return ;
-    }
-   
-    if(!this.order.buyerPhoneNumber){
-      let alert = this.alertCtrl.create({
-        title: '구매자 전화번호를 입력하세요.',
-        buttons: ['확인']
-      });
-      alert.present();
-      return ;
-    }
-
-    if(this.order.menuList==undefined || this.order.menuList.length==0){
-        this.addMenu();        
-    }
-
-    if(this.order.menuList==undefined || this.order.menuList.length==0){
-      let alert = this.alertCtrl.create({
-        title: '주문 떡 메뉴를 입력해주세요.',
-        buttons: ['확인']
-      });
-      alert.present();
-      return ;
-    }
-
-    if(this.order.price == undefined || this.order.price==0){
-      let alert = this.alertCtrl.create({
-        title: '가격을 입력하세요.',
-        buttons: ['확인']
-      });
-      alert.present();
-      return ;
-    }
-
-    if(!this.deliveryMethod){
-      let alert = this.alertCtrl.create({
-        title: '배송방법을 선택하세요.',
-        buttons: ['확인']
-      });
-      alert.present();
-      return ;
-    }
-
-    if(!this.paymentOption){
-      let alert = this.alertCtrl.create({
-        title: '결제 수단/방법을 선택하세요.',
-        buttons: ['확인']
-      });
-      alert.present();
-      return ;
-    }
-    
-    this.order.paymentOption=this.paymentOption;//workaround solution
-    this.order.deliveryMethod=this.deliveryMethod;//workaround solution
-    this.order.deliveryTimeUpdate=this.deliveryTimeUpdate //workaround solution. Why? 뭔가를 더 해줘야 하는가?
-
-    switch(this.order.paymentOption){
-      case "cash-pre":   this.order.paymentMethod="cash"; this.order.payment="unpaid-pre"; this.order.paymentString="현금-선불"; break;
-      case "cash-after": this.order.paymentMethod="cash"; this.order.payment="unpaid-after";this.order.paymentString="현금-후불";break;
-      case "cash-paid": this.order.paymentMethod="cash"; this.order.payment="paid";this.order.paymentString="현금-완납";break;      
-      case "card-pre":   this.order.paymentMethod="card"; this.order.payment="unpaid-pre";this.order.paymentString="카드-선불";break;
-      case "card-after":  this.order.paymentMethod="card"; this.order.payment="unpaid-after";this.order.paymentString="카드-후불";break;
-      case "card-paid":  this.order.paymentMethod="card"; this.order.payment="paid";this.order.paymentString="카드-완납";break;
-    }
-    let deliveryTime:string=this.order.deliveryTime;
-    deliveryTime=deliveryTime.substr(0,16)+":00.000Z"; //dynamoDB format으로 변경한다.
-    console.log("deliveryTime:"+deliveryTime);
-    this.order.deliveryTime=deliveryTime;
-    if(this.order.id){
-        if(this.deliveryTimeUpdate.substr(0,10)!=this.order.deliveryTime.substr(0,10)){
-            this.order.diffDate=true;          
-        }else
-            this.order.diffDate=false;
-        this.order.deliveryTimeUpdate=this.deliveryTimeUpdate.substr(0,16)+":00.000Z"; //dynamoDB format으로 변경한다.
-    }
-    this.order.price=parseInt(this.order.price);
-    if(this.order.deliveryFee){
-        this.order.deliveryFee=parseInt(this.order.deliveryFee);      
-        this.order.totalPrice=this.order.price+this.order.deliveryFee;
-    }else{
-        this.order.deliveryFee=0;
-        this.order.totalPrice=this.order.price;
-    }
-    if(!this.order.recipientAddressDetail || this.addressInputType=="manual"){
-        this.order.recipientAddressDetail="   "; //initialize it with blank string.
-    }
-    console.log("total:"+this.order.totalPrice+" price:"+this.order.price+" deliveryFee:"+this.order.deliveryFee);
-    this.output.emit(this.order);
+  checkDeliveryTime(){
+      return new Promise((resolve,reject)=>{   
+        if(!this.deliveryEndHour || !this.deliveryEndMin){
+            let alert = this.alertCtrl.create({
+              title: '배송요청 종료시간을 배송요청 시작시간과 동일하게 입력합니다.',
+              subTitle:' 아닐경우 아니오 선택후 시간과 분을 모두 입력해주세요',
+              buttons: [
+              {
+                text: '아니오',
+                handler: () => {
+                  reject();
+                }
+              },
+              {
+                text: '네',
+                handler: () => {
+                  this.deliveryEndHour=this.deliveryStartHour;
+                  this.deliveryEndMin=this.deliveryStartMin;
+                  console.log('agree clicked');
+                  resolve();
+                }
+              }]
+            });
+            alert.present();
+        }
+      }); 
   }
 
+  save(){
+    ////////////////////////////////////////////////////
+
+    if(!this.deliveryStartHour){
+          let alert = this.alertCtrl.create({
+            title: '배송요청 시작 시를 입력해 주시기 바랍니다.',
+            buttons: ['확인']
+          });
+          alert.present();
+          return ;          
+    }
+
+    if(!this.deliveryStartMin){
+          let alert = this.alertCtrl.create({
+            title: '배송요청 시작 분을 입력해 주시기 바랍니다.',
+            buttons: ['확인']
+          });
+          alert.present();
+          return ;          
+    }
+
+   if(parseInt(this.deliveryStartHour)>=24){
+          let alert = this.alertCtrl.create({
+            title: '배송요청 시작 시간을 정상적으로 입력해 주시기 바랍니다.',
+            buttons: ['확인']
+          });
+          alert.present();
+          return ;          
+
+   }
+   if(parseInt(this.deliveryStartMin)>=60){
+          let alert = this.alertCtrl.create({
+            title: '배송요청 시작 분을 정상적으로 입력해 주시기 바랍니다.',
+            buttons: ['확인']
+          });
+          alert.present();
+          return ;          
+   }
+
+   if(parseInt(this.deliveryEndHour)>=24){
+          let alert = this.alertCtrl.create({
+            title: '배송요청 종료 시간을 정상적으로 입력해 주시기 바랍니다.',
+            buttons: ['확인']
+          });
+          alert.present();
+          return ;          
+
+   }
+   if(parseInt(this.deliveryEndMin)>=60){
+          let alert = this.alertCtrl.create({
+            title: '배송요청 종료 분을 정상적으로 입력해 주시기 바랍니다.',
+            buttons: ['확인']
+          });
+          alert.present();
+          return ;          
+   }
+
+     this.checkDeliveryTime().then(()=>{
+          console.log("endHour:"+this.deliveryEndHour);
+          console.log("endMin:"+this.deliveryEndMin);
+          
+          //let deliveryStartMin,deliveryEndHour,deliveryEndMin:string;
+          let intNum:number;
+          intNum=parseInt(this.deliveryStartHour);
+          let deliveryStartHour:string=(intNum>9)?intNum.toString():'0'+intNum;
+          intNum=parseInt(this.deliveryStartMin);
+          let deliveryStartMin:string=(intNum>9)?intNum.toString():'0'+intNum;
+          intNum=parseInt(this.deliveryEndHour);
+          let deliveryEndHour:string=(intNum>9)?intNum.toString():'0'+intNum;
+          intNum=parseInt(this.deliveryEndMin);
+          let deliveryEndMin:string=(intNum>9)?intNum.toString():'0'+intNum;
+        
+        // 2018-04-20T08:30:00.000Z
+          this.order.deliveryTime=this.storageProvider.deliveryDate.substring(0,11)+deliveryStartHour+":"+deliveryStartMin+":00.000Z";
+          this.order.deliveryTimeEnd=this.storageProvider.deliveryDate.substring(0,11)+deliveryEndHour+":"+deliveryEndMin+":00.000Z";
+        ////////////////////////////////////////////////////
+          console.log("deliveryTime:"+this.order.deliveryTime);
+          console.log("deliveryTimeEnd:"+this.order.deliveryTimeEnd);
+          let start=new Date(this.order.deliveryTime);
+          let end=new Date(this.order.deliveryTimeEnd);
+          if(start.getTime()>end.getTime()){
+            let alert = this.alertCtrl.create({
+              title: '배송요청 시작시간이 배송요청 종료시간보다 늦을 수 없습니다.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return ;      
+          }
+          if(this.order.addressInputType=="unknown"){
+            let alert = this.alertCtrl.create({
+              title: '주소 형식을 선택해주세요.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return ;
+          }
+
+          if(this.order.addressInputType=="auto" && (!this.order.recipientAddressDetail || this.order.recipientAddressDetail.trim().length==0)){
+            let alert = this.alertCtrl.create({
+              title:'상세주소를 입력하세요.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return ;
+          }
+
+          if(this.order.addressInputType=="manual" && (!this.order.recipientAddress || this.order.recipientAddress.trim().length==0)){
+            let alert = this.alertCtrl.create({
+              title:'주소를 입력하세요.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return ;
+          }
+
+          if(!this.order.recipientName ||(this.order.recipientName.trim().length==0)){
+            let alert = this.alertCtrl.create({
+              title: '받는사람 이름을 입력하세요.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return ;
+          }
+
+          if(!this.order.recipientPhoneNumber || this.order.recipientPhoneNumber.trim().length==0){
+            let alert = this.alertCtrl.create({
+              title: '받는사람 전화번호를 입력하세요.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return ;
+          }
+
+          if(!this.order.buyerName || this.order.buyerName.trim().length==0){
+            let alert = this.alertCtrl.create({
+              title: '구매자 이름을 입력하세요.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return ;
+          }
+        
+          if(!this.order.buyerPhoneNumber || this.order.buyerPhoneNumber.trim().length==0){
+            let alert = this.alertCtrl.create({
+              title: '구매자 전화번호를 입력하세요.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return ;
+          }
+
+          if(this.categorySelected!=-1 || this.order.menuList==undefined || this.order.menuList.length==0){
+              if(!this.addMenu())
+                  return;        
+          }
+
+          if(this.order.price == undefined && !((this.order.paymentOption=="cash-unknown" || this.order.paymentOption=="cash-month")&&this.order.price==0)){
+            let alert = this.alertCtrl.create({
+              title: '가격을 입력하세요.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return ;
+          }
+
+          if(!this.order.deliveryMethod){
+            let alert = this.alertCtrl.create({
+              title: '배송방법을 선택하세요.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return ;
+          }
+
+          if(!this.order.paymentOption){
+            let alert = this.alertCtrl.create({
+              title: '결제 수단/방법을 선택하세요.',
+              buttons: ['확인']
+            });
+            alert.present();
+            return ;
+          }
+          
+          //this.order.paymentOption=this.paymentOption;//workaround solution
+          //this.order.deliveryMethod=this.deliveryMethod;//workaround solution
+
+          switch(this.order.paymentOption){
+            case "cash-paid-pre":   this.order.paymentMethod="cash"; this.order.payment="paid-pre"; this.order.paymentString="현금선불"; break;
+            case "cash-unpaid-after": this.order.paymentMethod="cash"; this.order.payment="unpaid-after";this.order.paymentString="현금후불";break;
+            case "cash-unpaid-transaction": this.order.paymentMethod="cash"; this.order.payment="unpaid-transaction";this.order.paymentString="현금이체";break;      
+            case "cash-unknown":  this.order.paymentMethod="cash"; this.order.payment="unknown";this.order.paymentString="현금보류";break;
+            case "cash-month":  this.order.paymentMethod="cash"; this.order.payment="month";this.order.paymentString="월말정산";break;
+            case "card-paid-pre":   this.order.paymentMethod="card"; this.order.payment="paid-pre";this.order.paymentString="카드선불";break;
+            case "card-unpaid":  this.order.paymentMethod="card"; this.order.payment="unpaid";this.order.paymentString="카드기";break;
+          }
+          this.order.price=parseInt(this.order.price);
+          if(this.order.deliveryFee){
+              this.order.deliveryFee=parseInt(this.order.deliveryFee);      
+              this.order.totalPrice=this.order.price+this.order.deliveryFee;
+          }else{
+              this.order.deliveryFee=0;
+              this.order.totalPrice=this.order.price;
+          }
+          if(!this.order.recipientAddressDetail || this.order.addressInputType=="manual"){
+              this.order.recipientAddressDetail="   "; //initialize it with blank string.
+          }
+          console.log("total:"+this.order.totalPrice+" price:"+this.order.price+" deliveryFee:"+this.order.deliveryFee);
+          this.output.emit(this.order);
+       
+     },err=>{
+       return;
+     });
+
+  }
+
+  selectPayment(){
+      if(this.order.paymentOption=="cash-unknown" || this.order.paymentOption=="cash-month"){
+          this.order.price=0;
+      }
+  }
 
   inputPrice(){
     console.log("inputPrice ");
@@ -613,4 +748,20 @@ changeManual(){
     this.paymentOption=value; //왜 order.paymentOption에 값이 저장되지 않을까?
   }
 */  
+
+  deliveryMethodChange(){
+    if(this.order.deliveryMethod=='픽업'){
+        this.order.addressInputType="manual";
+        this.order.recipientAddress="경기떡집";
+    }else{
+      if(this.deliveryMethod && this.deliveryMethod=='픽업' && this.order.deliveryMethod!="픽업"){
+        this.order.addressInputType="unknown";
+        this.order.recipientAddress="주소선택";
+        this.order.recipientAddressDetail="";
+      }
+    }
+    //change from 픽업-> other?
+    this.deliveryMethod=this.order.deliveryMethod;
+  }
+
 }

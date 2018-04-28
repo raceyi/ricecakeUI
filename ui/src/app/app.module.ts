@@ -17,7 +17,9 @@ import {ManagerEntrancePageModule} from '../pages/manager-entrance/manager-entra
 import {TrashPageModule} from '../pages/trash/trash.module';
 import {ManagerPageModule} from '../pages/manager/manager.module';
 import { CalendarModule } from 'ionic3-calendar-en';
+import {ManagerPasswordPageModule} from '../pages/manager-password/manager-password.module';
 //import { InAppBrowser } from '@ionic-native/in-app-browser'
+import {TrashPasswordPageModule} from '../pages/trash-password/trash-password.module';
 
 @NgModule({
   declarations: [
@@ -25,15 +27,17 @@ import { CalendarModule } from 'ionic3-calendar-en';
     HomePage
   ],
   imports: [
+    TrashPasswordPageModule,
     CalendarModule,
     ManagerPageModule,
     ManagerEntrancePageModule,
     TrashPageModule,
     CarrierManagementPageModule,
+    ManagerPasswordPageModule,
     HttpClientModule,
     ComponentsModule,
     BrowserModule,
-    IonicModule.forRoot(MyApp)
+    IonicModule.forRoot(MyApp,{mode:'ios'})
   ],
   bootstrap: [IonicApp],
   entryComponents: [

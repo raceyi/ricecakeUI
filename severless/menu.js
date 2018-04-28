@@ -429,6 +429,33 @@ router.getMenus=function (){
                 });
 }
 
+router.deactivateMenu=function(param){ // general menu에만 호출된다.
+    console.log("deactivateMenu comes");
+    return new Promise((resolve,reject)=>{
+    var params = {
+            TableName:"menu",
+            Key:{
+                        "category":param.category,
+                        "menu":param.menu
+            },
+            UpdateExpression:"set deactive = :deactive",
+            ExpressionAttributeValues:{
+                ":deactive":param.deactive
+            },
+            ReturnValues:"UPDATED_NEW"
+        };
+        console.log("params:"+JSON.stringify(params));
+        dynamoDB.dynamoUpdateItem(params).then(result=>{
+                notifyMenusAndReturn(param).then((data)=>{
+                    resolve(data);
+                },err=>{
+                    reject(err);
+                })
+        },err=>{
+                reject(err);
+        })
+    });
+}
 module.exports = router;
 
 /*

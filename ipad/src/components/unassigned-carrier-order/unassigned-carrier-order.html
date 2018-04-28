@@ -11,13 +11,16 @@
             </ion-col>            
           </ion-row>
           <ion-row>
-            <ion-col col-2 no-margin no-padding >
-                    {{order.deliveryTime.slice(11,13) + "시 " + order.deliveryTime.slice(14,16) + "분"}}
+            <ion-col col-3 no-margin no-padding *ngIf="order.deliveryTimeEnd">
+                {{order.deliveryTime.slice(11,13)+ "시" + order.deliveryTime.slice(14,16) + "분-"}}{{order.deliveryTimeEnd.slice(11,13)+ "시" + order.deliveryTimeEnd.slice(14,16) + "분"}}
             </ion-col>
-            <ion-col *ngIf="order.recipientAddressDetail==undefined || order.recipientAddressDetail==null || order.recipientAddressDetail.trim().length==0" col-10 no-margin no-padding>
+            <ion-col col-3 no-margin no-padding *ngIf="!order.deliveryTimeEnd">
+                {{order.deliveryTime.slice(11,13)+ "시" + order.deliveryTime.slice(14,16) + "분"}}
+            </ion-col>
+            <ion-col *ngIf="order.recipientAddressDetail==undefined || order.recipientAddressDetail==null || order.recipientAddressDetail.trim().length==0" col-9 no-margin no-padding>
                      {{order.recipientAddress}} 
             </ion-col>               
-            <ion-col *ngIf="order.recipientAddressDetail!=undefined && order.recipientAddressDetail!=null && order.recipientAddressDetail.trim().length>0" col-10 no-margin no-padding>
+            <ion-col *ngIf="order.recipientAddressDetail!=undefined && order.recipientAddressDetail!=null && order.recipientAddressDetail.trim().length>0" col-9 no-margin no-padding>
                      {{order.recipientAddress}} {{order.recipientAddressDetail}}
             </ion-col>               
           </ion-row>
@@ -28,12 +31,18 @@
             <ion-col no-margin no-padding>
             {{order.recipientName}}  {{order.recipientPhoneNumber}}  
             </ion-col>
-            <ion-col *ngIf="order.deliveryFee==undefined || order.deliveryFee==null || order.deliveryFee==0" no-margin no-padding>
+            <ion-col *ngIf="order.deliveryFee==undefined || order.deliveryFee==null || order.deliveryFee==0" [ngStyle]="getPaymentBackground(order.paymentString)" no-margin no-padding>
               {{order.totalPrice.toLocaleString()}}원 {{order.paymentString}}
             </ion-col>
-            <ion-col *ngIf="order.deliveryFee!=undefined && order.deliveryFee!=null && order.deliveryFee>0" no-margin no-padding>
+            <ion-col *ngIf="order.deliveryFee!=undefined && order.deliveryFee!=null && order.deliveryFee>0" [ngStyle]="getPaymentBackground(order.paymentString)" no-margin no-padding>
               {{order.totalPrice.toLocaleString()}}원(배송비{{order.deliveryFee.toLocaleString()}} 포함) {{order.paymentString}}
             </ion-col>
+            <ion-col col-1 no-padding no-margin *ngIf="((order.paymentMethod=='cash' && order.payment=='unpaid-after') || ( order.paymentMethod=='card' && order.payment=='unpaid'))">
+                  <button ion-button ion-button no-padding no-margin style="height:20px;" (click)="completePayment()"> 결제완료</button>
+            </ion-col>
+            <ion-col col-1 *ngIf="!((order.paymentMethod=='cash' && order.payment=='unpaid-after') || ( order.paymentMethod=='card' && order.payment=='unpaid'))">
+
+            </ion-col>                              
           </ion-row>
           <ion-row>
             <ion-col col-2 no-margin no-padding>

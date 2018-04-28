@@ -192,40 +192,29 @@ export class HomePage {
             order.addressInputType = "auto";
         }
         //결제 방법 변환(?)
-        if (order.paymentMethod == "cash") {
-            if (order.payment.startsWith("paid")) {
-                order.paymentOption = "cash-paid";
-            }
-            else if (order.payment.indexOf("pre") >= 0) {
-                order.paymentOption = "cash-pre";
-            }
-            else if (order.payment.indexOf("after") >= 0) {
-                order.paymentOption = "cash-after";
-            }
-        }
-        else if (order.paymentMethod == "card") {
-            if (order.payment.startsWith("paid")) {
-                order.paymentOption = "card-paid";
-            }
-            else if (order.payment.indexOf("pre") >= 0) {
-                order.paymentOption = "card-pre";
-            }
-            else if (order.payment.indexOf("after") >= 0) {
-                order.paymentOption = "card-after";
-            }
-        }
+      /*현금선불:paid-pre
+        현금후불:unpaid-after =>paid-after
+        현금이체:unpaid-transaction
+        현금보류:unknown
+        월말정산:month 
+        카드선불:paid-pre
+        카드기 :unpaid=>paid
+        */
+        order.paymentOption=order.paymentMethod+'-'+order.payment;
+        console.log("order.paymentOption:"+order.paymentOption);
+
         if (order.menuList == undefined) {
             order.menuList = [];
         }
         if (order.deliveryTime == undefined) {
-            console.log("deliveryDate:" + this.storageProvider.deliveryDate);
-            var deliveryDate = new Date(this.storageProvider.deliveryDate);
-            deliveryDate.setHours(0);
-            deliveryDate.setMinutes(0);
-            deliveryDate.setSeconds(0);
-            deliveryDate.setMilliseconds(0);
-            order.deliveryTime = this.getISO8601Format(deliveryDate.getTime()); //새주문 입력시 배달시간
-            console.log("new order deliveryTime:"+order.deliveryTime);
+          //  console.log("deliveryDate:" + this.storageProvider.deliveryDate);
+          //  var deliveryDate = new Date(this.storageProvider.deliveryDate);
+          //  deliveryDate.setHours(0);
+          //  deliveryDate.setMinutes(0);
+          //  deliveryDate.setSeconds(0);
+          //  deliveryDate.setMilliseconds(0);
+          //  order.deliveryTime = this.getISO8601Format(deliveryDate.getTime()); //새주문 입력시 배달시간
+          //  console.log("new order deliveryTime:"+order.deliveryTime);
         }else{
             order.deliveryTime= order.deliveryTime; 
             console.log("deliveryTime is "+order.deliveryTime+" in modification");
@@ -239,6 +228,47 @@ export class HomePage {
         //2. show order input area
         this.storageProvider.newOrderInputShown = true;
     };
+
+
+    savePayment(order){
+        console.log("savePayment-order:"+JSON.stringify(order));
+        if(order.paymentMethod=="cash"){
+            order.payment="paid-after";
+        }else if(order.paymentMethod=="card"){
+            order.payment="paid"; 
+        }         
+        this.storageProvider.updateOrder(order).then(()=>{///
+            },err=>{
+                console.log("err:"+JSON.stringify(err));
+                if(typeof err==="string" && err.indexOf("SMS-")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '문자발송에 실패했습니다.',
+                        buttons: ['확인']
+                    });
+                    if(order.paymentMethod=="cash"){
+                        order.payment="paid-after";
+                    }else if(order.paymentMethod=="card"){
+                        order.payment="paid"; 
+                    }                     
+                    alert.present();
+                }else if(typeof err==="string" ){
+                    let alert = this.alertCtrl.create({
+                        title: '주문 수정에 실패했습니다.',
+                        subTitle:err,
+                        buttons: ['확인']
+                    });
+                    alert.present();
+
+                }else{
+                    let alert = this.alertCtrl.create({
+                        title: '주문 수정에 실패했습니다.',
+                        subTitle:JSON.stringify(err),
+                        buttons: ['확인']
+                    });
+                    alert.present();
+                }
+         });
+    }
 
     saveOrder (order, existing) {
         console.log("saveOrder-output:" + JSON.stringify(order));
@@ -544,11 +574,12 @@ export class HomePage {
 
     }
 
-
     constructProducePrint(){
-        let rightCharacters:number=27;
+        //let rightCharacters:number=27;
+        let rightCharacters:number=22;
         let leftCharacters:number=11;
         let linesPerPage=25;
+        //let linesPerPage=20;
         let title=this.storageProvider.deliveryDate.substr(0,4)+"년"+
                       this.storageProvider.deliveryDate.substr(5,2)+"월"+
                       this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay;
@@ -579,22 +610,53 @@ export class HomePage {
                 name=item.menu;
             }
             console.log("name:"+name);
+            let sumUnits=0;
+            let total="";
+            if(item.kg>0){ 
+                sumUnits++;
+                total+=item.kg.toString()+"kg<br>"
+            } 
+            if(item.mal>0){ 
+                sumUnits++;
+                total+=item.mal.toString()+"말<br>"                
+            }
+            if(item.doi>0){ 
+                sumUnits++;
+                total+=item.doi.toString()+"되<br>"                                
+            }
+            if(item.jyupsi>0){
+                sumUnits++;
+                total+=item.jyupsi.toString()+"접시<br>"                                                
+            }
+            if(item.gae>0){ 
+                sumUnits++;
+                total+=item.gae.toString()+"개<br>"                                                                
+            }
+            if(nameLength<sumUnits){
+                nameLength=sumUnits;
+                console.log("sumUnits change nameLength !!!!"+ sumUnits);
+            }
 
             let list=" ";
             let totalLine="";
+            //let boldCount=0;
             item.amount.forEach(amount=>{
-                if(amount.amount) totalLine+=amount.amount;
+                if(amount.amount){ 
+                    totalLine+=amount.amount;  ////====> <b>를 넣어야 한다 how?
+                }
                 if(amount.menu) totalLine+=amount.menu;
                 totalLine+='('+amount.time+'),';
             });
             totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
             let remain=totalLine.length;
+
             let index=0;
             let lineNumber=0;
             while(remain>=rightCharacters){
                 list+=totalLine.substr(index,rightCharacters);
                 remain=remain-rightCharacters;
                 index+=rightCharacters;
+                console.log("index:"+index);
                 ++lineNumber;
                 if(remain>0)
                     list+="<br>";
@@ -605,10 +667,25 @@ export class HomePage {
             }
             console.log("lineNumber:"+lineNumber+"list:"+list);
             if(nameLength>lineNumber){
-                ++lineNumber;
+                //++lineNumber;
+                lineNumber=nameLength; // 
+                console.log("nameLength change lineNumber...");
             }
             totalLinesNumber+=lineNumber;
-            eachItems.push({lines:list, name:name,number:lineNumber});    
+            //////////////////////////////////////////
+            //bold를 포함한 list 를 다시 계산한다.동작할까?
+            totalLine="";
+            item.amount.forEach(amount=>{
+                if(amount.amount){ 
+                    totalLine+=("<b>"+amount.amount+"</b>");  ////====> <b>를 넣어야 한다 how?
+                }
+                if(amount.menu) totalLine+=amount.menu;
+                totalLine+='('+amount.time+'),';
+            });
+            totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
+            eachItems.push({lines:totalLine, name:name,number:lineNumber,total:total,delimeter:item.delimeter});    
+            ////////////////////////////////////
+            //eachItems.push({lines:list, name:name,number:lineNumber,total:total,delimeter:item.delimeter});    
         })
 
         console.log("eachItems:"+JSON.stringify(eachItems));
@@ -647,10 +724,20 @@ export class HomePage {
             pages+=this.storageProvider.deliveryDate.substr(0,4)+"년"+
                       this.storageProvider.deliveryDate.substr(5,2)+"월"+
                       this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+"("+(index+1)+"/"+pageNumber+")"+"</H1>";
+                      
             pages+="<table style=\"width:100%\;border-collapse:collapse;\">";          
             tables[index].items.forEach(item=>{
-                pages+="<tr><td style=\"border: solid 1px; font-size:1.6em;\">"+item.name+"</td>"+
-                            "<td style=\"border: solid 1px; font-size:1.6em;\">"+item.lines+"</td>"+"</tr>";
+                if(item.hasOwnProperty("delimeter")&& item.delimeter){
+                    pages+="<tr><td style=\"width:30%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.name+"</td>"+
+                            "<td style=\"width:60%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.lines+"</td>"+
+                            "<td style=\"width:10%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.total+"</td>"+
+                            "</tr>";
+                }else{
+                    pages+="<tr><td style=\"width:30%;border: solid 1px; font-size:1.6em;\">"+item.name+"</td>"+
+                            "<td style=\"width:55%;border: solid 1px; font-size:1.6em;\">"+item.lines+"</td>"+
+                            "<td style=\"width:15%;border: solid 1px; font-size:1.6em;\">"+item.total+"</td>"+
+                            "</tr>";
+                }
             })
             pages+="</table>";
         }
@@ -706,7 +793,10 @@ export class HomePage {
             }
             let menus="";
             item.menuList.forEach(menu=>{
-                menus+=menu.category+"-["+menu.menuString+"]";
+                if(menu.type=="complex")
+                    menus+=menu.category;
+                else
+                    menus+=menu.category+"-["+menu.menuString+"]";
                 if(menu.amount) menus+=menu.amount;
                 if(menu.unit) menus+=menu.unit+",";
             })
@@ -855,7 +945,10 @@ printPages(titleHead,orders,pageBreakFirst){
             }
             let menus="";
             item.menuList.forEach(menu=>{
-                menus+=menu.category+"-["+menu.menuString+"]";
+                if(menu.type=="complex")
+                    menus+=menu.category;
+                else
+                    menus+=menu.category+"-["+menu.menuString+"]";
                 if(menu.amount) menus+=menu.amount;
                 if(menu.unit) menus+=menu.unit+",";
             })
@@ -1012,4 +1105,28 @@ constructDeliveryPrint(){
    return pages;
 }
 
+topRowStyles = {
+    'border-style':'solid',
+    'border-width':'1px',
+    'border-color': 'darkgray'
+  };
+
+  otherRowStyles = {
+    'border-left-style':'solid',
+    'border-left-width':'1px',
+    'border-left-color': 'darkgray',
+    'border-right-style':'solid',
+    'border-right-width':'1px',
+    'border-right-color': 'darkgray',
+    'border-bottom-style':'solid',
+    'border-bottom-width':'1px',
+    'border-bottom-color': 'darkgray'
+  };
+
+    rowStyles(k){
+        if(k==0){
+            return this.topRowStyles;
+        }else
+            return this.otherRowStyles;
+    }
 }

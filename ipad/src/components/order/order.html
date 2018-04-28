@@ -3,24 +3,52 @@
       <ion-row>
         <ion-col col-9>
             <ion-row>
-              <ion-col col-3 no-padding no-margin>
+              <ion-col col-4 no-padding no-margin>
+              <ion-row style="padding-top:20px;">
+                  <ion-col no-padding no-margin>
+                    <ion-input no-margin class="input_underbar" type="number" max=3 min=1 [(ngModel)]="deliveryStartHour"> </ion-input>
+                  </ion-col>
+                  <ion-col no-padding no-margin>
+                    시
+                  </ion-col>
+                  <ion-col no-padding no-margin>
+                    <ion-input no-margin class="input_underbar" type="number" max=3 min=1 [(ngModel)]="deliveryStartMin"> </ion-input>
+                  </ion-col>
+                  <ion-col no-padding no-margin>
+                    분~
+                  </ion-col>
+                  <ion-col no-padding no-margin>
+                    <ion-input no-margin class="input_underbar" type="number" max=3 min=1 [(ngModel)]="deliveryEndHour"> </ion-input>
+                  </ion-col>
+                  <ion-col no-padding no-margin>
+                    시
+                  </ion-col>                  
+                  <ion-col no-padding no-margin>
+                    <ion-input no-margin class="input_underbar" type="number" max=3 min=1 [(ngModel)]="deliveryEndMin"> </ion-input>
+                  </ion-col>                  
+                  <ion-col no-padding no-margin>
+                    분
+                  </ion-col>
+                </ion-row>                
+                <!--
                 <ion-item>
                   <ion-datetime *ngIf="order.id" class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="YYYY MM DD HH mm" placeholder="배달시간" [(ngModel)]="deliveryTimeUpdate"></ion-datetime>
                   <ion-datetime *ngIf="!order.id" class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="  HH mm" placeholder="배달시간" [(ngModel)]="order.deliveryTime"></ion-datetime>
                 </ion-item>
+                -->
               </ion-col>
-              <ion-col col-9 *ngIf="order.addressInputType=='unknown'">
+              <ion-col col-8 [hidden]="order.deliveryMethod=='픽업'" *ngIf="order.addressInputType=='unknown'">
                 <ion-item class="no-item-border-bottom">
                   <button ion-button class="getJusoButton" outline (click)="getJusoAuto()">{{order.recipientAddress}}</button>
                   <button ion-button  class="getJusoButton" outline (click)="manualInput()">직접입력</button>
                 </ion-item>
               </ion-col>
-              <ion-col col-9 *ngIf="order.addressInputType=='manual'">
+              <ion-col col-8 [hidden]="order.deliveryMethod=='픽업'" *ngIf="order.addressInputType=='manual'">
                 <ion-item>
                   <ion-input type="text" placeholder="주소입력" [(ngModel)]="order.recipientAddress"></ion-input>
                 </ion-item>
               </ion-col>
-              <ion-col col-9 *ngIf="order.addressInputType=='auto'">
+              <ion-col col-8 [hidden]="order.deliveryMethod=='픽업'" *ngIf="order.addressInputType=='auto'">
                 <ion-item class="no-item-border-bottom">
                   <button ion-button class="getJusoButton" outline (click)="getJusoDaum()">{{order.recipientAddress}}</button> 
                 </ion-item>         
@@ -28,25 +56,33 @@
             </ion-row>
 
             <ion-row>
-              <ion-col col-3>
+              <ion-col col-3 *ngIf="!order.id">
                 &nbsp;
               </ion-col>
-              <ion-col col-9 *ngIf="order.addressInputType=='unknown'">
+              <ion-col col-1 style="margin-top:10px;" *ngIf="order.id">
+                배달일
+              </ion-col>
+              <ion-col col-2 *ngIf="order.id">
+                <ion-item  no-padding no-margin class="no-item-border-bottom">
+                   <ion-datetime no-padding no-margin class="timeonly-text" displayFormat="MM월 DD일" pickerFormat="YYYY MM DD" placeholder="배달일" [(ngModel)]="deliveryTimeUpdate"></ion-datetime>
+                </ion-item>
+              </ion-col>
+              <ion-col col-9 [hidden]="order.deliveryMethod=='픽업'" *ngIf="order.addressInputType=='unknown'">
                 <ion-item >
                   <ion-input type="text" placeholder="상세주소" [(ngModel)]="order.recipientAddressDetail"></ion-input>
                 </ion-item>       
               </ion-col>              
-              <ion-col col-9 *ngIf="order.addressInputType=='manual'">
+              <ion-col col-9 [hidden]="order.deliveryMethod=='픽업'" *ngIf="order.addressInputType=='manual'">
                 <ion-item >
                   <button ion-button class="getJusoButton" outline (click)="getJusoAuto()">주소 선택</button>
                 </ion-item>       
               </ion-col>              
-              <ion-col col-8 *ngIf="order.addressInputType=='auto'">
+              <ion-col col-8 [hidden]="order.deliveryMethod=='픽업'" *ngIf="order.addressInputType=='auto'">
                 <ion-item >
                   <ion-input type="text" placeholder="상세주소" [(ngModel)]="order.recipientAddressDetail"></ion-input>
                 </ion-item>       
               </ion-col> 
-              <ion-col no-padding no-margin col-1 *ngIf="order.addressInputType=='auto'">
+              <ion-col no-padding no-margin col-1 [hidden]="order.deliveryMethod=='픽업'" *ngIf="order.addressInputType=='auto'">
                 <ion-item no-padding no-margin class="manual-input-button no-item-border-bottom">
                   <button outline ion-button no-padding no-margin (click)="changeManual()" >직접<br>입력</button>
                 </ion-item>       
@@ -65,7 +101,7 @@
               </ion-col>
               <ion-col col-3>
                     <ion-item class="no-item-border-bottom">
-                      <ion-select class="payment-select" placeholder="배송방법" interface="popover" [(ngModel)]="order.deliveryMethod">
+                      <ion-select class="payment-select" placeholder="배송방법" interface="popover" (ionChange)="deliveryMethodChange()" [(ngModel)]="order.deliveryMethod">
                         <ion-option value="픽업">픽업</ion-option>
                         <ion-option value="배달">배달</ion-option>                  
                         <ion-option value="냉동">냉동</ion-option>
@@ -115,7 +151,7 @@
                 <ion-item class="no-item-border-bottom">
                   <ion-select no-padding interface="action-sheet" placeholder="메뉴종류" (ionChange)="selectCategory()" [(ngModel)]="categorySelected">
                     <ion-option [value]="-1">추가 메뉴 없음</ion-option>
-                    <ion-option [value]="-2">주문메뉴</ion-option> 
+                    <ion-option [value]="-2">직접입력</ion-option> 
                   <ion-option [value]="i" *ngFor="let menu of menus;let i=index">{{menu.category}}</ion-option>
                   </ion-select>
                 </ion-item>
@@ -244,14 +280,18 @@
             <ion-row>
               <ion-col col-8>
               <ion-item class="no-item-border-bottom">
-                <ion-select class="payment-select" placeholder="결제방법" interface="popover" [(ngModel)]="order.paymentOption">
-                  <ion-option value="cash-pre" >현금-선불</ion-option>
-                  <ion-option value="cash-after">현금-후불</ion-option>
-                  <ion-option value="cash-paid">현금-완납</ion-option>                 
-                  <ion-option value="card-pre">카드-선불</ion-option>
-                  <ion-option value="card-after">카드-후불</ion-option>
-                  <ion-option value="card-paid">카드-완납</ion-option>
-                </ion-select>  
+                <ion-select class="payment-select" placeholder="결제방법" (ionChange)="selectPayment()" interface="popover" [(ngModel)]="order.paymentOption">
+                  <ion-option value="cash-paid-pre" >현금선불-완납</ion-option>
+                  <ion-option value="cash-unpaid-after">현금후불</ion-option>
+                  <ion-option *ngIf="order.paymentOption=='cash-paid-after'" value="cash-paid-after">현금후불-완납</ion-option>
+                  <ion-option value="cash-unpaid-transaction">현금이체</ion-option> 
+                  <ion-option value="cash-paid">현금이체-완납</ion-option>                                                   
+                  <ion-option value="card-paid-pre">카드선불-완납</ion-option>
+                  <ion-option value="card-unpaid">카드기</ion-option>
+                  <ion-option value="cash-unknown">현금보류</ion-option>
+                  <ion-option value="cash-month">월말정산</ion-option>                  
+                  <ion-option *ngIf="order.paymentOption=='card-paid'" value="card-paid">카드기-완납</ion-option>                
+                 </ion-select>  
               </ion-item> 
               </ion-col>
               <ion-col col-4>

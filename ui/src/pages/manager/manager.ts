@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams ,AlertController} from 'ionic-angular';
 import {StorageProvider} from "../../providers/storage/storage";
-
+import {ManagerPasswordPage} from "../manager-password/manager-password";
 /**
  * Generated class for the ManagerPage page.
  *
@@ -241,4 +241,8 @@ export class ManagerPage {
 
  }
  
+ openConfig(){
+   console.log("push ManagerPasswordPage");
+   this.navCtrl.push(ManagerPasswordPage);
+ }
 }

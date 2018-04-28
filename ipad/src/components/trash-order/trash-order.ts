@@ -33,4 +33,14 @@ export class TrashOrderComponent {
   recovery(){
         this.output.emit(this.order);
   }
+
+   getPaymentBackground(paymentString){
+    //console.log("getPaymentBackground");
+    if(paymentString=="카드기")
+       return {"color":"#0000ff"};    
+    if(this.order.payment.startsWith("paid"))
+        return {"color":'#ff0000'};
+    else 
+        return {};     
+ }
 }

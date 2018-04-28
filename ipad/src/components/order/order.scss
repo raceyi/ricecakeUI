@@ -101,4 +101,12 @@ order {
         padding-left: 0px;
     }
     
+    .input_underbar{
+        border-bottom:solid 0.5px;
+        .text-input-ios {
+            //margin:0px;
+            width:100% !important;
+        }
+    }
+
 }

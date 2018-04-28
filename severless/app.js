@@ -183,6 +183,15 @@ app.post('/addCategory',(req,res)=>{
         });
 });
 
+app.post('/deactivateMenu',(req,res)=>{
+        console.log("deactivateMenu:",JSON.stringify(req.body));    
+        menu.deactivateMenu(req.body).then((value)=>{
+            res.json({result:"success",menus:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
+
 app.post('/addCarrier',(req,res) =>{
         console.log("addCarrier:",req.body);
         if(!req.body.name){

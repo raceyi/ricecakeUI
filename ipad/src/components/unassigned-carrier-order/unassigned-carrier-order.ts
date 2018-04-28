@@ -16,6 +16,7 @@ export class UnassignedCarrierOrderComponent {
 
   @Input('order') order:any;
   @Output("output") output= new EventEmitter();
+  @Output("modify") modify= new EventEmitter();
 
   constructor(public storageProvider:StorageProvider,public alertCtrl:AlertController) {
     console.log('Hello UnassignedCarrierOrderComponent Component');
@@ -38,4 +39,38 @@ export class UnassignedCarrierOrderComponent {
             alert.present();
         }   
   }  
+getPaymentBackground(paymentString){
+    //console.log("getPaymentBackground");
+    if(paymentString=="카드기")
+       return {"color":"#0000ff"};    
+    if(this.order.payment.startsWith("paid"))
+        return {"color":'#ff0000'};
+    else 
+        return {};     
+ }
+
+  completePayment(){
+                let alert = this.alertCtrl.create({
+                  title: '돈을 수령하셨습니까?',
+                  buttons: [
+                  {
+                    text: '아니오',
+                    handler: () => {
+                      return;
+                    }
+                  },
+                  {
+                    text: '네',
+                    handler: () => {
+                      console.log('agree clicked');
+                      
+                      this.modify.emit(this.order);    
+                      return;
+                    }
+                  }]
+                });
+                alert.present();
+                return;
+  }
+
 }

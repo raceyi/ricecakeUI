@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { IonicPage, NavController,AlertController, NavParams,Platform } from 'ionic-angular';
 import {StorageProvider} from "../../providers/storage/storage";
 import {ServerProvider} from "../../providers/server/server";
-
+import {TrashPasswordPage} from '../trash-password/trash-password';
 import { Events } from 'ionic-angular';
 
 /**
@@ -69,6 +69,45 @@ export class TrashPage {
     this.storageProvider.showOrder(order.id);
   }
 
+  callbackFunction = (pin) => {
+     return new Promise((resolve, reject) => {
+        console.log("callbackFunction:"+pin);
+        //check pin number here to make trash empty
+        //ask check if pin is valid or not.
+
+        this.serverProvider.checkPIN(pin).then(()=>{
+              this.storageProvider.deleteOrders().then(()=>{
+                  resolve();
+              },err=>{
+                    let alert = this.alertCtrl.create({
+                        title: '휴지통 비우기에 실패했습니다.',
+                        subTitle:err,
+                        buttons: ['확인']
+                    });
+                    alert.present();
+                    resolve();
+              })
+          },err=>{
+                if(typeof err==="string" && err.indexOf("invalidPIN")>=0){
+                    let alert = this.alertCtrl.create({
+                        title: '비밀번호가 일치하지 않습니다.',
+                        buttons: ['확인']
+                    });
+                    alert.present();
+                    resolve();
+                }else if(typeof err==="string" ){
+                    let alert = this.alertCtrl.create({
+                        title: '관리자 비밀번호 확인에 실패했습니다.',
+                        subTitle:err,
+                        buttons: ['확인']
+                    });
+                    alert.present();
+                    resolve();
+                }
+          });
+     });
+  }
+
   removeAll(){
       let alert = this.alertCtrl.create({
         title: '휴지통을 정말 비우시겠습니까?',
@@ -83,7 +122,8 @@ export class TrashPage {
                   text: '네',
                   handler: () => {
                     console.log('agree clicked');
-                    this.storageProvider.deleteOrders();
+                    this.navCtrl.push(TrashPasswordPage,{callback:this.callbackFunction});
+                    //this.storageProvider.deleteOrders();
                     return;
                   }
                 }]
