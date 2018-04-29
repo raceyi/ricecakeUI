@@ -73,21 +73,8 @@ dayString=function(day){
   }
 };
 
-/*
-let order={
-     menuList:[{category:'맵떡',name:'이티',amount:1,unit:'kg'},{category:'찰떡',name:'단호박',amount:30,unit:"개"}],
-     price: 57000,
-     deliveryFee:6000,
-     totalPrice: 63000,
-     deliveryTime:"2018-03-21T09:00:01.553Z"
-}
-*/
-
-router.notifyOrder=function(order){
-      return new Promise((resolve,reject)=>{    
-
-            let content="010-377088-82607\n 하나은행 최대웅\n";
-
+getOrderList=function(order){
+            let content="";
             let i;
             for(i=0;i<order.menuList.length;i++){
               if(order.menuList[i].type=="complex"){ //complex menu
@@ -103,9 +90,7 @@ router.notifyOrder=function(order){
                   content+=order.menuList[i].unit;
               content+="\n";
             }
-
             content+=order.price.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+"원\n"; // Why toLocaleString doesn't work?
-
             if(order.deliveryFee && order.deliveryFee>0){
                 console.log("order.totalPrice:"+order.totalPrice);
                 content+="택배비:"+order.deliveryFee.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")+"원\n";
@@ -117,9 +102,48 @@ router.notifyOrder=function(order){
             let deliveryDate=new Date(order.deliveryTime); //local time
 
             content+="떡 발송 날짜 - "+month+"/"+date+" "+ dayString(deliveryDate.getUTCDay()); 
+            content+='\n주문감사합니다.\n';  
+            return content;          
+}
 
-            content+='\n주문감사합니다.\n';
-            content+=' *입금부탁드립니다.\n *주문변경 및 취소는 2~3일 전에 매장 전화로만 가능합니다.\n (02-333-8880)(02-337-6376)\n *문자상담은 어렵습니다.\n *상담가능시간 오전6:00~오후6:00(일요일휴무)';
+router.notifyOrder=function(order){
+      return new Promise((resolve,reject)=>{  
+           let content="";  
+           if(order.paymentMethod=="cash"){
+               if(order.payment=="paid-pre"){ //"현금선불-완납" (OK)
+                    content+=getOrderList(order);
+                    content+="*결제완료(현금)\n";
+               }else if(order.payment=="unpaid-after"){ //"현금후불" (OK)
+                    content="010-377088-82607\n 하나은행 최대웅\n";
+                    content+=getOrderList(order);
+                    content+="*결제미수(현금)\n";
+               }else if(order.payment=="paid-after"){ //"현금후불-완납"
+                    resolve();                    
+               }else if(order.payment=="unpaid-transaction"){ //"현금이체" (OK)
+                    content="010-377088-82607\n 하나은행 최대웅\n";
+                    content+=getOrderList(order);
+                    content+="*결제미수(계좌이체)\n";
+               }else if(order.payment=="paid"){ //"현금이체-완납"
+                    resolve();
+               }else if(order.payment=="unknown"){ //"현금보류"
+                    resolve();
+               }else if(order.payment=="month"){ //"월말정산"
+                    resolve();
+               }
+           }else if(order.paymentMethod=="card"){ //must be card
+               if(order.payment=="paid-pre"){ //"카드선불" (OK)
+                    content+=getOrderList(order);
+                    content+="*결제완료(카드)\n";
+               }else if(order.payment=="unpaid"){ //"카드기" (OK)
+                    content="010-377088-82607\n 하나은행 최대웅\n";
+                    content+=getOrderList(order);
+                    content+="*결제미수(카드기)\n";
+               }else if(order.payment=="paid"){ //"카드기-완납"
+                    resolve();
+               }
+           }
+    
+            content+='*주문변경 및 취소는 2~3일 전에 매장 전화로만 가능합니다.\n (02-333-8880)(02-337-6376)\n *문자상담은 어렵습니다.\n *상담가능시간 오전6:00~오후6:00(일요일휴무)';
             console.log("content:"+content);
             
             let phoneNumber= order.buyerPhoneNumber.replace(/-/g, "");
