@@ -495,6 +495,8 @@ export class StorageProvider {
                 console.log("hum... please check error -1")
                 if(index!=-1)
                         this.assignOrderList[index].orders.push(order);
+                else
+                        this.unassingOrderDeliveryList.push(order);        
                 console.log("hum... please check error -2")
             }
             else {
@@ -521,10 +523,14 @@ export class StorageProvider {
 
     /////////////////////////////////////////////////////////
     //   Produce section - begin
-    addMenuInList(menu, deliveryTime, amount,customerMenu) {
+    addMenuInList(menu, deliveryTime,deliveryTimeEnd, amount,customerMenu) {
+        if(!deliveryTimeEnd) // deliveryTimeEnd가 없는 경우 오류 방지를 위해 설정함.
+            deliveryTimeEnd=deliveryTime;
         console.log("menu.menu:" + JSON.stringify(menu.menu));
         var hhmm = deliveryTime.slice(11, 13) + "시 " + deliveryTime.slice(14, 16) + "분";
         var min = parseInt(deliveryTime.slice(11, 13)) * 60 + parseInt(deliveryTime.slice(14, 16));
+        var endhhmm=deliveryTimeEnd.slice(11, 13) + "시 " + deliveryTimeEnd.slice(14, 16) + "분";
+        
         if(customerMenu){
             let index = this.produceList.findIndex(function (val) {
                 console.log("val.menu:" + JSON.stringify(val));
@@ -536,10 +542,10 @@ export class StorageProvider {
             console.log("index:" + index);
             if (index < 0) {
                 console.log
-                this.produceList.push({ menu: "직접입력", amount: [{ amount: amount + menu.unit, time: hhmm, min: min ,menu: menu.menu}] });
+                this.produceList.push({ menu: "직접입력", amount: [{ amount: amount + menu.unit, time: hhmm, timeEnd:endhhmm, min: min ,menu: menu.menu}] });
             }
             else {
-                this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, min: min,menu:menu.menu });
+                this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, timeEnd:endhhmm, min: min,menu:menu.menu });
             }
             console.log("produceList:" + JSON.stringify(this.produceList));            
         }else{
@@ -553,10 +559,10 @@ export class StorageProvider {
             console.log("index:" + index);
             if (index < 0) {
                 console.log
-                this.produceList.push({ menu: menu.menu, amount: [{ amount: amount + menu.unit, time: hhmm, min: min ,unit:menu.unit,amountNum:amount}] });
+                this.produceList.push({ menu: menu.menu, amount: [{ amount: amount + menu.unit, time: hhmm, timeEnd:endhhmm, min: min ,unit:menu.unit,amountNum:amount}] });
             }
             else {
-                this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, min: min ,unit:menu.unit,amountNum:amount});
+                this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, timeEnd:endhhmm,min: min ,unit:menu.unit,amountNum:amount});
             }
             console.log("produceList:" + JSON.stringify(this.produceList));
         }
@@ -568,7 +574,7 @@ export class StorageProvider {
             order.menuList.forEach( (menu) =>{
                 console.log("produceSection- menu:"+JSON.stringify(menu));
                 if(menu.category=="직접입력"){
-                    this.addMenuInList(menu, order.deliveryTime, menu.amount,true);
+                    this.addMenuInList(menu, order.deliveryTime, order.deliveryTimeEnd,menu.amount,true);
                 }else if (menu.menu.indexOf("[") == 0) {
                     var menuObjs = JSON.parse(menu.menu);
                     menuObjs.forEach( (menuObj)=> {
@@ -576,11 +582,11 @@ export class StorageProvider {
                         var menuInput = { menu: key[0], unit: menu.unit };
                         var amount = Number(menuObj[key]) * Number(menu.amount);
                         console.log("amount:" + amount);
-                        this.addMenuInList(menuInput, order.deliveryTime, amount,false);
+                        this.addMenuInList(menuInput, order.deliveryTime,order.deliveryTimeEnd, amount,false);
                     });
                 }
                 else {
-                    this.addMenuInList(menu, order.deliveryTime, menu.amount,false);
+                    this.addMenuInList(menu, order.deliveryTime, order.deliveryTimeEnd,menu.amount,false);
                 }
             });
         });

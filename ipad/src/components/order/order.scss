@@ -97,6 +97,10 @@ order {
         }
     }
 
+    .searchbar-ios .searchbar-input{
+        font-size: 2.1rem;
+    }   
+
     .searchbar-ios.searchbar-left-aligned .searchbar-input {
         padding-left: 0px;
     }
@@ -106,6 +110,12 @@ order {
         .text-input-ios {
             //margin:0px;
             width:100% !important;
+        }
+    }
+
+    .choice-selection{
+        .item-ios .item-button {
+            font-size: 1.95rem;
         }
     }
 

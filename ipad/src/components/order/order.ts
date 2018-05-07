@@ -1,4 +1,4 @@
-import { Component,Input,NgZone,Output,EventEmitter,OnInit } from '@angular/core';
+import { Component,Input,NgZone,Output,EventEmitter,OnInit,ViewChild } from '@angular/core';
 import { NavController,AlertController ,Platform} from 'ionic-angular';
 import * as moment from 'moment';
 import { InAppBrowser } from '@ionic-native/in-app-browser';
@@ -57,6 +57,11 @@ export class OrderComponent implements OnInit {
   deliveryEndHour;
   deliveryEndMin;
   deliveryMethod;
+
+  @ViewChild('inputToFocusStartHour') inputToFocusStartHour;
+  @ViewChild('inputToFocusStartMin') inputToFocusStartMin;
+  @ViewChild('inputToFocusEndHour') inputToFocusEndHour;
+  @ViewChild('inputToFocusEndMin') inputToFocusEndMin;
 
   constructor(public alertCtrl:AlertController
               ,private iab: InAppBrowser 
@@ -411,6 +416,14 @@ autoHypenPhone(str){
     str = str.replace(/[^0-9]/g, '');
     var tmp = '';
 
+    if(str.length==10 && str.startsWith('02')){
+      tmp+=str.substr(0,2);
+      tmp+='-';
+      tmp+=str.substr(2,4);
+      tmp+='-';
+      tmp+=str.substr(6,4);      
+      return tmp;
+    }
     if(str.length>=2 && str.startsWith('02')){
       tmp += str.substr(0, 2);
       tmp+='-';
@@ -671,7 +684,7 @@ autoHypenPhone(str){
             case "cash-month":  this.order.paymentMethod="cash"; this.order.payment="month";this.order.paymentString="월말정산";break;
             case "card-paid-pre":   this.order.paymentMethod="card"; this.order.payment="paid-pre";this.order.paymentString="카드선불-완납";break;
             case "card-unpaid":  this.order.paymentMethod="card"; this.order.payment="unpaid";this.order.paymentString="카드기";break;
-            case "cash-paid":this.order.paymentMethod="cash";  this.order.payment="unpaid";this.order.paymentString="현금이체-완납";
+            case "cash-paid":this.order.paymentMethod="cash";  this.order.payment="paid";this.order.paymentString="현금이체-완납";
             //case "card-paid":this.order.paymentMethod="card";this.order.payment="paid";this.order.paymentString="카드기-완납"; break;
             //case "cash-paid-after":this.order.paymentMethod="cash"; this.order.payment="paid-after";this.order.paymentString="현금후불-완납";break; 
           }
@@ -816,5 +829,24 @@ changeManual(){
     //change from 픽업-> other?
     this.deliveryMethod=this.order.deliveryMethod;
   }
+
+  inputStartHour(){
+     if(this.deliveryStartHour && this.deliveryStartHour.length==2){
+          this.inputToFocusStartMin.setFocus();
+     }
+  }
+
+  inputStartMin(){
+     if(this.deliveryStartMin && this.deliveryStartMin.length==2){
+          this.inputToFocusEndHour.setFocus();
+     }
+  }
+
+  inputEndHour(){
+     if(this.deliveryEndHour && this.deliveryEndHour.length==2){
+          this.inputToFocusEndMin.setFocus();
+     }
+  }
+
 
 }

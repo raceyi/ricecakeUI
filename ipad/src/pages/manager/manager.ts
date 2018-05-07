@@ -895,7 +895,111 @@ export class ManagerPage {
   }  
  // 메뉴 비활성화-end 
  //////////////////////////////////////////////
+// 메뉴 변경
+modifyGeneralMenu(menu,i){
+    menu.edit=true;
+    menu.newName=this.currentCategoryMenus.optionStrings[i];
+}
 
+saveModificationGeneralMenu(menu,i){
+     //remove existing one and then add new one
+    let reqbody:any={category:menu.category, menu:menu.menu}; 
+    console.log("menu.newName:"+menu.newName);
+
+    let reqbodyAdd:any={category:menu.category, menu:menu.newName, categorySeq:menu.categorySeq ,menuSeq:menu.menuSeq};    
+
+    this.storageProvider.removeGeneralMenu(reqbody).then(()=>{
+        //
+        this.storageProvider.addGeneralMenu(reqbodyAdd).then(()=>{
+        },err=>{
+            let alert = this.alertCtrl.create({
+                    title: '메뉴 변경에 실패했습니다.',
+                    subTitle: JSON.stringify(err),
+                    buttons: ['확인']
+            });
+            alert.present();                
+        })
+    },err=>{
+        let alert = this.alertCtrl.create({
+                title: '메뉴 변경에 실패했습니다.',
+                subTitle: JSON.stringify(err),
+                buttons: ['확인']
+        });
+        alert.present();                
+    })
+}
+
+undoModificationGeneralMenu(menu,i){
+    menu.edit=false;    
+}
+
+  undoModificationCategory(category){
+      category.mod=false;  
+  }
+
+  modifyCategory(category){
+      category.mod=true;  
+      category.newName=category.category;
+  }
+
+  saveModificationCategory(category,i){
+     let isCurrentCategory=false; 
+     if(this.currentCategoryMenus.category==category.category){
+        isCurrentCategory=true;
+     } 
+     let reqBodyRemoveCategory:any={category:category.category,sequences:[],type:category.type};
+     let reqBodyAddCategory:any={category:category.newName,categorySeq:category.categorySeq ,type:category.type};
+     let menu;
+     let reqBodyAddComplexMenu;
+     if(category.menus.length>0){
+         menu=category.menus[0];
+         if(menu.choiceNumber)
+            reqBodyAddComplexMenu={category:category.newName,categorySeq:category.categorySeq , 
+                                     menu:menu.menu,menuSeq:0,choiceNumber:menu.choiceNumber};
+         else
+            reqBodyAddComplexMenu={category:category.newName,categorySeq:category.categorySeq , 
+                                     menu:menu.menu,menuSeq:0};                                     
+     }
+     this.storageProvider.removeCategory(reqBodyRemoveCategory).then(()=>{
+             this.storageProvider.addCategory(reqBodyAddCategory).then(()=>{
+                if(reqBodyAddComplexMenu){
+                    this.storageProvider.addComplexMenu(reqBodyAddComplexMenu).then(()=>{
+                            if(isCurrentCategory){
+                                this.currentCategoryMenus=this.storageProvider.menus[i];
+                                this.storageProvider.categorySelected=category.newName;
+                            }
+                    },err=>{
+                        let alert = this.alertCtrl.create({
+                            title: '메뉴 변경에 실패했습니다.',
+                            subTitle: JSON.stringify(err),
+                            buttons: ['확인']
+                        });
+                        alert.present();                
+                    })
+                }else{
+                            if(isCurrentCategory){
+                                this.currentCategoryMenus=this.storageProvider.menus[i];
+                                this.storageProvider.categorySelected=category.newName;
+                            }
+                }
+             },err=>{
+                    let alert = this.alertCtrl.create({
+                        title: '메뉴 변경에 실패했습니다.',
+                        subTitle: JSON.stringify(err),
+                        buttons: ['확인']
+                    });
+                    alert.present();                
+             })  
+     },err=>{
+                    let alert = this.alertCtrl.create({
+                        title: '메뉴 변경에 실패했습니다.',
+                        subTitle: JSON.stringify(err),
+                        buttons: ['확인']
+                    });
+                    alert.present();                
+     });
+  }
+/////////////////////////////////////////////////
  openConfig(){
    console.log("push ManagerPasswordPage");
    this.navCtrl.push(ManagerPasswordPage);

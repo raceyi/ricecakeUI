@@ -52,8 +52,8 @@
               <ion-row *ngIf="modification">
                   <ion-item class="no-item-border-bottom">
                       <ion-select class="payment-select carrier-select" placeholder="배달자" [(ngModel)]="carrier">
+                        <ion-option [value]="미지정" >미지정</ion-option>
                         <ion-option *ngFor="let carrier of storageProvider.carriers" [value]="carrier.name" >{{carrier.name}}</ion-option>
-                        <ion-option value="미지정" >미지정</ion-option>
                       </ion-select>
                   </ion-item>
               </ion-row>

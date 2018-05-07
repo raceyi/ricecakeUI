@@ -4,6 +4,7 @@
   <button ion-button (click)="adminPage()"><ion-icon large name="person"></ion-icon>관리자</button>
   <button ion-button (click)="trashPage()"><ion-icon large name="trash"></ion-icon>휴지통</button>
 </ion-buttons>
+앱버전:{{configProvider.version}}
 <ion-buttons end>
    <button ion-button (click)="refresh()"><ion-icon large name="md-refresh" ></ion-icon>&nbsp;업데이트</button>
    <button ion-button (click)="print()"><ion-icon large name="print"></ion-icon>프린트</button>
@@ -19,6 +20,8 @@
   <button *ngIf="section!='delivery'" style="color:black;" ion-button clear large (click)="deliverySection()">| 배달 |</button>
   <button *ngIf="section=='produce'" style="color:#488aff;" ion-button clear large>| 생산 |</button>
   <button *ngIf="section!='produce'" style="color:black;" ion-button clear large (click)="produceSection()">| 생산 |</button>
+  <button *ngIf="section=='set'" style="color:#488aff;" ion-button clear large>| 세트 |</button>
+  <button *ngIf="section!='set'" style="color:black;" ion-button clear large (click)="setSection()">| 세트 |</button>  
 </div>
 
 <ion-grid class="delivery-date" no-padding>
@@ -92,7 +95,7 @@
                     {{menu.menu}}
                 </ion-col>
                 <ion-col  col-7 *ngIf="menu.menu!='직접입력'">
-                    <span *ngFor="let item of menu.amount"><b>{{item.amount}}</b>({{item.time}}),</span>
+                    <span *ngFor="let item of menu.amount"><b>{{item.amount}}</b>({{item.time}}-{{item.timeEnd}}),</span>
                 </ion-col>
                 <ion-col  col-2 *ngIf="menu.menu!='직접입력'" style="border-left: solid 1px darkgray;">
                     <span *ngIf="menu.kg>0"> {{menu.kg}}kg<br></span>
@@ -122,7 +125,24 @@
       </ion-grid>
       -->
 </div>
-
+<div [hidden]="section!='set'">
+    <div padding>
+        <ion-grid  no-padding style="font-size:large;border:solid 1px darkgray; border-bottom:0px;">
+          <ion-row *ngFor="let order of setTable,let k=index" style="border-bottom:solid 1px darkgray;" >
+                <ion-col no-margin no-padding col-3 style="border-right:solid 1px darkgray;">
+                    {{order.hhmm}}-{{order.hhmmEnd}}
+                </ion-col>
+                <ion-col no-margin no-padding col-9>
+                    <ion-row *ngFor="let menu of order.order">
+                        <ion-col no-margin no-padding>
+                            {{menu.name}}-<b>{{menu.amount}}개</b>
+                        </ion-col>
+                    </ion-row>
+                </ion-col>                
+          </ion-row>
+    </ion-grid>
+    </div>
+</div>
 </ion-content>
                                       
 

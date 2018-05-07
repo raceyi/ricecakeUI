@@ -4,7 +4,33 @@
         <ion-col col-9>
             <ion-row>
               <ion-col col-4 no-padding no-margin>
-              <ion-row style="padding-top:20px;">
+              <ion-row style="padding-top:20px;" *ngIf="!order.id">
+                  <ion-col no-padding no-margin>
+                    <ion-input no-margin #inputToFocusStartHour (input)="inputStartHour()" class="input_underbar" type="number" max=3 min=1 [(ngModel)]="deliveryStartHour"> </ion-input>
+                  </ion-col>
+                  <ion-col no-padding no-margin>
+                    시
+                  </ion-col>
+                  <ion-col no-padding no-margin>
+                    <ion-input no-margin #inputToFocusStartMin (input)="inputStartMin()" class="input_underbar" type="number" max=3 min=1 [(ngModel)]="deliveryStartMin"> </ion-input>
+                  </ion-col>
+                  <ion-col no-padding no-margin>
+                    분~
+                  </ion-col>
+                  <ion-col no-padding no-margin>
+                    <ion-input no-margin #inputToFocusEndHour  (input)="inputEndHour()" class="input_underbar" type="number" max=3 min=1 [(ngModel)]="deliveryEndHour"> </ion-input>
+                  </ion-col>
+                  <ion-col no-padding no-margin>
+                    시
+                  </ion-col>                  
+                  <ion-col no-padding no-margin>
+                    <ion-input no-margin #inputToFocusEndMin class="input_underbar" type="number" max=3 min=1 [(ngModel)]="deliveryEndMin"> </ion-input>
+                  </ion-col>                  
+                  <ion-col no-padding no-margin>
+                    분
+                  </ion-col>
+                </ion-row>   
+                <ion-row style="padding-top:20px;" *ngIf="order.id">
                   <ion-col no-padding no-margin>
                     <ion-input no-margin class="input_underbar" type="number" max=3 min=1 [(ngModel)]="deliveryStartHour"> </ion-input>
                   </ion-col>
@@ -29,7 +55,7 @@
                   <ion-col no-padding no-margin>
                     분
                   </ion-col>
-                </ion-row>                
+                </ion-row>   
                 <!--
                 <ion-item>
                   <ion-datetime *ngIf="order.id" class="timeonly-text" displayFormat="HH시 mm분" pickerFormat="YYYY MM DD HH mm" placeholder="배달시간" [(ngModel)]="deliveryTimeUpdate"></ion-datetime>
@@ -214,7 +240,7 @@
             <ion-row *ngFor="let choice of choices;let i=index;">
               <ion-col col-3 no-padding no-margin>
               </ion-col>
-              <ion-col col-4 no-padding no-margin>
+              <ion-col class="choice-selection" col-4 no-padding no-margin>
                 <ion-item class="no-item-border-bottom">
                 <ion-searchbar  placeholder="메뉴이름" [(ngModel)]="choices[i].option" (ionInput)="onInput($event,i)">
                 </ion-searchbar>

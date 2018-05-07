@@ -47,7 +47,9 @@ export class CarrierOrderComponent {
       });
       alert.present();
     }else{
-        this.order.updateCarrier=this.carrier;
+        //if(this.carrier=="미지정")
+        //   this.order.updateCarrier="";
+        this.order.updateCarrier=this.carrier;        
         this.output.emit(this.order);      
     }
     this.modification=false;
@@ -77,7 +79,6 @@ export class CarrierOrderComponent {
                     text: '네',
                     handler: () => {
                       console.log('agree clicked');
-                      
                       this.modify.emit(this.order);    
                       return;
                     }

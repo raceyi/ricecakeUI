@@ -46,7 +46,7 @@ import {MyErrorHandler} from '../classes/my-error-handler';
     HttpClientModule,
     ComponentsModule,
     BrowserModule,
-    IonicModule.forRoot(MyApp)
+    IonicModule.forRoot(MyApp,{mode:'ios'})
   ],
   bootstrap: [IonicApp],
   entryComponents: [
