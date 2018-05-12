@@ -1,0 +1,63 @@
+<ion-header>
+
+  <ion-navbar hideBackButton>
+    <ion-title>배달인원관리</ion-title>
+    <ion-buttons end>
+      <button ion-button style="font-size:4vw;" color="black" (click)="close()"><ion-icon  large name="md-close"></ion-icon></button>
+    </ion-buttons>
+  </ion-navbar>
+</ion-header>
+<ion-content padding>
+  <div *ngIf="!storageProvider.ipad">
+   <ion-list>
+        <ion-item no-padding no-margin class="no-item-border-bottom" *ngFor="let carrier of storageProvider.carriers;let i=index;">     
+            <ion-row>
+              <ion-col no-padding no-margin text-center>
+                    {{carrier.name}} <button style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="removeCarrier(carrier.name)" > <ion-icon style="font-size: 1.5em;" name="md-remove-circle"></ion-icon></button>
+              </ion-col>
+            </ion-row>
+        </ion-item>
+          <ion-row>
+            <ion-col col-3></ion-col>
+            <ion-col col-4 no-padding no-margin text-right>
+            <ion-item class="no-item-border-bottom">
+            <ion-input type="text" placeholder="이름" style="border-bottom:solid 1px;" [(ngModel)]="newCarrier" ></ion-input>
+            </ion-item>
+            </ion-col>
+            <ion-col col-2 no-padding no-margin text-left>                    
+            <ion-item class="no-item-border-bottom">         
+            <button style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="addCarrier()" ><b> <ion-icon style="font-size: 1.8em;" name="md-add"></ion-icon></b></button>
+            </ion-item>
+            </ion-col>
+            <ion-col col-3>
+            </ion-col>        
+          </ion-row>  
+   </ion-list>
+   </div>
+  <div *ngIf="storageProvider.ipad">
+   <ion-list>
+        <ion-item no-padding no-margin class="no-item-border-bottom" *ngFor="let carrier of storageProvider.carriers;let i=index;">     
+            <ion-row>
+              <ion-col no-padding no-margin text-center>
+                    {{carrier.name}} <button style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="removeCarrier(carrier.name)" > <ion-icon style="font-size: 1.5em;" name="md-remove-circle"></ion-icon></button>
+              </ion-col>
+            </ion-row>
+        </ion-item>
+          <ion-row>
+            <ion-col col-5></ion-col>
+            <ion-col col-2 no-padding no-margin text-right>
+            <ion-item class="no-item-border-bottom">
+            <ion-input type="text" placeholder="이름" style="border-bottom:solid 1px;" [(ngModel)]="newCarrier" ></ion-input>
+            </ion-item>
+            </ion-col>
+            <ion-col col-1 no-padding no-margin text-left>                    
+            <ion-item class="no-item-border-bottom">         
+            <button style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="addCarrier()" ><b> <ion-icon style="font-size: 1.8em;" name="md-add"></ion-icon></b></button>
+            </ion-item>
+            </ion-col>
+            <ion-col col-4>
+            </ion-col>        
+          </ion-row>  
+   </ion-list>
+  </div>
+</ion-content>

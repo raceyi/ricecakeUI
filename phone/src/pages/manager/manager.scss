@@ -1,0 +1,60 @@
+page-manager {
+    .toolbar-background-ios {
+         background:white; 
+         border:0px;
+    }
+    .header-ios .toolbar-background-ios, .footer-ios .toolbar-background-ios {
+        border-style: none;
+    }
+
+    .list-ios > .item-block:last-child, .list-ios > .item-wrapper:last-child .item-block{
+        border-bottom: 0px;   
+    }   
+//////////////////////////////////////////////////////////////////////////////////////
+ .scroll-content{
+        overflow-y:hidden;
+        padding:0px;
+    }
+
+    ion-scroll{
+        height:60vh;
+        overflow-y:auto;
+        .scroll-content{
+            height:60vh  !important;
+        }
+    }
+
+    .list-ios {
+        margin: 0px;
+        .list-item{
+            .label-ios {
+                margin: 0;
+            }
+            .list-item-label{
+                padding-top:10px;
+            }
+        }
+        .item-ios.item-block .item-inner {
+            border: 0px !important;
+        }
+    }
+
+    .no-item-border-bottom.item-ios.item-block .item-inner {
+        border-bottom: 0px !important;
+    }
+
+    .list-ios > .item-block:first-child {
+        border-top: 0px;
+    }
+
+    .item-ios.item-block .item-inner {
+         padding-right: 0px; 
+    }
+
+    .list-item-no-drag{
+       ion-col{
+           background-color:white;
+       }
+    }
+
+}

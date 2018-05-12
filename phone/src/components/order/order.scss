@@ -1,0 +1,122 @@
+order {
+    .order-input-section{
+        border-color: #9acd32;
+        border-style: solid;
+        border-bottom-style: solid;
+        border-bottom-width: 3px;
+        margin-bottom:3px;    
+        
+        .main-datetime-text{
+            text-align: center;
+            font-size: 30px;
+        }
+        .timeonly-text{
+            text-align: center;
+            font-size: 15px;
+        }
+        .getJusoButton{
+            span{
+                font-size: 1.8rem !important;
+            }
+        }
+        .payment-select{
+            max-width:100%;
+            padding:0px;
+        }
+
+        ion-textarea{
+            color: black;
+            border:solid 1px lightgray;
+            height: 5vh;
+        }  
+
+        .save-button{
+            padding:0px;
+            .label-ios{
+                margin:0px;
+                padding:0px;
+            }
+            .item-button{
+                font-size:1.8rem;
+                height:35px;
+                border-radius: 3px;
+            }
+        } 
+
+        .carrier-select{
+            padding-left:20px;
+        }
+
+        .add-button{
+            .label-ios{
+                margin:0px;
+            }
+        }
+
+         .manual-input-button{
+            .label-ios {
+                margin: 0;
+            }
+            button {
+                height: 3rem !important;
+            }
+        }
+        .amount-input .text-input-ios {
+            margin: 0; 
+        }
+        .unit-selector{
+            padding-left:0px;
+            button{
+                padding:0px;
+            }
+            .select-text{
+                font-size:small;
+            }
+            .item-inner{
+                padding:0px;
+            }
+        }
+    }
+
+    ion-select{
+        max-width:100%;
+    }
+    .select-ios{
+        padding:0px;
+    }
+    .no-item-border-bottom.item-ios.item-block .item-inner{
+            border-bottom: 0px !important;
+    }
+    ////////////////////////////////////////////
+    .searchbar-ios .searchbar-search-icon {
+        display:none;
+        width:0;
+        height:0;
+        .label-ios {
+            margin:0px !important;
+        }
+    }
+
+    .searchbar-ios .searchbar-input{
+        font-size: 2.1rem;
+    }   
+
+    .searchbar-ios.searchbar-left-aligned .searchbar-input {
+        padding-left: 0px;
+    }
+    
+    .input_underbar{
+        border-bottom:solid 0.5px;
+        .text-input-ios {
+            //margin:0px;
+            width:100% !important;
+        }
+    }
+
+    .choice-selection{
+        .item-ios .item-button {
+            font-size: 1.95rem;
+        }
+    }
+
+}

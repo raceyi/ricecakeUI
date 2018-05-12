@@ -1,0 +1,65 @@
+<!-- Generated template for the PhoneExistingOrderComponent component -->
+  <ion-grid class="order-style">
+      <ion-row style="font-size:3vw;">
+            <ion-col col-8 style="color:darkgray;" no-padding>
+             접수일시:{{order.orderedTimeString}}  
+            </ion-col>
+            <ion-col text-right col-2  no-margin no-padding>
+                  <button ion-button clear no-padding no-margin style="font-size:3vw;height:13px;" (click)="modifyOrder()"> 수정</button>
+            </ion-col>       
+            <ion-col text-right col-2  no-margin no-padding>
+                   <button ion-button clear no-padding no-margin style="font-size:3vw;height:13px;" (click)="deleteOrder()" > 삭제</button>
+            </ion-col>            
+        </ion-row>
+        <ion-row style="font-size:3vw;">
+                  <ion-col no-margin no-padding>
+                       받는분: {{order.recipientName}}({{order.recipientPhoneNumber}})  
+                  </ion-col>
+                  <ion-col text-right no-margin no-padding>
+                       구매자: {{order.buyerName}}({{order.buyerPhoneNumber}})  
+                  </ion-col>
+        </ion-row>
+        <ion-row style="font-size:3vw;">
+            <ion-col *ngIf="order.recipientAddressDetail==undefined || order.recipientAddressDetail==null || order.recipientAddressDetail.trim().length==0" col-9 no-margin no-padding>
+                  배송지:{{order.recipientAddress}} 
+            </ion-col>               
+            <ion-col *ngIf="order.recipientAddressDetail!=undefined && order.recipientAddressDetail!=null && order.recipientAddressDetail.trim().length>0" col-9 no-margin no-padding>
+                  배송지:{{order.recipientAddress}} {{order.recipientAddressDetail}}
+            </ion-col>   
+        </ion-row>
+        <div style="border-top: solid 1px lightgray;border-bottom: solid 1px lightgray;" >
+        <ion-row *ngFor="let menu of order.menuList">
+              <span *ngIf="menu.type=='complex'" > {{menu.category}} {{menu.amount}} {{menu.unit}}</span>
+              <span *ngIf="menu.type=='complex-choice'" > {{menu.category}}({{menu.menuString}}) {{menu.amount}}{{menu.unit}}</span>
+              <span *ngIf="menu.type=='general'" > {{menu.category}}-{{menu.menuString}} {{menu.amount}} {{menu.unit}}</span>
+        </ion-row>
+        </div>
+        <ion-row *ngIf="order.memo!=undefined && order.memo!=null && order.memo.trim().length>0" style="font-size:3.4vw;border:solid 0.5px;">
+              {{order.memo}}
+        </ion-row>
+        <ion-row style="font-size:3.4vw;">
+          <ion-col no-margin no-padding col-1>
+              {{order.deliveryMethod}}
+          </ion-col>
+          <ion-col col-4 no-margin no-padding *ngIf="order.deliveryTimeEnd">
+              {{order.deliveryTime.slice(11,13)+ "시" + order.deliveryTime.slice(14,16) + "분-"}}{{order.deliveryTimeEnd.slice(11,13)+ "시" + order.deliveryTimeEnd.slice(14,16) + "분"}}
+          </ion-col>
+          <ion-col col-4 no-margin no-padding *ngIf="!order.deliveryTimeEnd">
+              {{order.deliveryTime.slice(11,13)+ "시" + order.deliveryTime.slice(14,16) + "분"}}
+          </ion-col>
+        </ion-row>
+        <ion-row style="font-size:3.4vw;">
+              <ion-col col-7 *ngIf="order.deliveryFee==undefined || order.deliveryFee==null || order.deliveryFee==0" [ngStyle]="getPaymentBackground(order.paymentString)" no-margin no-padding>
+                    {{order.totalPrice.toLocaleString()}}원 
+              </ion-col>
+              <ion-col col-7 *ngIf="order.deliveryFee!=undefined && order.deliveryFee!=null && order.deliveryFee>0" [ngStyle]="getPaymentBackground(order.paymentString)" no-margin no-padding>
+                    {{order.totalPrice.toLocaleString()}}원(배송비{{order.deliveryFee.toLocaleString()}} 포함) 
+              </ion-col>
+              <ion-col [ngStyle]="getPaymentBackground(order.paymentString)" no-margin no-padding>
+                    {{order.paymentString}}
+              </ion-col>
+              <ion-col col-2 no-padding no-margin *ngIf="((order.paymentMethod=='cash' && order.payment=='unpaid-after') || ( order.paymentMethod=='card' && order.payment=='unpaid'))">
+                    <button ion-button ion-button no-padding no-margin style="font-size:3vw;" (click)="completePayment()"> 결제완료</button>
+              </ion-col>
+          </ion-row>
+        </ion-grid>

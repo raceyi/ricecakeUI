@@ -1,0 +1,60 @@
+page-home {
+
+    .delivery-date{
+        .icon-md-datetime-left{
+            font-size: 6rem;
+            text-align: right;
+        }
+
+        .icon-md-datetime-right{
+            font-size: 6rem;
+            text-align: left;
+        }
+
+        .day{
+            font-size: 3rem;
+            padding-top: 12px !important;
+        }
+        .item-datetime-inner{
+            margin: auto;
+        }
+
+        .main-datetime-text{
+            text-align: center;
+            font-size: 30px;
+        }
+
+        .item-ios.item-block .item-inner{
+            border-bottom:0px;
+        }
+
+        ion-row{
+            padding-left:30px;
+        }
+    }
+
+
+ion-select {
+  max-width: 100%;
+}
+
+.select-ios {
+  padding: 0px;
+}
+
+.no-item-border-bottom.item-ios.item-block .item-inner {
+  border-bottom: 0px !important;
+}
+
+page-home hr {
+  display: block;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  margin-left: auto;
+  margin-right: auto;
+  border-style: inset;
+  border-width: 1px;
+}
+
+    
+}

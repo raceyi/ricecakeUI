@@ -1,0 +1,10 @@
+phone-existing-order {
+ .order-style{
+    border: solid 1px darkgray;
+    border-radius:10px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.16);
+    @include calc(width, "100% - 20px");
+    background-color:white;
+    margin:10px;
+ }
+}

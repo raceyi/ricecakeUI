@@ -1,0 +1,146 @@
+<ion-header>
+<ion-navbar>
+<ion-buttons start>
+  <button ion-button (click)="adminPage()"><ion-icon large name="person"></ion-icon>관리자</button>
+  <button ion-button (click)="trashPage()"><ion-icon large name="trash"></ion-icon>휴지통</button>
+</ion-buttons>
+앱버전:{{configProvider.version}}
+<ion-buttons end>
+   <button ion-button (click)="refresh()"><ion-icon large name="md-refresh" ></ion-icon>&nbsp;업데이트</button>
+   <button ion-button (click)="print()"><ion-icon large name="print"></ion-icon>프린트</button>
+</ion-buttons>
+</ion-navbar>
+</ion-header>
+
+<ion-content>
+<div text-center>
+  <button *ngIf="section=='order'" style="color:#488aff;" ion-button clear large>| 주문 |</button>
+  <button *ngIf="section!='order'" style="color:black;" ion-button clear large (click)="orderSection()">| 주문 |</button>
+  <button *ngIf="section=='delivery'" style="color:#488aff;" ion-button clear large>| 배달 |</button>   
+  <button *ngIf="section!='delivery'" style="color:black;" ion-button clear large (click)="deliverySection()">| 배달 |</button>
+  <button *ngIf="section=='produce'" style="color:#488aff;" ion-button clear large>| 생산 |</button>
+  <button *ngIf="section!='produce'" style="color:black;" ion-button clear large (click)="produceSection()">| 생산 |</button>
+  <button *ngIf="section=='set'" style="color:#488aff;" ion-button clear large>| 세트 |</button>
+  <button *ngIf="section!='set'" style="color:black;" ion-button clear large (click)="setSection()">| 세트 |</button>  
+</div>
+
+<ion-grid class="delivery-date" no-padding>
+    <ion-row>
+      <ion-col col-2>
+      <button ion-button float-right clear (click)="storageProvider.orderGoYesterday()">
+      <ion-icon class="icon-md-datetime-left" name="arrow-back"></ion-icon>
+      </button>
+      </ion-col>
+      <ion-col col-5 no-padding no-margin >
+      <ion-item class="item-datetime-inner">
+      <ion-datetime class="main-datetime-text" displayFormat="YYYY년 MM월 DD일" pickerFormat="YYYY MM DD" (ionChange)="storageProvider.updateDeliveryDay()" [(ngModel)]="storageProvider.deliveryDate"></ion-datetime>
+      </ion-item>
+      </ion-col>
+      <ion-col col-2 class="day">
+         {{storageProvider.deliveyDay}}
+      </ion-col>
+      <ion-col col-3>
+      <button ion-button float-left clear (click)="storageProvider.orderGoTomorrow()">
+      <ion-icon class="icon-md-datetime-right" name="arrow-forward"></ion-icon>
+      </button>
+      </ion-col>
+    </ion-row>
+</ion-grid>
+
+<div [hidden]="section!='order'">
+      <div style="width:30%;margin:auto;">
+              <ion-searchbar placeholder="주문자 이름,전화번호 검색" (input)="inputSearchKeyWord()" [(ngModel)]="searchKeyWord"></ion-searchbar>
+      </div>
+      <div *ngIf="!searchKeyWord || searchKeyWord.trim().length==0">
+            <ion-row>
+                    <ion-col text-left> <button ion-button (click)="storageProvider.todayOrders()">오늘</button></ion-col>  
+                     <ion-col *ngIf="storageProvider.sortType=='input'" text-center> <button color="light" ion-button (click)="sortOrdersDeliveryTime()">시간순전환</button></ion-col>
+                     <ion-col *ngIf="storageProvider.sortType=='delivery'" text-center> <button  color="light" ion-button (click)="sortOrdersInputTime()">입력순전환</button></ion-col>
+                    <ion-col *ngIf="!storageProvider.newOrderInputShown" text-right><button ion-button (click)="createNewOrder()">주문생성</button></ion-col>
+            </ion-row>
+            <order *ngIf="storageProvider.newOrderInputShown" [order]="newOrder" [menus]="storageProvider.menus" (output)="saveOrder($event)"></order>
+            
+            <div *ngFor="let order of storageProvider.orderList;let i=index;">
+                <existing-order *ngIf="!order.modification" [order]="order" (output)="modifyOrder($event)" (modify)="savePayment(order)"></existing-order>        
+                <order *ngIf="order.modification" [order]="configureOrderInput(order)" [menus]="storageProvider.menus" (output)="saveOrder($event,order)"></order>        
+            </div>
+      </div>
+      <div *ngIf="searchKeyWord && searchKeyWord.trim().length>0">
+              <div *ngFor="let order of filter;let i=index;">
+                <existing-order *ngIf="!order.modification" [order]="order" (output)="modifyOrder($event)" (modify)="savePayment(order)"></existing-order>        
+                <order *ngIf="order.modification" [order]="configureOrderInput(order)" [menus]="storageProvider.menus" (output)="saveOrder($event,order)"></order>        
+            </div>        
+      </div>
+</div>
+
+<div [hidden]="section!='delivery'">
+      <div text-right> <button ion-button clear (click)="manageCarrier()">배달인원관리</button></div>
+          <div *ngFor="let carrier of storageProvider.assignOrderList;let i=index;"> 
+          <h3>{{carrier.name}}</h3>
+              <carrier-order [order]="order" (output)="modifyCarrier($event)" (modify)="savePayment(order)" *ngFor="let order of carrier.orders;let j=index;"></carrier-order>      
+          </div>
+          <hr><br>
+          <h3>*배달</h3>
+              <unassigned-carrier-order [order]="order" (output)="assingCarrier($event)" (modify)="savePayment(order)" *ngFor="let order of storageProvider.unassingOrderDeliveryList;let i=index;"></unassigned-carrier-order> 
+          <h3>*픽업</h3>   
+              <unassigned-carrier-order [order]="order" (output)="assingCarrier($event)" (modify)="savePayment(order)" *ngFor="let order of storageProvider.unassingOrderPickupList;let i=index;"></unassigned-carrier-order> 
+          <h3>*냉동</h3>
+              <unassigned-carrier-order [order]="order" (output)="assingCarrier($event)" (modify)="savePayment(order)" *ngFor="let order of storageProvider.unassingOrderFrozenList;let i=index;"></unassigned-carrier-order> 
+          <h3>*기타</h3>
+              <unassigned-carrier-order [order]="order" (output)="assingCarrier($event)" (modify)="savePayment(order)" *ngFor="let order of storageProvider.unassingOrderEtcList;let i=index;"></unassigned-carrier-order> 
+</div>
+
+<div [hidden]="section!='produce'">
+    <ion-grid  style="font-size:large;" *ngFor="let table of storageProvider.produceTables" >
+          <ion-row *ngFor="let menu of table.menus,let k=index" [ngStyle]="rowStyles(k)">
+                <ion-col  col-3 style="border-right:solid 1px darkgray;">
+                    {{menu.menu}}
+                </ion-col>
+                <ion-col  col-7 *ngIf="menu.menu!='직접입력'">
+                    <span *ngFor="let item of menu.amount"><b>{{item.amount}}</b>({{item.time}}-{{item.timeEnd}}),</span>
+                </ion-col>
+                <ion-col  col-2 *ngIf="menu.menu!='직접입력'" style="border-left: solid 1px darkgray;">
+                    <span *ngIf="menu.kg>0"> {{menu.kg}}kg<br></span>
+                    <span *ngIf="menu.mal>0"> {{menu.mal}}말<br></span>
+                    <span *ngIf="menu.doi>0"> {{menu.doi}}되<br></span>
+                    <span *ngIf="menu.jyupsi>0"> {{menu.jyupsi}}접시<br></span>
+                    <span *ngIf="menu.gae>0"> {{menu.gae}}개 <br></span>
+                </ion-col>
+                <ion-col col-9 *ngIf="menu.menu=='직접입력'">
+                    <span *ngFor="let item of menu.amount">{{item.menu}}({{item.time}}),</span>
+                </ion-col>                
+          </ion-row>
+    </ion-grid>
+    <!--
+      <ion-grid style="font-size:large;">
+          <ion-row *ngFor="let menu of storageProvider.produceList" style="border:solid 1px darkgray;">
+                <ion-col col-3 style="border-right:solid 1px darkgray;">
+                    {{menu.menu}}
+                </ion-col>
+                <ion-col col-9 *ngIf="menu.menu!='직접입력'">
+                    <span *ngFor="let item of menu.amount"><b>{{item.amount}}</b>({{item.time}}),</span>
+                </ion-col>
+                <ion-col col-9 *ngIf="menu.menu=='직접입력'">
+                    <span *ngFor="let item of menu.amount">{{item.menu}}({{item.time}}),</span>
+                </ion-col>                
+          </ion-row>
+      </ion-grid>
+      -->
+</div>
+<div [hidden]="section!='set'">
+    <div *ngFor="let menu of setTable" padding style="padding-top:0px;padding-bottom:10px;">
+        <ion-grid  no-padding style="font-size:large;border:solid 1px darkgray;border-bottom:0px;" >
+          <ion-row  *ngFor="let order of menu.orders" style="border-bottom:solid 1px darkgray;" >
+                <ion-col no-margin no-padding col-3 style="border-right:solid 1px darkgray;">
+                    {{order.hhmm}}-{{order.hhmmEnd}}
+                </ion-col>
+                <ion-col no-margin no-padding col-9>
+                            {{order.name}}<span *ngIf="order.option">{{order.option}}</span>-<b>{{order.amount}}개</b>
+                </ion-col>                
+          </ion-row>
+        </ion-grid>
+    </div>
+</div>
+</ion-content>
+                                      
+
