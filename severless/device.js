@@ -15,14 +15,25 @@ let API_KEY=config.API_KEY;
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-router.putRegistrationId=function (registrationId){
+router.putRegistrationId=function (registrationId,android){
         return new Promise((resolve,reject)=>{
-                let params={
-                    TableName:"devices",
-                    Item:{
-                        "registrationId":registrationId
-                    }
-                };
+                let params;
+                if(android){
+                    params={
+                        TableName:"devices",
+                        Item:{
+                            "registrationId":registrationId,
+                            "android":true
+                        }
+                    };
+                }else{
+                    params={
+                        TableName:"devices",
+                        Item:{
+                            "registrationId":registrationId
+                        }
+                    };
+                }
                 console.log("putRegistrationId-params:"+JSON.stringify(params));
 
                 docClient.put(params, function(err, data) {
@@ -81,6 +92,7 @@ sendGCM=function(params,next){
 
     let tableName=params.tableName;
     let pushId=params.pushId.registrationId;
+    let android=params.pushId.android?true:false;
     let sender = new gcm.Sender(API_KEY);
     console.log("tableName content:"+tableName);
     let message;
@@ -94,6 +106,8 @@ sendGCM=function(params,next){
       }else{
         data={table:tableName};
       }
+
+    if(!android){
       message = {
 			"to" : pushId,
 			priority: 'high',
@@ -106,6 +120,7 @@ sendGCM=function(params,next){
                 //body: tableName
             }
         };
+
 		var body = JSON.stringify(message);
 		console.log(body);
         var options = {
@@ -158,6 +173,27 @@ sendGCM=function(params,next){
             console.error(e);
             next(null,"unregister");  // Please check if error is unregistered id. 
         });
+    }else{ //android
+        console.log("send GCM into Android device");
+        
+        data["content-available"]=1;
+        message = new gcm.Message({
+            priority: 'high',
+            collapseKey: 'takit',
+            timeToLive: 3,
+            data : data,
+        });
+
+            sender.send(message, {"registrationTokens":pushId}, 4, function (err, result) {
+            if(err){
+            console.log("err sender:"+JSON.stringify(err));
+            next(null,"gcm:"+err);
+            }else{
+            console.log("success sender:"+JSON.stringify(result));
+            next(null,result);
+            }
+        });
+    }
 }
 
 router.notifyAll=function(name,registrationId){

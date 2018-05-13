@@ -303,24 +303,24 @@ router.updateOrder=function (param){
                 };
                 dynamoDB.dynamoUpdateItem(params).then(result=>{
                         //모든 변경에 대해 문자를 전달한다. 
-                        //if(!onlyPaymentChange(orderInfo,order)){
-                            sms.notifyOrder(order).then(()=>{
-                                notifyAndReturn(param).then(()=>{
-                                    resolve(result);
+                            if(order.sms){
+                                sms.notifyOrder(order).then(()=>{
+                                    notifyAndReturn(param).then(()=>{
+                                        resolve(result);
+                                    },err=>{
+                                        reject(err);
+                                    })  
                                 },err=>{
-                                    reject(err);
-                                })  
-                            },err=>{
-                                console.log("notifyOrder err:"+JSON.stringify(err));                    
-                                reject(err); //hum...
-                            });            
-                        //}else{
-                        //        notifyAndReturn(param).then(()=>{
-                        //            resolve(result);
-                        //        },err=>{
-                        //            reject(err);
-                        //        })  
-                        //}
+                                    console.log("notifyOrder err:"+JSON.stringify(err));                    
+                                    reject(err); //hum...
+                                });           
+                            }else{
+                                    notifyAndReturn(param).then(()=>{
+                                        resolve(result);
+                                    },err=>{
+                                        reject(err);
+                                    })                                  
+                            }
                 },err=>{
                         if(err.code=="ConditionalCheckFailedException")            
                             reject("invalidOrderId");

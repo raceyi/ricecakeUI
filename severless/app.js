@@ -230,7 +230,7 @@ app.post('/getCarriers',(req,res) =>{
 
 app.post('/registerDeviceRegistrationId',(req,res) =>{
         console.log("registerDeviceRegistrationId:",req.body.registrationId);
-        device.putRegistrationId(req.body.registrationId).then((value)=>{
+        device.putRegistrationId(req.body.registrationId,req.body.android).then((value)=>{
             console.log("value:"+value);            
             res.json({result:"success"});
         },err=>{
@@ -251,9 +251,32 @@ app.post('/checkPIN',(req,res) =>{
         });
 });
 
+app.post('/checkInstallPIN',(req,res) =>{
+        console.log("checkInstallPIN:",req.body);
+        manager.checkInstallPIN(req.body).then(pinNumber=>{
+            console.log("value:"+pinNumber);
+            if(req.body.pin!=pinNumber){
+                res.json({result:"failure",error:"invalidPIN"});
+            }else
+                res.json({result:"success"});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
+
 app.post("/modifyPIN",(req,res)=>{
         console.log("modifyPIN:",req.body);
         manager.modifyPIN(req.body).then(()=>{
+            res.json({result:"success"});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+    
+});
+
+app.post("/modifyInstallPin",(req,res)=>{
+        console.log("modifyInstallPin:",req.body);
+        manager.modifyInstallPin(req.body).then(()=>{
             res.json({result:"success"});
         },err=>{
             res.json({result:"failure",error:JSON.stringify(err)});

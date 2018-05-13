@@ -599,7 +599,8 @@ computeTotal(){
             buttons: ['확인']
           });
           alert.present();
-          reject();         
+          reject(); 
+          return;        
     }
 
     if(!this.deliveryStartMin){
@@ -609,6 +610,7 @@ computeTotal(){
           });
           alert.present();
           reject();          
+          return;        
     }
 
    if(parseInt(this.deliveryStartHour)>=24){
@@ -618,7 +620,7 @@ computeTotal(){
           });
           alert.present();
           reject();        
-
+          return;        
    }
    if(parseInt(this.deliveryStartMin)>=60){
           let alert = this.alertCtrl.create({
@@ -626,7 +628,8 @@ computeTotal(){
             buttons: ['확인']
           });
           alert.present();
-          reject();          
+          reject(); 
+          return;         
    }
 
    if(parseInt(this.deliveryEndHour)>=24){
@@ -636,7 +639,7 @@ computeTotal(){
           });
           alert.present();
           reject();         
-
+          return;
    }
    if(parseInt(this.deliveryEndMin)>=60){
           let alert = this.alertCtrl.create({
@@ -644,7 +647,8 @@ computeTotal(){
             buttons: ['확인']
           });
           alert.present();
-          reject();          
+          reject();   
+          return;       
    }
    //console.log("checkDeliveryTime call" );
      this.checkDeliveryTime().then(()=>{
@@ -677,6 +681,7 @@ computeTotal(){
             });
             alert.present();
             reject();       
+            return;        
           }
 
           if(this.order.addressInputType=="unknown"){
@@ -686,6 +691,7 @@ computeTotal(){
             });
             alert.present();
             reject(); 
+            return;        
           }
 
           if(this.order.addressInputType=="auto" && (!this.order.recipientAddressDetail || this.order.recipientAddressDetail.trim().length==0)){
@@ -695,6 +701,7 @@ computeTotal(){
             });
             alert.present();
             reject(); 
+            return;        
           }
 
           if(this.order.addressInputType=="manual" && (!this.order.recipientAddress || this.order.recipientAddress.trim().length==0)){
@@ -704,6 +711,7 @@ computeTotal(){
             });
             alert.present();
             reject(); 
+            return;        
           }
 
           if(!this.order.recipientName ||(this.order.recipientName.trim().length==0)){
@@ -713,6 +721,7 @@ computeTotal(){
             });
             alert.present();
             reject(); 
+            return;        
           }
 
           if(!this.order.recipientPhoneNumber || this.order.recipientPhoneNumber.trim().length==0){
@@ -722,6 +731,7 @@ computeTotal(){
             });
             alert.present();
             reject(); 
+            return;        
           }
 
           if(!this.order.buyerName || this.order.buyerName.trim().length==0){
@@ -731,6 +741,7 @@ computeTotal(){
             });
             alert.present();
             reject(); 
+            return;        
           }
         
           if(!this.order.buyerPhoneNumber || this.order.buyerPhoneNumber.trim().length==0){
@@ -740,11 +751,14 @@ computeTotal(){
             });
             alert.present();
             reject(); 
+            return;        
           }
 
           if(this.categorySelected!=-1 || this.order.menuList==undefined || this.order.menuList.length==0){
-              if(!this.addMenu())
-                  reject();         
+              if(!this.addMenu()){
+                  reject();
+                  return;       
+              }  
           }
 
           console.log("this.order.paymentOption:"+this.order.paymentOption);
@@ -755,6 +769,7 @@ computeTotal(){
             });
             alert.present();
             reject(); 
+            return;                    
           }
 
           if(this.order.price == undefined && !((this.order.paymentOption=="cash-unknown" || this.order.paymentOption=="cash-month")&&this.order.price==0)){
@@ -764,6 +779,7 @@ computeTotal(){
             });
             alert.present();
             reject(); 
+            return;        
           }
 
           if(!this.order.deliveryMethod){
@@ -773,6 +789,7 @@ computeTotal(){
             });
             alert.present();
             reject(); 
+            return;        
           }
 
           //this.order.paymentOption=this.paymentOption;//workaround solution

@@ -63,8 +63,6 @@ router.dynamoDeleteItem=function (params){
                 reject(err);
             } else {
                 console.log("dynamoDeleteItem:", JSON.stringify(data, null, 2));
-                //resolve(data);
-                    console.log("notifyAll");
                     resolve(data);
             }
         });   
