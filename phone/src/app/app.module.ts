@@ -39,6 +39,7 @@ import { HttpWrapperProvider } from '../providers/http-wrapper/http-wrapper';
 import {HomePageModule} from '../pages/home/home.module';
 import { NativeStorage } from '@ionic-native/native-storage';
 import {InstallPasswordPageModule} from '../pages/install-password/install-password.module';
+import { ScreenOrientation } from '@ionic-native/screen-orientation';
 
 @NgModule({
   declarations: [
@@ -71,6 +72,7 @@ import {InstallPasswordPageModule} from '../pages/install-password/install-passw
     TabsPage
   ],
   providers: [
+    ScreenOrientation,
     NativeStorage,
     Printer,
     BackgroundMode,

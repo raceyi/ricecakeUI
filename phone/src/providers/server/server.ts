@@ -40,18 +40,16 @@ export class ServerProvider {
           this.platform.ready().then(() => {
             this.backgroundMode.enable();
             this.pushNotification=this.push.init({
+            android: {
+                    //senderID: " ",
+                },
                 ios: {
-                    "fcmSandbox": "false", //code for production mode
-                    //"fcmSandbox": "true",  //code for development mode
-                    //"alert": "true",
-                    //"sound": "true",
-                    //"badge": "true",
                 }
             });
             this.pushNotification.on('registration').subscribe((response:any)=>{
                 this.registrationId=response.registrationId;
                 console.log("registrationId:"+this.registrationId);
-                this.registerDeviceRegistrationId(this.registerDeviceRegistrationId).then(()=>{
+                this.registerDeviceRegistrationId(this.registrationId).then(()=>{
 
                 },err=>{
                     let alert = this.alertCtrl.create({
@@ -73,10 +71,10 @@ export class ServerProvider {
                 }
             });
             this.pushNotification.on('error').subscribe((e:any)=>{
-                console.log(e.message);
+                console.log("!!! notification error:"+e.message);
                 let alert = this.alertCtrl.create({
                   title: '장치등록 오류입니다.',
-                  subTitle:"업데이트버튼을 사용해 주시기 바랍니다.",
+                  subTitle:"변경 사항 확인을 위해 업데이트버튼을 사용해 주시기 바랍니다.",
                   buttons: ['확인']
                 });
                 alert.present();
@@ -87,7 +85,7 @@ export class ServerProvider {
 
   registerDeviceRegistrationId(registrationId){
       return new Promise((resolve,reject)=>{    
-          let body = {registrationId:this.registrationId};
+          let body = {registrationId:this.registrationId,android:this.platform.is("android")};
           //this.http.setDataSerializer("json"); 
           //this.http.post(this.configProvider.serverAddress+"/registerDeviceRegistrationId",body, {"Content-Type":"application/json"}).then((res:any)=>{
             this.httpWrapperProvider.post("/registerDeviceRegistrationId",body).then((response:any)=>{

@@ -38,6 +38,8 @@ export class ManagerPage {
 
   totalSales:number=0;
 
+  startDay; // android 버전을 위한 변수 
+  endDay;   // android 버전을 위한 변수
  ///////////////////////////////////////////////////////////////////////////////
  // 메뉴에 sequence 적용 코드-begin
   newComplexMenuItems=[];
@@ -56,6 +58,7 @@ export class ManagerPage {
   currentCategoryMenus;
   
   editSequence:boolean=false;
+  android;
 
   // 메뉴에 sequence 적용 코드-end
   ///////////////////////////////////////////////////////////////////////////////
@@ -71,7 +74,7 @@ export class ManagerPage {
               private drag: DragulaService) {
 
       console.log("manager-constructor");
-
+      this.android=platform.is("android");
       // today
       let today=new Date();
       this.startDateIn={year:today.getFullYear(),month:today.getMonth(),date:today.getDate()};
@@ -83,6 +86,12 @@ export class ManagerPage {
       this.startDateString= dString;
       this.endDateString= dString;
 
+      //////////////////////////////
+      // android 버전 -begin
+      this.startDay=dString;
+      this.endDay=dString;
+      // android 버전 -end
+      /////////////////////////////
       if(!this.storageProvider.ipad)
           this.updateSales();
 
@@ -1045,4 +1054,19 @@ undoModificationGeneralMenu(menu,i){
 // phone버전 추가 함수 -end
 //////////////////////////////////////////////////
  
+ /////////////////////////////////////////////////
+ // android 버전 추가 함수 -begin
+startDaySelect(){
+    let date=new Date(this.startDay)
+    let day={year:date.getFullYear(),month:date.getMonth(),date:date.getDate()};
+    this.onStartDaySelect(day);
+}
+ 
+ endDaySelect(){
+    let date=new Date(this.startDay)
+    let day={year:date.getFullYear(),month:date.getMonth(),date:date.getDate()};
+    this.onEndDaySelect(day)
+ }
+ // android 버전 추가 함수 -end
+ /////////////////////////////////////////////////
 }

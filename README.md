@@ -33,6 +33,10 @@ $ionic cordova plugin add cordova-plugin-nativestorage
 
 $npm install --save @ionic-native/native-storage
 
+$ionic cordova plugin add cordova-plugin-screen-orientation
+
+$npm install --save @ionic-native/screen-orientation
+
 app.scss에 아래 라인을 반듯이 추가해야만 한다
 
     .gu-mirror {

@@ -2,6 +2,8 @@ import { Component ,NgZone,ViewChild} from '@angular/core';
 import { IonicPage, NavController, NavParams ,Platform,AlertController} from 'ionic-angular';
 import { StorageProvider } from '../../providers/storage/storage';
 import { InAppBrowser } from '@ionic-native/in-app-browser';
+import { normalizeURL } from 'ionic-angular';
+var cordova;
 
 /**
  * Generated class for the OrderInputPage page.
@@ -21,6 +23,7 @@ export class OrderInputPage { //order.ts와 동작이 동일해야만 한다.
   browserRef;
   done:boolean=false;
   redirectUrl="http://www.takit.biz";
+  androidRedirectUrl="http://www.takit.biz/result";
 
   menus;
   categorySelected:number=-1;
@@ -120,21 +123,32 @@ export class OrderInputPage { //order.ts와 동작이 동일해야만 한다.
     console.log("call daum API");
     let localfile;
     this.done=false;
+    let option;
 
     if(this.platform.is('android')){
         console.log("android");
-        localfile='file:///android_asset/www/assets/address.html';
+         localfile='http://www.takit.biz/ricecake.html'; //It doesn't work anymore?
+         option='toolbar=no,location=no';
     }else if(this.platform.is('ios')){
         console.log("ios");
         localfile='assets/address.html';
+        option='toolbarposition=top,location=no,presentationstyle=formsheet,closebuttoncaption=종료';
     }       
-    this.browserRef=this.iab.create(localfile,"_blank" ,'toolbarposition=top,location=no,presentationstyle=formsheet,closebuttoncaption=종료');
-
+    this.browserRef=this.iab.create(localfile,"_blank" ,option);
         this.browserRef.on("loadstart").subscribe((e) =>{
         console.log("e.url:"+e.url);
-        if (e.url.startsWith(this.redirectUrl)) {
+        if (!this.platform.is("android") && e.url.startsWith(this.redirectUrl)) {
             let url=decodeURI(e.url);
             let address=url.substring(this.redirectUrl.length+1);
+            this.ngZone.run(()=>{
+                this.order.recipientAddress=address;
+                console.log("address:"+decodeURI(address));                    
+            });
+            gPage.done=true;            
+            gPage.browserRef.close();
+        }else if(this.platform.is("android") && e.url.startsWith(this.androidRedirectUrl)){
+            let url=decodeURI(e.url);
+            let address=url.substring(this.androidRedirectUrl.length+1);
             this.ngZone.run(()=>{
                 this.order.recipientAddress=address;
                 console.log("address:"+decodeURI(address));                    
@@ -483,7 +497,8 @@ computeTotal(){
   }
 
   save(){
-    if(this.checkSave()){
+    console.log("save comes");
+    this.checkSave().then(()=>{
     //주문을 저장하고 pop을 수행함
         console.log("saveOrder-output:" + JSON.stringify(this.order));
         if (this.order.id == undefined) {
@@ -542,7 +557,7 @@ computeTotal(){
             });
             alert.present();       
         }
-    }
+    });
   }
 /////////////////////////////////////////////////
  checkDeliveryTime(){
@@ -576,6 +591,7 @@ computeTotal(){
   }
 
   checkSave(){
+      return new Promise((resolve,reject)=>{   
     console.log("checkSave comes");
     if(!this.deliveryStartHour){
           let alert = this.alertCtrl.create({
@@ -583,7 +599,7 @@ computeTotal(){
             buttons: ['확인']
           });
           alert.present();
-          return ;          
+          reject();         
     }
 
     if(!this.deliveryStartMin){
@@ -592,7 +608,7 @@ computeTotal(){
             buttons: ['확인']
           });
           alert.present();
-          return ;          
+          reject();          
     }
 
    if(parseInt(this.deliveryStartHour)>=24){
@@ -601,7 +617,7 @@ computeTotal(){
             buttons: ['확인']
           });
           alert.present();
-          return ;          
+          reject();        
 
    }
    if(parseInt(this.deliveryStartMin)>=60){
@@ -610,7 +626,7 @@ computeTotal(){
             buttons: ['확인']
           });
           alert.present();
-          return ;          
+          reject();          
    }
 
    if(parseInt(this.deliveryEndHour)>=24){
@@ -619,7 +635,7 @@ computeTotal(){
             buttons: ['확인']
           });
           alert.present();
-          return ;          
+          reject();         
 
    }
    if(parseInt(this.deliveryEndMin)>=60){
@@ -628,7 +644,7 @@ computeTotal(){
             buttons: ['확인']
           });
           alert.present();
-          return ;          
+          reject();          
    }
    //console.log("checkDeliveryTime call" );
      this.checkDeliveryTime().then(()=>{
@@ -660,7 +676,7 @@ computeTotal(){
               buttons: ['확인']
             });
             alert.present();
-            return ;      
+            reject();       
           }
 
           if(this.order.addressInputType=="unknown"){
@@ -669,7 +685,7 @@ computeTotal(){
               buttons: ['확인']
             });
             alert.present();
-            return ;
+            reject(); 
           }
 
           if(this.order.addressInputType=="auto" && (!this.order.recipientAddressDetail || this.order.recipientAddressDetail.trim().length==0)){
@@ -678,7 +694,7 @@ computeTotal(){
               buttons: ['확인']
             });
             alert.present();
-            return ;
+            reject(); 
           }
 
           if(this.order.addressInputType=="manual" && (!this.order.recipientAddress || this.order.recipientAddress.trim().length==0)){
@@ -687,7 +703,7 @@ computeTotal(){
               buttons: ['확인']
             });
             alert.present();
-            return ;
+            reject(); 
           }
 
           if(!this.order.recipientName ||(this.order.recipientName.trim().length==0)){
@@ -696,7 +712,7 @@ computeTotal(){
               buttons: ['확인']
             });
             alert.present();
-            return ;
+            reject(); 
           }
 
           if(!this.order.recipientPhoneNumber || this.order.recipientPhoneNumber.trim().length==0){
@@ -705,7 +721,7 @@ computeTotal(){
               buttons: ['확인']
             });
             alert.present();
-            return ;
+            reject(); 
           }
 
           if(!this.order.buyerName || this.order.buyerName.trim().length==0){
@@ -714,7 +730,7 @@ computeTotal(){
               buttons: ['확인']
             });
             alert.present();
-            return ;
+            reject(); 
           }
         
           if(!this.order.buyerPhoneNumber || this.order.buyerPhoneNumber.trim().length==0){
@@ -723,12 +739,12 @@ computeTotal(){
               buttons: ['확인']
             });
             alert.present();
-            return ;
+            reject(); 
           }
 
           if(this.categorySelected!=-1 || this.order.menuList==undefined || this.order.menuList.length==0){
               if(!this.addMenu())
-                  return;        
+                  reject();         
           }
 
           console.log("this.order.paymentOption:"+this.order.paymentOption);
@@ -738,7 +754,7 @@ computeTotal(){
               buttons: ['확인']
             });
             alert.present();
-            return ;
+            reject(); 
           }
 
           if(this.order.price == undefined && !((this.order.paymentOption=="cash-unknown" || this.order.paymentOption=="cash-month")&&this.order.price==0)){
@@ -747,7 +763,7 @@ computeTotal(){
               buttons: ['확인']
             });
             alert.present();
-            return ;
+            reject(); 
           }
 
           if(!this.order.deliveryMethod){
@@ -756,7 +772,7 @@ computeTotal(){
               buttons: ['확인']
             });
             alert.present();
-            return ;
+            reject(); 
           }
 
           //this.order.paymentOption=this.paymentOption;//workaround solution
@@ -795,10 +811,11 @@ computeTotal(){
               this.order.recipientAddressDetail="   "; //initialize it with blank string.
           }
           console.log("total:"+this.order.totalPrice+" price:"+this.order.price+" deliveryFee:"+this.order.deliveryFee);
-          return true;
+          resolve();
      },err=>{
-          return;
+          reject(); 
      });
+      });
   }
 
    updateOrdrFunc(){

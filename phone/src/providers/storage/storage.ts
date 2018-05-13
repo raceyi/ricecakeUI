@@ -6,6 +6,7 @@ import {ServerProvider} from "../../providers/server/server";
 import * as moment from 'moment';
 import { Printer, PrintOptions } from '@ionic-native/printer'
 import { NativeStorage } from '@ionic-native/native-storage';
+import {InstallPasswordPage} from '../../pages/install-password/install-password';
 
 var gStorageProvider;
 /*
@@ -94,10 +95,11 @@ export class StorageProvider {
                         alert.present();            
             });
             if(this.platform.is('android')){
-                this.nativeStorage.getItem('install')
-                .then(
-                    data => console.log(data),
-                    error =>{ 
+                this.nativeStorage.getItem('install').then(
+                    data => {
+                        console.log(data)
+                    },error =>{ 
+                        this.app.getRootNavs()[0].push(InstallPasswordPage);
                         // 처음 설치함.
                         // 설치 비번화면으로 이동해야함.
                         // 설치 비번화면에서 실패시 계속 설치 비번화면
