@@ -662,6 +662,36 @@ checkPIN(pin){
       });
   }
   
+  checkInstallPIN(pin){
+      return new Promise((resolve,reject)=>{    
+          let body = {pin:pin,registrationId:this.registrationId};
+          //this.http.setDataSerializer("json"); 
+          //this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          progressBarLoader.present();
+          
+          this.httpWrapperProvider.post("/checkInstallPIN",body).then((response:any)=>{
+                  progressBarLoader.dismiss();
+                  //let response=JSON.parse(res.data);            
+                  if(response.result=="success"){
+                      resolve();
+                  }else{
+                    if(response.error)
+                      reject(response.error);
+                    else
+                      reject("unknown error in server");
+                  }
+          },(err)=>{
+                progressBarLoader.dismiss();            
+                console.log("err:"+JSON.stringify(err));
+                reject(err);            
+          });            
+      });
+  }
+
   post(request,bodyIn){
       return new Promise((resolve,reject)=>{ 
           let body=bodyIn;

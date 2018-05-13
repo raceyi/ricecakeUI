@@ -11,6 +11,12 @@
           <button ion-button style="font-size:4vw;" color="black" (click)="close()"><ion-icon  large name="md-close"></ion-icon></button>
     </ion-buttons>    
   </ion-navbar>
+  <ion-navbar *ngIf="!storageProvider.ipad" hideBackButton>
+    <ion-title></ion-title>
+    <ion-buttons end>
+          <button ion-button style="font-size:4vw;" color="black" (click)="close()"><ion-icon  large name="md-close"></ion-icon></button>
+    </ion-buttons>    
+  </ion-navbar>  
 </ion-header>
 <ion-content>
 <div *ngIf="storageProvider.ipad">
@@ -527,22 +533,22 @@
         <ion-row class="list-item list-item-no-drag no-item-border-bottom" *ngFor="let category of storageProvider.menus;let i=index;" id="{{ category.id }}">
           <ion-col col-1>
           </ion-col>
-          <ion-col class="list-item-label" no-padding no-margin col-8>
+          <ion-col class="list-item-label" no-padding no-margin col-5>
           <button *ngIf="!categorySelectedCheck(category.category) && !category.mod" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="selectCategory(category.category)" > <ion-icon name="md-square-outline"></ion-icon></button>
           <button *ngIf="categorySelectedCheck(category.category)  && !category.mod" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button> <ion-icon name="md-checkbox-outline"></ion-icon></button>            
           <ion-input *ngIf="category.mod" type="text" [(ngModel)]="category.newName"  style="border-bottom:solid 1px;">  </ion-input>
           <span *ngIf="!category.mod">{{ category.category }}</span>
           </ion-col>
-          <ion-col no-padding no-margin col-1> 
+          <ion-col no-padding no-margin col-2> 
             <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && !category.mod" color="black" no-padding no-margin clear ion-button (click)="modifyCategory(category)"><ion-icon  name="md-create"></ion-icon></button>
             <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && category.mod" color="black" no-padding no-margin clear ion-button (click)="saveModificationCategory(category,i)"><ion-icon  name="md-create"></ion-icon></button>
           </ion-col>          
-          <ion-col no-padding no-margin col-1> 
+          <ion-col no-padding no-margin col-2> 
             <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && category.mod" color="black" no-padding no-margin clear ion-button (click)="undoModificationCategory(category)"><ion-icon  name="md-close"></ion-icon></button>            
             <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && !category.deactive && !category.mod" color="black" no-padding no-margin clear ion-button (click)="deactivateCategory(category)"><ion-icon  name="radio-button-on"></ion-icon></button>
             <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && category.deactive && !category.mod" color="black" no-padding no-margin clear ion-button (click)="activateCategory(category)"><ion-icon  name="radio-button-off"></ion-icon></button>
           </ion-col>          
-          <ion-col no-padding no-margin col-1> 
+          <ion-col no-padding no-margin col-2> 
             <button *ngIf="!category.mod" color="black" no-padding no-margin clear ion-button (click)="removeCategory(category)"><ion-icon  name="md-remove-circle"></ion-icon></button>
           </ion-col>
         </ion-row>
@@ -557,18 +563,20 @@
         <ion-row>
           <ion-col col-1>
           </ion-col>
-          <ion-col class="list-item-label" no-padding no-margin col-9>
+          <ion-col class="list-item-label" no-padding no-margin col-11>
           <button *ngIf="!categorySelectedCheck(category.category)" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="selectCategory(category.category)" > <ion-icon  name="md-square-outline"></ion-icon></button>
           <button *ngIf="categorySelectedCheck(category.category)" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button> <ion-icon  name="md-checkbox-outline"></ion-icon></button>            
-          {{ category.category }}
+          <span>{{ category.category }}</span>
           </ion-col>
-          <ion-col no-padding no-margin col-1> 
+          <!--
+          <ion-col no-padding no-margin col-2> 
             <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && !category.deactive" color="black" no-padding no-margin clear ion-button (click)="deactivateCategory(category)"><ion-icon  name="radio-button-on"></ion-icon></button>
             <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && category.deactive" color="black" no-padding no-margin clear ion-button (click)="activateCategory(category)"><ion-icon  name="radio-button-off"></ion-icon></button>
           </ion-col>                    
-          <ion-col no-padding no-margin col-1> 
+          <ion-col no-padding no-margin col-2> 
             <button color="black" no-padding no-margin clear ion-button (click)="removeCategory(category)"><ion-icon  name="md-remove-circle"></ion-icon></button>
           </ion-col>
+          -->
         </ion-row>
         </ion-item>
       </ion-list>
@@ -619,12 +627,14 @@
             <ion-row>
               <ion-col col-1>
               </ion-col>
-              <ion-col class="list-item-label" text-wrap align-self-center no-padding no-margin col-10>
+              <ion-col class="list-item-label" text-wrap align-self-center no-padding no-margin col-11>
               {{ currentCategoryMenus.optionStrings[i]}} 
               </ion-col>
+              <!--
               <ion-col no-padding no-margin col-1> 
                 <button color="black" no-padding no-margin clear ion-button (click)="removeGeneralMenu(i)"><ion-icon name="md-remove-circle"></ion-icon></button>
               </ion-col>
+              -->
             </ion-row>
             </ion-item>
           </ion-list>
@@ -635,30 +645,30 @@
             <ion-row class="list-item list-item-no-drag" *ngFor="let menu of currentCategoryMenus.menus;let i=index;" id="{{currentCategoryMenus.ids[i]}}">
               <ion-col no-margin no-padding col-1>
               </ion-col>
-              <ion-col *ngIf="!menu.edit" class="list-item-label" text-wrap align-self-center no-padding no-margin col-9>
+              <ion-col *ngIf="!menu.edit" class="list-item-label" text-wrap align-self-center no-padding no-margin col-7>
               {{ currentCategoryMenus.optionStrings[i]}}
               </ion-col>
-              <ion-col *ngIf="menu.edit" class="list-item-label" no-padding no-margin col-9>
+              <ion-col *ngIf="menu.edit" class="list-item-label" no-padding no-margin col-7>
                 <ion-item no-margin no-padding>
                 <ion-input type="text" [(ngModel)]="menu.newName"  style="border-bottom:solid 1px;"></ion-input>
                 </ion-item>
               </ion-col>              
-              <ion-col *ngIf="!menu.edit"  no-padding no-margin col-1> 
+              <ion-col *ngIf="!menu.edit"  no-padding no-margin col-2> 
                 <ion-item class="no-item-border-bottom" no-padding no-margin>
                 <button color="black" no-padding no-margin clear ion-button (click)="modifyGeneralMenu(menu,i)"><ion-icon  name="md-create"></ion-icon></button>
                 </ion-item>
               </ion-col>
-              <ion-col *ngIf="!menu.edit" no-padding no-margin col-1>
+              <ion-col *ngIf="!menu.edit" no-padding no-margin col-2>
                 <ion-item class="no-item-border-bottom" no-padding no-margin> 
                 <button color="black" no-padding no-margin clear ion-button (click)="removeGeneralMenu(i)"><ion-icon  name="md-remove-circle"></ion-icon></button>
                 </ion-item>
               </ion-col>
-              <ion-col *ngIf="menu.edit"  no-padding no-margin col-1> 
+              <ion-col *ngIf="menu.edit"  no-padding no-margin col-2> 
                 <ion-item class="no-item-border-bottom" no-padding no-margin>
                 <button color="black" no-padding no-margin clear ion-button (click)="saveModificationGeneralMenu(menu,i)"><ion-icon  name="md-create"></ion-icon></button>
                 </ion-item>
               </ion-col>
-              <ion-col *ngIf="menu.edit" no-padding no-margin col-1>
+              <ion-col *ngIf="menu.edit" no-padding no-margin col-2>
                 <ion-item class="no-item-border-bottom" no-padding no-margin> 
                 <button color="black" no-padding no-margin clear ion-button (click)="undoModificationGeneralMenu(menu,i)"><ion-icon  name="md-close"></ion-icon></button>
                 </ion-item>

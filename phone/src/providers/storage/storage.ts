@@ -5,6 +5,7 @@ import {ConfigProvider} from "../config/config";
 import {ServerProvider} from "../../providers/server/server";
 import * as moment from 'moment';
 import { Printer, PrintOptions } from '@ionic-native/printer'
+import { NativeStorage } from '@ionic-native/native-storage';
 
 var gStorageProvider;
 /*
@@ -61,6 +62,7 @@ export class StorageProvider {
               private printer: Printer,                               
               public serverProvider:ServerProvider,
               public configProvider:ConfigProvider,
+              private nativeStorage: NativeStorage,
               private app:App,
               public ngZone:NgZone) {
     console.log('Hello StorageProvider Provider');
@@ -91,6 +93,21 @@ export class StorageProvider {
                         });
                         alert.present();            
             });
+            if(this.platform.is('android')){
+                this.nativeStorage.getItem('install')
+                .then(
+                    data => console.log(data),
+                    error =>{ 
+                        // 처음 설치함.
+                        // 설치 비번화면으로 이동해야함.
+                        // 설치 비번화면에서 실패시 계속 설치 비번화면
+                        // 설치 비번화면에서 성공시 이전 화면으로 돌아옴 
+                        console.error(error)
+                    }
+                );
+            }            
+
+            
     });
     var now = new Date().getTime();
     this.setDeliveryDate(now);
@@ -1279,8 +1296,8 @@ export class StorageProvider {
         }
         let options: PrintOptions = {
             name: 'MyDocument',
-            duplex: true,
-            landscape: true,
+            duplex: false,
+            landscape: false,
             grayscale: true
         };
 

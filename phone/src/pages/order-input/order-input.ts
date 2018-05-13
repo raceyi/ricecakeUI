@@ -123,10 +123,10 @@ export class OrderInputPage { //order.ts와 동작이 동일해야만 한다.
 
     if(this.platform.is('android')){
         console.log("android");
-        localfile='file:///android_asset/www/assets/address.up.html';
+        localfile='file:///android_asset/www/assets/address.html';
     }else if(this.platform.is('ios')){
         console.log("ios");
-        localfile='assets/address.up.html';
+        localfile='assets/address.html';
     }       
     this.browserRef=this.iab.create(localfile,"_blank" ,'toolbarposition=top,location=no,presentationstyle=formsheet,closebuttoncaption=종료');
 

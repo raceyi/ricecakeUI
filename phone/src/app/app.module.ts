@@ -37,6 +37,8 @@ import {ManagerEntrancePageModule} from '../pages/manager-entrance/manager-entra
 import { MyErrorHandler } from '../classes/my-error-handler';
 import { HttpWrapperProvider } from '../providers/http-wrapper/http-wrapper';
 import {HomePageModule} from '../pages/home/home.module';
+import { NativeStorage } from '@ionic-native/native-storage';
+import {InstallPasswordPageModule} from '../pages/install-password/install-password.module';
 
 @NgModule({
   declarations: [
@@ -48,6 +50,7 @@ import {HomePageModule} from '../pages/home/home.module';
     CalendarModule, //just testing 
     HttpClientModule,
     BrowserModule,
+    InstallPasswordPageModule,
     ManagerPageModule,
     ManagerEntrancePageModule,
     ManagerPasswordPageModule,    
@@ -68,6 +71,7 @@ import {HomePageModule} from '../pages/home/home.module';
     TabsPage
   ],
   providers: [
+    NativeStorage,
     Printer,
     BackgroundMode,
     Push,
