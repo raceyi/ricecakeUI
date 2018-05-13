@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController,AlertController,Platform,LoadingController } from 'ionic-angular';
+import { IonicPage,NavController,AlertController,Platform,LoadingController } from 'ionic-angular';
 import {StorageProvider} from "../../providers/storage/storage";
 import {ServerProvider} from "../../providers/server/server";
 import {CarrierManagementPage} from "../carrier-management/carrier-management";
@@ -16,6 +16,7 @@ import { Events } from 'ionic-angular';
 import * as moment from 'moment';
 var gHomePage;
 
+@IonicPage()
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
@@ -44,7 +45,7 @@ export class HomePage {
         this.section = "order";
         this.storageProvider.newOrderInputShown = false;
         this.storageProvider.reconfigureDeliverySection();
-
+/*
         this.platform.ready().then(() => {
             this.printer.isAvailable().then((avail)=>{
                 console.log("avail:"+avail);
@@ -66,7 +67,7 @@ export class HomePage {
                         alert.present();            
             });
         });
-
+*/
         events.subscribe('update', (tablename) => {
             console.log("homePage receive update event");
             /*

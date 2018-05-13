@@ -13,13 +13,13 @@
   </ion-navbar>
   <ion-navbar *ngIf="!storageProvider.ipad" hideBackButton>
     <ion-buttons start>
-      <button ion-button style="font-size:4vw;" color="black" (click)="close()"><ion-icon  large name="md-close"></ion-icon></button>
+        <button  (click)="removeAll()" style="width:15vw;" ion-button  clear>
+            비우기
+        </button>      
     </ion-buttons>
     <ion-title>휴지통</ion-title>
     <ion-buttons end>
-        <button  (click)="goManager()" style="width:15vw;" ion-button  clear>
-            비우기
-        </button>      
+      <button ion-button style="font-size:4vw;" color="black" (click)="close()"><ion-icon  large name="md-close"></ion-icon></button>
       </ion-buttons>
   </ion-navbar>
  </ion-header>
@@ -33,8 +33,7 @@
   </ion-row>    
     <trash-order [order]="order" (output)="recovery($event)" *ngFor="let order of storageProvider.trashList;let j=index;"></trash-order>      
   </div>
-  <div *ngIf="!storageProvider.ipad">
-
+  <div *ngIf="!storageProvider.ipad" style="background-color:lightgray;">
+        <phone-trash-order [order]="order" (output)="recovery($event)" *ngFor="let order of storageProvider.trashList;let j=index;"></phone-trash-order>      
   </div>
-
 </ion-content>

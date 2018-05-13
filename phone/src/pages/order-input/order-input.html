@@ -270,7 +270,7 @@
       </ion-col>
     <ion-col col-2 no-padding no-margin *ngIf="categorySelected>=0 && menus[categorySelected].type=='general'">
       <ion-item no-padding no-margin class="no-item-border-bottom unit-selector">
-        <ion-select style="font-size:3vw;" no-padding placeholder="포장" interface="popover" [(ngModel)]="package">
+        <ion-select style="font-size:3vw;" no-padding placeholder="포장" [(ngModel)]="package">
           <ion-option style="font-size:3vw;" value="기본">기본</ion-option>
           <ion-option style="font-size:3vw;" value="기계">기계</ion-option>                    
           <ion-option style="font-size:3vw;" value="미니랩">미니랩</ion-option>
@@ -288,7 +288,7 @@
     </ion-col>
     <ion-col col-1 no-padding no-margin *ngIf="categorySelected>=0">
       <ion-item no-padding no-margin class="no-item-border-bottom unit-selector">
-        <ion-select style="font-size:3vw;" no-padding placeholder="단위" interface="popover" [(ngModel)]="unit">
+        <ion-select style="font-size:3vw;" no-padding placeholder="단위" [(ngModel)]="unit">
           <ion-option style="font-size:3vw;" value="kg">kg</ion-option>
           <ion-option style="font-size:3vw;" value="말">말</ion-option>
           <ion-option style="font-size:3vw;" value="되">되</ion-option>
@@ -328,7 +328,7 @@
   </ion-col>
   <ion-col col-9>
               <ion-item no-padding no-margin  class="no-item-border-bottom">
-                <ion-select style="font-size:3vw;" class="payment-select" placeholder="결제방법" (ionChange)="selectPayment()" interface="popover" [(ngModel)]="order.paymentOption">
+                <ion-select style="font-size:3vw;" class="payment-select" placeholder="결제방법" (ionChange)="selectPayment()" [(ngModel)]="order.paymentOption">
                   <ion-option style="font-size:3vw;" value="cash-paid-pre" >현금선불-완납</ion-option>
                   <ion-option style="font-size:3vw;" value="cash-unpaid-after">현금후불</ion-option>
                   <ion-option style="font-size:3vw;" *ngIf="order.paymentOption=='cash-paid-after'" value="cash-paid-after">현금후불-완납</ion-option>

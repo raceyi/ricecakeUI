@@ -36,6 +36,7 @@ import {ManagerEntrancePageModule} from '../pages/manager-entrance/manager-entra
 
 import { MyErrorHandler } from '../classes/my-error-handler';
 import { HttpWrapperProvider } from '../providers/http-wrapper/http-wrapper';
+import {HomePageModule} from '../pages/home/home.module';
 
 @NgModule({
   declarations: [
@@ -57,7 +58,8 @@ import { HttpWrapperProvider } from '../providers/http-wrapper/http-wrapper';
     ProducePageModule,
     SetPageModule,
     TrashPageModule,
-    TrashPasswordPageModule,        
+    TrashPasswordPageModule,
+    HomePageModule,        
     IonicModule.forRoot(MyApp,{mode:'ios'})
   ],
   bootstrap: [IonicApp],

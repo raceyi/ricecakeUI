@@ -71,6 +71,26 @@ export class StorageProvider {
             this.refresh("menu");
             this.refresh("order");
             this.refresh("carrier");
+
+            this.printer.isAvailable().then((avail)=>{
+                console.log("avail:"+avail);
+                this.printer.check().then((output)=>{
+                    console.log("output:"+JSON.stringify(output));
+                },err=>{
+                        let alert = this.alertCtrl.create({
+                            title: '출력기능에 문제가 발생하였습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();
+                });
+            }, (err)=>{
+                console.log("err:"+JSON.stringify(err));
+                        let alert = this.alertCtrl.create({
+                            title: '출력기능에 문제가 발생하였습니다.',
+                            buttons: ['확인']
+                        });
+                        alert.present();            
+            });
     });
     var now = new Date().getTime();
     this.setDeliveryDate(now);

@@ -27,6 +27,10 @@ export class ManagerPage {
   startDateIn;  //input format
   endDateIn;    // input format
 
+  startDateString:string; // phone 버전 변수 
+  endDateString:string; // phone 버전 변수
+  inputChoice; // one of start,end
+
   cashPaid:number=0;
   cashUnpaid:number=0;
   cardPaid:number=0;
@@ -72,6 +76,15 @@ export class ManagerPage {
       let today=new Date();
       this.startDateIn={year:today.getFullYear(),month:today.getMonth(),date:today.getDate()};
       this.endDateIn={year:today.getFullYear(),month:today.getMonth(),date:today.getDate()};
+
+      var mm = today.getMonth() < 9 ? "0" + (today.getMonth() + 1) : (today.getMonth() + 1); // getMonth() is zero-based
+      var dd = today.getDate() < 10 ? "0" + today.getDate() : today.getDate();
+      var dString =today.getFullYear() + '-' + (mm) + '-' + dd;
+      this.startDateString= dString;
+      this.endDateString= dString;
+
+      if(!this.storageProvider.ipad)
+          this.updateSales();
 
       gPage=this;
       this.storageProvider.maxMenuId=0;
@@ -200,6 +213,14 @@ export class ManagerPage {
     console.log("day:"+JSON.stringify(day));
     this.startDateIn=day;
     console.log("start-day:"+JSON.stringify(day));
+    /////////////////////////////////////////////
+    // phone-begin
+    var mm = day.month < 9 ? "0" + (day.month + 1) : (day.month + 1); // getMonth() is zero-based
+    var dd = day.date < 10 ? "0" + day.date : day.date;
+    var dString =day.year + '-' + (mm) + '-' + dd;
+    this.startDateString= dString;     
+    // phone-end
+    /////////////////////////////////////////////
     this.updateSales();
   }
   
@@ -225,6 +246,7 @@ export class ManagerPage {
   }
 
   updateSales(){
+    console.log("updateSales");
     if(!this.peridoCheck()){
             let alert = this.alertCtrl.create({
               title: '시작일은 종료일보다 빨라야만 합니다.',
@@ -235,6 +257,7 @@ export class ManagerPage {
     }
     let startDate=this.formatDate(this.startDateIn);
     let endDate=this.formatDate(this.endDateIn);
+    console.log("[updateSales]startDate:"+startDate+"endDate:"+endDate);
     this.serverProvider.getSales(startDate,endDate).then((value:any)=>{
         console.log("sales:"+JSON.stringify(value));
         this.cashPaid=value.cashPaid;
@@ -258,6 +281,15 @@ export class ManagerPage {
   onEndDaySelect(day){
     this.endDateIn=day;    
     console.log("end-day:"+JSON.stringify(day));
+    /////////////////////////////////////////////
+    // phone-begin
+    var mm = day.month < 9 ? "0" + (day.month + 1) : (day.month + 1); // getMonth() is zero-based
+    var dd = day.date < 10 ? "0" + day.date : day.date;
+    var dString =day.year + '-' + (mm) + '-' + dd;
+    this.endDateString= dString;     
+    // phone-end
+    /////////////////////////////////////////////
+    
     this.updateSales();    
   }
 
@@ -1000,8 +1032,17 @@ undoModificationGeneralMenu(menu,i){
      });
   }
 /////////////////////////////////////////////////
- openConfig(){
+ openConfig(type){
    console.log("push ManagerPasswordPage");
-   this.navCtrl.push(ManagerPasswordPage);
+   this.navCtrl.push(ManagerPasswordPage,{type:type});
  }
+
+//////////////////////////////////////////////////
+// phone버전 추가 함수 -begin
+ selectInputChoice(type){
+    this.inputChoice=type;
+ }
+// phone버전 추가 함수 -end
+//////////////////////////////////////////////////
+ 
 }

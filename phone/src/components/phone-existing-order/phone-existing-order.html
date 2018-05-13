@@ -34,7 +34,7 @@
               <span *ngIf="menu.type=='general'" > {{menu.category}}-{{menu.menuString}} {{menu.amount}} {{menu.unit}}</span>
         </ion-row>
         </div>
-        <ion-row *ngIf="order.memo!=undefined && order.memo!=null && order.memo.trim().length>0" style="font-size:3.4vw;border:solid 0.5px;">
+        <ion-row *ngIf="order.memo!=undefined && order.memo!=null && order.memo.trim().length>0" style="border:solid 0.5px;">
               {{order.memo}}
         </ion-row>
         <ion-row style="font-size:3.4vw;">

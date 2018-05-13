@@ -5,22 +5,18 @@
   Ionic pages and navigation.
 -->
 <ion-header>
-
   <ion-navbar *ngIf="storageProvider.ipad" hideBackButton>
     <ion-title></ion-title>
     <ion-buttons end>
           <button ion-button style="font-size:4vw;" color="black" (click)="close()"><ion-icon  large name="md-close"></ion-icon></button>
     </ion-buttons>    
   </ion-navbar>
-
-  <ion-navbar *ngIf="!storageProvider.ipad" hideBackButton>
-  </ion-navbar>
 </ion-header>
 <ion-content>
 <div *ngIf="storageProvider.ipad">
   <ion-row>
     <ion-col *ngIf="section=='sales'"col-2>
-      <button color="black" ion-button clear large (click)="openConfig()" ><ion-icon name="md-settings"></ion-icon><span style="font-size: smaller;">비밀번호</span></button>      
+      <button color="black" ion-button clear large (click)="openConfig('manager')" ><ion-icon name="md-settings"></ion-icon><span style="font-size: smaller;">관리자</span></button>      
     </ion-col>
     <ion-col *ngIf="!editSequence && section=='menu'" col-2>
       <button ion-button  (click)="modifySequence()" >순서변경</button>
@@ -36,7 +32,10 @@
           <button  *ngIf="section!='menu'" style="color:black;font-size:x-large;" ion-button clear large (click)="menuSection()"> <메뉴></button>
         </div>
     </ion-col>
-    <ion-col col-2 text-right>
+    <ion-col col-2 text-right *ngIf="section=='sales'">
+      <button color="black" ion-button clear large (click)="openConfig('install')" ><ion-icon name="md-settings"></ion-icon><span style="font-size: smaller;">설치</span></button>      
+    </ion-col>
+    <ion-col col-2 text-right *ngIf="section=='menu'">
       <button ion-button [hidden]="saveButtonHidden" (click)="saveSequence()" >저장</button>
     </ion-col>
   </ion-row>
@@ -44,10 +43,10 @@
 <div [hidden]="section!='sales'">
 <ion-row>
   <ion-col col-6>
-    <ion-calendar #calendar (onDaySelect)="onStartDaySelect($event)"></ion-calendar>
+    <ion-calendar  (onDaySelect)="onStartDaySelect($event)"></ion-calendar>
   </ion-col>
   <ion-col col-6>
-    <ion-calendar #calendar (onDaySelect)="onEndDaySelect($event)"></ion-calendar>
+    <ion-calendar  (onDaySelect)="onEndDaySelect($event)"></ion-calendar>
   </ion-col>
 </ion-row>
 
@@ -58,7 +57,7 @@
   <ion-col col-6>
     <ion-row>
       <ion-col>
-              <ion-searchbar  placeholder="주문자 검색" [(ngModel)]="searchKeyWord"></ion-searchbar>
+              <ion-searchbar  placeholder="주문자 검색" [(ngModel)]="searchKeyWord" (ionClear)="updateSales()"></ion-searchbar>
       </ion-col>
       <ion-col text-center>
         <button ion-button (click)="searchSales()">계산하기</button>
@@ -167,28 +166,6 @@
           </ion-col>
         </ion-row>
       </ion-list>
-<!--
-      <ion-list style="padding-right:20px;background-color:lightgray;">
-        <ion-item class="list-item no-item-border-bottom" *ngFor="let category of storageProvider.menus;let i=index;" id="{{ category.id }}">
-        <ion-row>
-          <ion-col col-1>
-          </ion-col>
-          <ion-col class="list-item-label" no-padding no-margin col-9>
-          <button *ngIf="!categorySelectedCheck(category.category)" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="selectCategory(category.category)" > <ion-icon style="font-size: 1.5em;" name="md-square-outline"></ion-icon></button>
-          <button *ngIf="categorySelectedCheck(category.category)" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button> <ion-icon style="font-size: 1.5em;" name="md-checkbox-outline"></ion-icon></button>            
-          {{ category.category }}
-          </ion-col>
-          <ion-col no-padding no-margin col-1> 
-            <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && !category.deactive" color="black" no-padding no-margin clear ion-button (click)="deactivateCategory(category)"><ion-icon style="font-size: 1.5em;" name="radio-button-on"></ion-icon></button>
-            <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && category.deactive" color="black" no-padding no-margin clear ion-button (click)="activateCategory(category)"><ion-icon style="font-size: 1.5em;" name="radio-button-off"></ion-icon></button>
-          </ion-col>                    
-          <ion-col no-padding no-margin col-1> 
-            <button color="black" no-padding no-margin clear ion-button (click)="removeCategory(category)"><ion-icon style="font-size: 1.5em;" name="md-remove-circle"></ion-icon></button>
-          </ion-col>
-        </ion-row>
-        </ion-item>
-      </ion-list>
--->
       </div>
 
       <div class="section" *ngIf="editSequence">
@@ -416,7 +393,391 @@
 </ion-row>
 </div>
 </div>
-<div *ngIf="!storageProvider.ipad">
+<!-- =================================================================================================================== -->
+<div *ngIf="!storageProvider.ipad" style="font-size:3.4vw;">
+  <ion-row>
+    <ion-col *ngIf="!editSequence && section=='menu'" col-2>
+      <button ion-button  style="font-size:3vw;" color="black" clear (click)="modifySequence()" >순서변경</button>
+    </ion-col>
+    <ion-col *ngIf="editSequence && section=='menu'" col-2>
+      <button ion-button style="font-size:3vw;" color="black"  clear (click)="cancelSequence()" >순서변경취소</button>
+    </ion-col>          
+    <ion-col *ngIf="section=='sales'" col-2>
+       <button ion-button style="font-size:3vw;" color="black" clear (click)="openConfig('manager')" ><ion-icon name="md-settings"></ion-icon>관리자</button>
+    </ion-col>
+    <ion-col col-8> 
+        <div text-center >
+          <button  *ngIf="section=='sales'" style="color:#488aff;" style="font-size:4vw;" ion-button clear large> <매출> </button>
+          <button  *ngIf="section!='sales'" color="black" style="font-size:4vw;" ion-button clear large (click)="salesSection()"><매출></button>
+          <button  *ngIf="section=='menu'" style="color:#488aff;" style="font-size:4vw;" ion-button clear large> <메뉴></button>   
+          <button  *ngIf="section!='menu'" color="black" style="font-size:4vw;" ion-button clear large (click)="menuSection()"> <메뉴></button>
+        </div>
+    </ion-col>
+    <ion-col col-2 *ngIf="section=='menu'" text-right>
+      <button ion-button style="font-size:3vw;" clear color="black" [hidden]="saveButtonHidden" (click)="saveSequence()" >저장</button>
+    </ion-col>
+    <ion-col *ngIf="section=='sales'" col-2 text-right>
+       <button ion-button style="font-size:3vw;" color="black" clear (click)="openConfig('install')" ><ion-icon name="md-settings"></ion-icon>설치</button>
+    </ion-col>
+  </ion-row>
+  <div [hidden]="section!='sales'">
+    <ion-row class="date-button">
+      <ion-col no-padding no-margin>
+        <ion-item no-padding no-margin class="no-item-border-bottom" text-center>
+          <button no-padding no-margin *ngIf="inputChoice!='start'" (click)="selectInputChoice('start')" outline ion-button>{{startDateString}}</button>
+          <button no-padding no-margin *ngIf="inputChoice=='start'" disable ion-button>{{startDateString}}</button>
+        </ion-item>
+      </ion-col>
+      <ion-col no-padding no-margin>
+        <ion-item no-padding no-margin class="no-item-border-bottom"  text-center>
+          <button no-padding no-margin *ngIf="inputChoice!='end'" (click)="selectInputChoice('end')" outline ion-button>{{endDateString}}</button>
+          <button no-padding no-margin *ngIf="inputChoice=='end'" disable ion-button>{{endDateString}}</button>
+        </ion-item>        
+      </ion-col>
+    </ion-row>
+    <ion-row *ngIf="inputChoice">
+      <ion-col *ngIf="inputChoice=='start'" text-center>
+          <ion-calendar  (onDaySelect)="onStartDaySelect($event)"></ion-calendar>
+      </ion-col>
+      <ion-col *ngIf="inputChoice=='end'" text-center>
+          <ion-calendar  (onDaySelect)="onEndDaySelect($event)"></ion-calendar>
+      </ion-col>      
+    </ion-row>
+    <ion-row class="date-button">
+       <ion-col col-9 no-padding no-margin text-center>
+         <ion-item no-padding no-margin class="no-item-border-bottom"  text-center>
+              <ion-searchbar  placeholder="주문자 검색" [(ngModel)]="searchKeyWord" (ionClear)="updateSales()"></ion-searchbar>
+         </ion-item>
+      </ion-col>
+      <ion-col col-3 text-center no-padding no-margin text-center>
+         <ion-item no-padding no-margin class="no-item-border-bottom"  text-center>        
+              <button no-padding no-margin ion-button (click)="searchSales()">계산하기</button>
+         </ion-item>
+      </ion-col>
+    </ion-row>
+<div>
+    <ion-row>
+      <ion-col style="border: solid 1px lightgray;" col-6 text-right>
+        <ion-row>
+          <ion-col>
+        현금완납:
+          </ion-col>
+          <ion-col>
+            {{cashPaid.toLocaleString()}}
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            카드완납:
+          </ion-col>
+          <ion-col>
+          {{cardPaid.toLocaleString()}}
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+           완납:
+          </ion-col>
+          <ion-col>
+             <amount-display [amount]="sum(cardPaid,cashPaid)"></amount-display>
+          </ion-col>
+        </ion-row>
+      </ion-col>
+      <ion-col style="border: solid 1px lightgray;" col-6 text-right>
+        <ion-row>
+          <ion-col>
+        현금미납:
+          </ion-col>
+          <ion-col>
+            {{cashUnpaid.toLocaleString()}}
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+         카드미납:
+          </ion-col>
+          <ion-col>
+             {{cardUnpaid.toLocaleString()}}
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+           미납
+          </ion-col>
+          <ion-col>
+            <amount-display [amount]="sum(cardUnpaid,cashUnpaid)"></amount-display>
+          </ion-col>
+        </ion-row>
+      </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col text-center>
+          총매출:{{totalSales.toLocaleString()}}
+        </ion-col>
+      </ion-row>
+</div>  
 
+  </div>
+<div [hidden]="section!='menu'" class="phone-menu" style="font-size:3vw;">
+<ion-row>
+  <ion-col col-6 no-padding no-margin>
+    <ion-scroll [scrollY]="scrollCategoryEnable">
+      <div class="section" *ngIf="!editSequence">
+      <ion-list style="padding-right:20px;background-color:lightgray;">
+        <ion-row class="list-item list-item-no-drag no-item-border-bottom" *ngFor="let category of storageProvider.menus;let i=index;" id="{{ category.id }}">
+          <ion-col col-1>
+          </ion-col>
+          <ion-col class="list-item-label" no-padding no-margin col-8>
+          <button *ngIf="!categorySelectedCheck(category.category) && !category.mod" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="selectCategory(category.category)" > <ion-icon name="md-square-outline"></ion-icon></button>
+          <button *ngIf="categorySelectedCheck(category.category)  && !category.mod" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button> <ion-icon name="md-checkbox-outline"></ion-icon></button>            
+          <ion-input *ngIf="category.mod" type="text" [(ngModel)]="category.newName"  style="border-bottom:solid 1px;">  </ion-input>
+          <span *ngIf="!category.mod">{{ category.category }}</span>
+          </ion-col>
+          <ion-col no-padding no-margin col-1> 
+            <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && !category.mod" color="black" no-padding no-margin clear ion-button (click)="modifyCategory(category)"><ion-icon  name="md-create"></ion-icon></button>
+            <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && category.mod" color="black" no-padding no-margin clear ion-button (click)="saveModificationCategory(category,i)"><ion-icon  name="md-create"></ion-icon></button>
+          </ion-col>          
+          <ion-col no-padding no-margin col-1> 
+            <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && category.mod" color="black" no-padding no-margin clear ion-button (click)="undoModificationCategory(category)"><ion-icon  name="md-close"></ion-icon></button>            
+            <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && !category.deactive && !category.mod" color="black" no-padding no-margin clear ion-button (click)="deactivateCategory(category)"><ion-icon  name="radio-button-on"></ion-icon></button>
+            <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && category.deactive && !category.mod" color="black" no-padding no-margin clear ion-button (click)="activateCategory(category)"><ion-icon  name="radio-button-off"></ion-icon></button>
+          </ion-col>          
+          <ion-col no-padding no-margin col-1> 
+            <button *ngIf="!category.mod" color="black" no-padding no-margin clear ion-button (click)="removeCategory(category)"><ion-icon  name="md-remove-circle"></ion-icon></button>
+          </ion-col>
+        </ion-row>
+      </ion-list>
+      </div>
+
+      <div class="section" *ngIf="editSequence">
+      <ion-list style="padding-right:20px;background-color:lightgray;"
+        [dragula]='"category"'
+        [dragulaModel]='menus'>
+        <ion-item class="list-item no-item-border-bottom" *ngFor="let category of storageProvider.menus;let i=index;" id="{{ category.id }}">
+        <ion-row>
+          <ion-col col-1>
+          </ion-col>
+          <ion-col class="list-item-label" no-padding no-margin col-9>
+          <button *ngIf="!categorySelectedCheck(category.category)" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="selectCategory(category.category)" > <ion-icon  name="md-square-outline"></ion-icon></button>
+          <button *ngIf="categorySelectedCheck(category.category)" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button> <ion-icon  name="md-checkbox-outline"></ion-icon></button>            
+          {{ category.category }}
+          </ion-col>
+          <ion-col no-padding no-margin col-1> 
+            <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && !category.deactive" color="black" no-padding no-margin clear ion-button (click)="deactivateCategory(category)"><ion-icon  name="radio-button-on"></ion-icon></button>
+            <button *ngIf="(category.type=='complex' || category.type=='complex-choice') && category.deactive" color="black" no-padding no-margin clear ion-button (click)="activateCategory(category)"><ion-icon  name="radio-button-off"></ion-icon></button>
+          </ion-col>                    
+          <ion-col no-padding no-margin col-1> 
+            <button color="black" no-padding no-margin clear ion-button (click)="removeCategory(category)"><ion-icon  name="md-remove-circle"></ion-icon></button>
+          </ion-col>
+        </ion-row>
+        </ion-item>
+      </ion-list>
+      </div>
+    </ion-scroll>  
+      <ion-list>
+        <ion-item class="no-item-border-bottom">
+                <ion-row>
+                  <ion-col col-3>
+                    <button *ngIf="'general'!=newCategoryType" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="categoyTypeSelect('general')" > <ion-icon  name="md-square-outline"></ion-icon></button>
+                    <button *ngIf="'general'==newCategoryType" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button > <ion-icon  name="md-checkbox-outline"></ion-icon></button>
+                        일반
+                  </ion-col>
+                  <ion-col col-3>
+                    <button *ngIf="'complex'!=newCategoryType" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="categoyTypeSelect('complex')" > <ion-icon  name="md-square-outline"></ion-icon></button>
+                    <button *ngIf="'complex'==newCategoryType" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button > <ion-icon  name="md-checkbox-outline"></ion-icon></button>
+                        세트
+                  </ion-col>
+                  <ion-col col-6>
+                    <button *ngIf="'complex-choice'!=newCategoryType" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="categoyTypeSelect('complex-choice')" > <ion-icon name="md-square-outline"></ion-icon></button>
+                    <button *ngIf="'complex-choice'==newCategoryType" color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button > <ion-icon  name="md-checkbox-outline"></ion-icon></button>
+                        세트-선택
+                  </ion-col>
+                </ion-row>
+        </ion-item>
+        <ion-row>
+                <ion-col col-8 no-padding no-margin text-left>
+                <ion-item class="no-item-border-bottom">
+                <ion-input type="text" placeholder="종류" [(ngModel)]="newCategory" style="border-bottom:solid 1px;"></ion-input>
+                </ion-item>
+                </ion-col>
+                <ion-col col-4 no-padding no-margin text-left>                    
+                <ion-item class="no-item-border-bottom">         
+                <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="addCategory()" ><b> <ion-icon  name="md-add"></ion-icon></b></button>
+                </ion-item>
+                </ion-col>
+        </ion-row>  
+        </ion-list>
+  </ion-col>
+  
+  <ion-col col-6 no-padding no-margin>
+      <ion-scroll *ngIf="currentCategoryMenus && currentCategoryMenus.type=='general'" [scrollY]="scrollMenuEnable">
+      <div class="section" *ngIf="editSequence">
+        <div *ngIf="currentCategoryMenus.type=='general'">
+          <ion-list style="padding-right:20px;background-color:lightgray;"
+            [dragula]='"menu"'>
+            <ion-item class="list-item" *ngFor="let menu of currentCategoryMenus.menus;let i=index;" id="{{currentCategoryMenus.ids[i]}}">
+            <ion-row>
+              <ion-col col-1>
+              </ion-col>
+              <ion-col class="list-item-label" text-wrap align-self-center no-padding no-margin col-10>
+              {{ currentCategoryMenus.optionStrings[i]}} 
+              </ion-col>
+              <ion-col no-padding no-margin col-1> 
+                <button color="black" no-padding no-margin clear ion-button (click)="removeGeneralMenu(i)"><ion-icon name="md-remove-circle"></ion-icon></button>
+              </ion-col>
+            </ion-row>
+            </ion-item>
+          </ion-list>
+          </div>
+      </div>
+      <div class="section" *ngIf="!editSequence">
+        <div *ngIf="currentCategoryMenus.type=='general'">
+            <ion-row class="list-item list-item-no-drag" *ngFor="let menu of currentCategoryMenus.menus;let i=index;" id="{{currentCategoryMenus.ids[i]}}">
+              <ion-col no-margin no-padding col-1>
+              </ion-col>
+              <ion-col *ngIf="!menu.edit" class="list-item-label" text-wrap align-self-center no-padding no-margin col-9>
+              {{ currentCategoryMenus.optionStrings[i]}}
+              </ion-col>
+              <ion-col *ngIf="menu.edit" class="list-item-label" no-padding no-margin col-9>
+                <ion-item no-margin no-padding>
+                <ion-input type="text" [(ngModel)]="menu.newName"  style="border-bottom:solid 1px;"></ion-input>
+                </ion-item>
+              </ion-col>              
+              <ion-col *ngIf="!menu.edit"  no-padding no-margin col-1> 
+                <ion-item class="no-item-border-bottom" no-padding no-margin>
+                <button color="black" no-padding no-margin clear ion-button (click)="modifyGeneralMenu(menu,i)"><ion-icon  name="md-create"></ion-icon></button>
+                </ion-item>
+              </ion-col>
+              <ion-col *ngIf="!menu.edit" no-padding no-margin col-1>
+                <ion-item class="no-item-border-bottom" no-padding no-margin> 
+                <button color="black" no-padding no-margin clear ion-button (click)="removeGeneralMenu(i)"><ion-icon  name="md-remove-circle"></ion-icon></button>
+                </ion-item>
+              </ion-col>
+              <ion-col *ngIf="menu.edit"  no-padding no-margin col-1> 
+                <ion-item class="no-item-border-bottom" no-padding no-margin>
+                <button color="black" no-padding no-margin clear ion-button (click)="saveModificationGeneralMenu(menu,i)"><ion-icon  name="md-create"></ion-icon></button>
+                </ion-item>
+              </ion-col>
+              <ion-col *ngIf="menu.edit" no-padding no-margin col-1>
+                <ion-item class="no-item-border-bottom" no-padding no-margin> 
+                <button color="black" no-padding no-margin clear ion-button (click)="undoModificationGeneralMenu(menu,i)"><ion-icon  name="md-close"></ion-icon></button>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </div>
+      </div>      
+      </ion-scroll>  
+      <div *ngIf="currentCategoryMenus && currentCategoryMenus.type=='general'">
+       <ion-list>
+           <ion-row>
+                <ion-col col-8 no-padding no-margin text-left>
+                <ion-item class="no-item-border-bottom">
+                <ion-input type="text" placeholder="이름"  [(ngModel)]="newName"  style="border-bottom:solid 1px;"></ion-input>
+                </ion-item>
+                </ion-col>
+                <ion-col col-4 no-padding no-margin text-left>                    
+                <ion-item class="no-item-border-bottom">         
+                <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="addGeneralMenu()" ><b> <ion-icon name="md-add"></ion-icon></b></button>
+                </ion-item>
+                </ion-col>
+           </ion-row>
+          </ion-list>  
+      </div>
+        <div *ngIf="currentCategoryMenus && currentCategoryMenus.type=='complex'">
+                <ion-scroll scrollY="true">
+                <ion-list>
+                      <ion-item class="no-item-border-bottom" *ngFor="let item of newComplexMenuItems;let k=index;">
+                        <ion-row>
+                          <ion-col col-10 text-wrap>
+                              {{item.string}}
+                          </ion-col>
+                          <ion-col col-2> 
+                              <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="removeComplexMenuItems(k)" > <ion-icon name="md-remove-circle"></ion-icon></button>
+                          </ion-col>
+                        </ion-row> 
+                      </ion-item>
+                </ion-list>  
+                </ion-scroll>
+                <ion-list>
+                    <ion-row>
+                      <ion-col col-6 no-padding no-margin text-left>
+                      <ion-item class="no-item-border-bottom">
+                      <ion-input type="text" placeholder="이름"  [(ngModel)]="newName"  style="border-bottom:solid 1px;"></ion-input>
+                      </ion-item>
+                      </ion-col>
+                      <ion-col col-2 no-padding no-margin>
+                      <ion-item no-padding no-margin>
+                        <ion-input type="number" placeholder="수량"  text-right [(ngModel)]="newAmount"></ion-input>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col col-2 no-padding no-margin>
+                      <ion-item class="no-item-border-bottom">
+                        개 
+                      </ion-item>
+                    </ion-col> 
+                    <ion-col col-2>
+                      <ion-item class="no-item-border-bottom">         
+                      <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="addComplexMenuItem(currentCategoryMenus.type)" ><b> <ion-icon name="md-add"></ion-icon></b></button>
+                      </ion-item>                  
+                    </ion-col>                            
+                    </ion-row>
+                    <ion-row>
+                      <button ion-button (click)="saveComplexMenu()">저장</button>
+                    </ion-row>
+                </ion-list>
+        </div>        
+        <div *ngIf="currentCategoryMenus && currentCategoryMenus.type=='complex-choice'">
+               <ion-row>
+                    <ion-col col-4>
+                      <ion-item class="no-item-border-bottom">
+                        선택수 
+                      </ion-item>
+                    </ion-col>
+                    <ion-col col-4>
+                      <ion-item>
+                          <ion-input type="number" placeholder="선택수"  text-right [(ngModel)]="newChoiceNumber"></ion-input>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col col-4>
+                      <ion-item class="no-item-border-bottom">
+                      개
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                <ion-scroll scrollY="true">  
+                <ion-list>
+                      <ion-item class="no-item-border-bottom" *ngFor="let item of newComplexMenuItems;let k=index;">
+                        <ion-row >
+                          <ion-col col-10 text-wrap>
+                              {{item.string}}
+                          </ion-col>
+                          <ion-col col-2>    
+                              <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="removeComplexMenuItems(k)" > <ion-icon name="md-remove-circle"></ion-icon></button>
+                          </ion-col>
+                        </ion-row> 
+                      </ion-item>
+                </ion-list> 
+                </ion-scroll>           
+                <ion-list>                      
+                    <ion-row>
+                      <ion-col col-10 no-padding no-margin text-left>
+                      <ion-item class="no-item-border-bottom">
+                      <ion-input type="text" placeholder="이름"  [(ngModel)]="newName"  style="border-bottom:solid 1px;"></ion-input>
+                      </ion-item>
+                      </ion-col>
+                    <ion-col col-2>
+                      <ion-item class="no-item-border-bottom">         
+                      <button color="black" style="padding-bottom:10px;" no-padding no-margin clear ion-button (click)="addComplexMenuItem(currentCategoryMenus.type)" ><b> <ion-icon name="md-add"></ion-icon></b></button>
+                      </ion-item>                  
+                    </ion-col>                            
+                    </ion-row>
+                    <ion-row>
+                      <button ion-button (click)="saveComplexChoiceMenu()">저장</button>
+                    </ion-row>
+                </ion-list>
+        </div>
+  </ion-col>
+</ion-row>
+</div>
 </div>
 </ion-content>
