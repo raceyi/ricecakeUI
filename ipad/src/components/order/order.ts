@@ -408,6 +408,15 @@ selectCategory(){
     return true;
   }
 
+modifyMenu(menu){
+  //console.log("modifyMenu-menu.modification:"+menu.modification);      
+  if(!menu.modification)
+      menu.modification=true;
+  else
+      menu.modification=false;      
+  //console.log("menu.modification:"+menu.modification);    
+}
+
  removeMenu(i){
     this.order.menuList.splice(i,1);
  }

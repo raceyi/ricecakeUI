@@ -41,6 +41,11 @@ export class StorageProvider {
   categorySelected;
   // Menu 편집 화면을 위한 변수-end
   ///////////////////////////////
+
+  //////////////////////////////
+  // orderList.sort의 종류
+  sortType="input";
+
   lastOrderUpdateTime;
 
   constructor(public http: HttpClient,
@@ -199,16 +204,26 @@ export class StorageProvider {
             }
             if(tablename=="order"){
                 this.serverProvider.getOrders(this.deliveryDate.substr(0,10)).then((orders)=>{
+                    console.log("orders:!!!!!"+JSON.stringify(orders)+"!!!!");
+
                     this.ngZone.run(()=>{
                         this.orderList=orders;
                         this.convertOrderList(this.orderList);
-                        this.orderList.sort(function(a,b){
-                            let a_delivery=new Date(a.deliveryTime);
-                            let b_delivery=new Date(b.deliveryTime);
-                            if (a_delivery.getTime() < b_delivery.getTime()) return -1;
-                            if (a_delivery.getTime() > b_delivery.getTime()) return 1;
-                            return 0;
-                        } );
+                        if(this.sortType=="delivery"){
+                            this.orderList.sort(function(a,b){
+                                let a_delivery=new Date(a.deliveryTime);
+                                let b_delivery=new Date(b.deliveryTime);
+                                if (a_delivery.getTime() < b_delivery.getTime()) return -1;
+                                if (a_delivery.getTime() > b_delivery.getTime()) return 1;
+                                return 0;
+                            } );
+                        }else{ //"input""
+                            this.orderList.sort(function(a,b){
+                                if (a.id < b.id) return -1;
+                                if (a.id > b.id) return 1;
+                                return 0;
+                            } );
+                        }
                         let now=new Date();
                         this.lastOrderUpdateTime=now.toString();
                         console.log("call reconfigureDeliverySection...");
@@ -323,13 +338,21 @@ export class StorageProvider {
         this.serverProvider.getOrders(this.deliveryDate.substr(0,10)).then((orders)=>{
                 this.orderList=orders;
                 this.convertOrderList(this.orderList);
-                this.orderList.sort(function(a,b){
-                    let a_delivery=new Date(a.deliveryTime);
-                    let b_delivery=new Date(b.deliveryTime);
-                    if (a_delivery.getTime() < b_delivery.getTime()) return -1;
-                    if (a_delivery.getTime() > b_delivery.getTime()) return 1;
-                    return 0;
-                } );
+                if(this.sortType=="delivery"){
+                            this.orderList.sort(function(a,b){
+                                let a_delivery=new Date(a.deliveryTime);
+                                let b_delivery=new Date(b.deliveryTime);
+                                if (a_delivery.getTime() < b_delivery.getTime()) return -1;
+                                if (a_delivery.getTime() > b_delivery.getTime()) return 1;
+                                return 0;
+                            } );
+                }else{ //"input""
+                            this.orderList.sort(function(a,b){
+                                if (a.id < b.id) return -1;
+                                if (a.id > b.id) return 1;
+                                return 0;
+                            } );
+                }
                 this.reconfigureDeliverySection();
                 this.configureProduceSection(); 
                 this.newOrderInputShown=false;               
@@ -483,6 +506,7 @@ export class StorageProvider {
             this.assignOrderList.push({ name: carrier.name, orders: [] });
         });
         console.log("assignOrderList-"+JSON.stringify(this.assignOrderList));
+
         this.orderList.forEach((order)=> {
             if (order.carrier) {
                 console.log("order.carrier:" + order.carrier);
@@ -498,8 +522,7 @@ export class StorageProvider {
                 else
                         this.unassingOrderDeliveryList.push(order);        
                 console.log("hum... please check error -2")
-            }
-            else {
+            }else {
                 if (order.deliveryMethod == "배달")
                     this.unassingOrderDeliveryList.push(order);
                 else if (order.deliveryMethod == "픽업")
@@ -510,6 +533,46 @@ export class StorageProvider {
                     this.unassingOrderEtcList.push(order);
             }
         });
+        //////////////////////////////////////////////////////////////////
+        this.assignOrderList.forEach(orderList=>{
+            orderList.orders.sort(function(a,b){
+                let a_delivery=new Date(a.deliveryTime);
+                let b_delivery=new Date(b.deliveryTime);
+                if (a_delivery.getTime() < b_delivery.getTime()) return -1;
+                if (a_delivery.getTime() > b_delivery.getTime()) return 1;
+                return 0;
+            })
+        });
+        this.unassingOrderDeliveryList.sort(function(a,b){
+                let a_delivery=new Date(a.deliveryTime);
+                let b_delivery=new Date(b.deliveryTime);
+                if (a_delivery.getTime() < b_delivery.getTime()) return -1;
+                if (a_delivery.getTime() > b_delivery.getTime()) return 1;
+                return 0;
+        })
+
+        this.unassingOrderPickupList.sort(function(a,b){
+                let a_delivery=new Date(a.deliveryTime);
+                let b_delivery=new Date(b.deliveryTime);
+                if (a_delivery.getTime() < b_delivery.getTime()) return -1;
+                if (a_delivery.getTime() > b_delivery.getTime()) return 1;
+                return 0;
+        })
+        this.unassingOrderFrozenList.sort(function(a,b){
+                let a_delivery=new Date(a.deliveryTime);
+                let b_delivery=new Date(b.deliveryTime);
+                if (a_delivery.getTime() < b_delivery.getTime()) return -1;
+                if (a_delivery.getTime() > b_delivery.getTime()) return 1;
+                return 0;
+        })
+        this.unassingOrderEtcList.sort(function(a,b){
+                let a_delivery=new Date(a.deliveryTime);
+                let b_delivery=new Date(b.deliveryTime);
+                if (a_delivery.getTime() < b_delivery.getTime()) return -1;
+                if (a_delivery.getTime() > b_delivery.getTime()) return 1;
+                return 0;
+        })
+        //////////////////////////////////////////////////////////////////
         this.assignOrderList.sort(function(a,b){
             if(a.name <b.name)
                   return -1;

@@ -156,7 +156,7 @@
               <ion-col col-2></ion-col>
               <ion-col col-3>{{menu.category}}</ion-col>
               <ion-col col-4>{{menu.menuString}}</ion-col>
-              <ion-col col-1 text-right>{{menu.amount}}</ion-col>
+              <ion-col col-1><ion-input class="amount-input" style="border-bottom:solid 1px;"type="number" text-right [(ngModel)]="menu.amount"> </ion-input></ion-col>              
               <ion-col col-1 text-left>{{menu.unit}}</ion-col>
               <ion-col col-1>
                 <button ion-button no-padding no-margin clear style="height:15px;" (click)="removeMenu(i)">
@@ -164,7 +164,6 @@
                 </button>
               </ion-col>
             </ion-row>
-
             <ion-row>
               <!--
               <ion-col col-1 no-padding no-margin class="add-button">
@@ -306,7 +305,7 @@
             <ion-row>
               <ion-col col-8>
               <ion-item class="no-item-border-bottom">
-                <ion-select class="payment-select" placeholder="결제방법" (ionChange)="selectPayment()" interface="popover" [(ngModel)]="order.paymentOption">
+                <ion-select class="payment-select" placeholder="결제방법" (ionChange)="selectPayment()" [(ngModel)]="order.paymentOption">
                   <ion-option value="cash-paid-pre" >현금선불-완납</ion-option>
                   <ion-option value="cash-unpaid-after">현금후불</ion-option>
                   <ion-option *ngIf="order.paymentOption=='cash-paid-after'" value="cash-paid-after">현금후불-완납</ion-option>

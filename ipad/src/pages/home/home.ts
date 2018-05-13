@@ -532,6 +532,66 @@ export class HomePage {
             this.navCtrl.push(TrashPage);
     }
 
+    lookForMenu(keyword){
+        let output=[];
+        console.log("lookForMenu:"+keyword);
+        this.storageProvider.orderList.forEach(order=>{
+            order.menuList.forEach(menu=>{
+                console.log("menu:"+JSON.stringify(menu));
+                    //if (menu.menu.indexOf("[") == 0) {
+                    if(menu.type=="complex-choice"){    
+                        var menuObjs = JSON.parse(menu.menu);
+                        menuObjs.forEach(function (menuObj) {
+                            var key :any= Object.keys(menuObj);
+                            if(key[0].indexOf(keyword)>=0){
+                                output.push(order);
+                            }
+                        });
+                        if(menu.category.indexOf(keyword)>=0){
+                            output.push(order);
+                        }
+                    }else if(menu.type=="complex"){
+                        if(menu.category.indexOf(keyword)>=0){
+                            output.push(order);
+                        }
+                    }else{
+                        if(menu.menu.indexOf(keyword)>=0){
+                                output.push(order);
+                        }
+                    }
+            });
+        });
+        return output;
+    }
+
+    inputSearchKeyWord(){
+        console.log("inputSearchKeyWord:"+this.searchKeyWord);
+
+        if(!this.searchKeyWord) return;
+
+        var searchKeyWord = this.searchKeyWord.trim();
+        if ('0' <= searchKeyWord[0] && searchKeyWord[0] <= '9') {
+            this.searchKeyWord = this.autoHypenPhone(searchKeyWord); // look for phone number
+        }
+
+        this.filter=this.storageProvider.orderList.filter(function(value){
+            if('0'<=gHomePage.searchKeyWord[0] && gHomePage.searchKeyWord[0]<='9'){ //check digit
+                    console.log(" "+value.buyerPhoneNumber+" "+gHomePage.searchKeyWord);
+                    console.log(value.buyerPhoneNumber.startsWith(gHomePage.searchKeyWord));
+                    return value.buyerPhoneNumber.startsWith(gHomePage.searchKeyWord);
+            }else{
+                    console.log(" "+value.buyerName+" "+gHomePage.searchKeyWord); 
+                    console.log(value.buyerName.startsWith(gHomePage.searchKeyWord)); 
+                    return value.buyerName.startsWith(gHomePage.searchKeyWord);                
+            }
+        });
+        if(this.filter.length==0){
+            //메뉴에서 검색
+             this.filter=this.lookForMenu(this.searchKeyWord);
+        } 
+    }
+
+/*
     inputSearchKeyWord(){
         console.log("inputSearchKeyWord:"+this.searchKeyWord);
 
@@ -554,6 +614,7 @@ export class HomePage {
             }
         });
     }
+*/
 
     refresh(){
         /*
@@ -614,14 +675,20 @@ export class HomePage {
         let eachItems=[];
         let totalLinesNumber=0;
         console.log("constructSetPrint");
-        this.setTable.forEach(order=>{
-            let deliveryTime= order.hhmm+'-'+order.hhmmEnd;
-            let totalLine="";
-            let lineNumber=0;
-            console.log("lineNumber is "+lineNumber);
-            order.order.forEach(menu=>{
-                let line=menu.name+'-'+menu.amount+"개"+"<br>";
-                totalLine+=menu.name+'-'+'<b>'+menu.amount+"개"+"</b>" +"<br>"; // 하나의 주문에 여러 매뉴가 있을수 있음으로 totalLine+이다.
+
+        this.setTable.forEach(menu=>{
+            let index;
+            for(index=0;index<menu.orders.length;index++){
+                let order=menu.orders[index];
+                let deliveryTime= order.hhmm+'-'+order.hhmmEnd;
+                let line;
+                let lineNumber=0;
+                console.log("lineNumber is "+lineNumber);
+                if(order.option)
+                    line=order.name+order.option+'-<b>'+order.amount+'개</b>'; //right
+                else 
+                    line=order.name+'-<b>'+order.amount+'개</b>'; //right
+                
                 let remain=line.length;
                 while(remain>=rightCharacters){
                     console.log("remain:"+remain+" lineNumber:"+lineNumber);
@@ -634,8 +701,11 @@ export class HomePage {
                 }
                 console.log(" lineNumber:"+lineNumber);                    
                 totalLinesNumber+=lineNumber;
-                eachItems.push({deliveryTime:deliveryTime, lines:totalLine, number:lineNumber});    
-            });
+                if(index==menu.orders.length-1)
+                    eachItems.push({deliveryTime:deliveryTime, lines:line, number:lineNumber,delimeter:true});
+                else
+                    eachItems.push({deliveryTime:deliveryTime, lines:line, number:lineNumber,delimeter:false});                    
+            }
         });
 
         console.log("eachItems:"+JSON.stringify(eachItems));
@@ -677,9 +747,15 @@ export class HomePage {
                       
             pages+="<table style=\"width:100%\;border-collapse:collapse;\">";          
             tables[index].items.forEach(item=>{
+                if(item.delimeter){
+                    pages+="<tr><td style=\"width:30%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.deliveryTime+"</td>"+
+                            "<td style=\"width:60%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.lines+"</td>"
+                            "</tr>";
+                }else{
                     pages+="<tr><td style=\"width:30%;border: solid 1px; border-bottom-width:1px; font-size:1.6em;\">"+item.deliveryTime+"</td>"+
                             "<td style=\"width:60%;border: solid 1px; border-bottom-width:1px; font-size:1.6em;\">"+item.lines+"</td>"
                             "</tr>";
+                }       
             })
             pages+="</table>";
         }
@@ -1251,15 +1327,34 @@ topRowStyles = {
    }
   setTable=[];
 
+  putMenuSetTable(menu){
+        let index=this.setTable.findIndex(function (val) {
+            console.log("val.menu:" + JSON.stringify(val));
+            if (val.name == menu.name) //Please update this....
+                return true;
+            else
+                return false;
+        });
+        if(index<0){
+            let orders=[];
+            orders.push(menu);
+            this.setTable.push({name:menu.name,orders:orders})
+        }else{
+            this.setTable[index].orders.push(menu);
+        }
+  }
+
   configureSetSection(){
-    //console.log("order:"+JSON.stringify(this.storageProvider.orderList));
+    console.log("order:"+JSON.stringify(this.storageProvider.orderList));
 
     this.setTable=[];
     this.storageProvider.orderList.forEach( (order)=>{
-        let orderRow=[];
+        var min = parseInt(order.deliveryTime.slice(11, 13)) * 60 + parseInt(order.deliveryTime.slice(14, 16));        
+        var hhmm = order.deliveryTime.slice(11, 13) + "시 " + order.deliveryTime.slice(14, 16) + "분";   
+        var hhmmEnd = order.deliveryTime.slice(11, 13) + "시 " + order.deliveryTime.slice(14, 16) + "분";   
         order.menuList.forEach(menu=>{
             if(menu.type=="complex"){
-                orderRow.push({name:menu.category, amount:menu.amount});
+                this.putMenuSetTable({name:menu.category, amount:menu.amount,min:min,hhmm:hhmm,hhmmEnd:hhmmEnd});
             }else if(menu.type=="complex-choice"){
                     var menuObjs = JSON.parse(menu.menu);
                     let string="";
@@ -1270,25 +1365,50 @@ topRowStyles = {
                         })
                     });
                     string=string.substr(0,string.length-1); // 마지막 ,를 없앤다.
-                    orderRow.push({name:menu.category+"("+string+")", amount:menu.amount});
+                    this.putMenuSetTable({name:menu.category, option:"("+string+")", amount:menu.amount,min:min,hhmm:hhmm,hhmmEnd:hhmmEnd});
             }
         })
-        var hhmm = order.deliveryTime.slice(11, 13) + "시 " + order.deliveryTime.slice(14, 16) + "분";   
-        var hhmmEnd = order.deliveryTimeEnd.slice(11, 13) + "시 " + order.deliveryTimeEnd.slice(14, 16) + "분";   
-             
-        var min = parseInt(order.deliveryTime.slice(11, 13)) * 60 + parseInt(order.deliveryTime.slice(14, 16));        
-        if(orderRow.length>0)
-            this.setTable.push({order:orderRow,min:min,hhmm:hhmm,hhmmEnd:hhmmEnd});
     }) 
-    this.setTable.sort(function (a, b) {
+    //sort each menu
+    this.setTable.forEach(menu=>{
+        menu.orders.sort(function(a,b){
                 if (a.min < b.min)
                     return -1;
                 if (a.min > b.min)
+                    return 1;
+                return 0;
+        })
+    });
+
+    this.setTable.sort(function (a, b) {
+                if (a.name < b.name)
+                    return -1;
+                if (a.name > b.name)
                     return 1;
                 return 0;
             });            
     console.log("setTable:"+JSON.stringify(this.setTable)); 
   }
 ///////////////////////////////////////////////////////
+
+    sortOrdersDeliveryTime(){
+        this.storageProvider.sortType="delivery";
+        this.storageProvider.orderList.sort(function(a,b){
+            let a_delivery=new Date(a.deliveryTime);
+            let b_delivery=new Date(b.deliveryTime);
+            if (a_delivery.getTime() < b_delivery.getTime()) return -1;
+            if (a_delivery.getTime() > b_delivery.getTime()) return 1;
+            return 0;
+        } );
+    }
+
+    sortOrdersInputTime(){
+        this.storageProvider.sortType="input";
+        this.storageProvider.orderList.sort(function(a,b){
+            if (a.id < b.id) return -1;
+            if (a.id > b.id) return 1;
+            return 0;
+        } );
+    }
 
 }
