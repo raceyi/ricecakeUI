@@ -40,8 +40,8 @@ export class ServerProvider {
           this.platform.ready().then(() => {
             this.backgroundMode.enable();
             this.pushNotification=this.push.init({
-            android: {
-                    //senderID: " ",
+                android: {
+                    senderID:'72197196442',
                 },
                 ios: {
                 }
@@ -49,26 +49,20 @@ export class ServerProvider {
             this.pushNotification.on('registration').subscribe((response:any)=>{
                 this.registrationId=response.registrationId;
                 console.log("registrationId:"+this.registrationId);
-                this.registerDeviceRegistrationId(this.registrationId).then(()=>{
-
-                },err=>{
-                    let alert = this.alertCtrl.create({
-                      title: '장치등록 오류입니다.',
-                      subTitle:"업데이트버튼을 사용해 주시기 바랍니다."+JSON.stringify(err),
-                      buttons: ['확인']
-                    });
-                    alert.present();
-                })
+                        this.pushNotification.subscribe("/topics/ricecake").then((data:any)=>{
+                            console.log("subscribe /topics/ricecake once "+JSON.stringify(data));
+                        });
             });
+
             this.pushNotification.on('notification').subscribe((data:any)=>{
-                console.log("pushNotification.on-data:"+JSON.stringify(data));
-                if(data.additionalData.registrationId && data.additionalData.registrationId==this.registrationId){
-                    console.log("just ignore it");
-                }else{
-                    console.log("publish update");
-                    this.events.publish('update',data.additionalData.table);
-                    this.event.emit(data.additionalData.table); // 이 코드가 들어가야 위에 코드가 수행되는것같다 ㅜㅜ 
-                }
+                    console.log("pushNotification.on-data:"+JSON.stringify(data));
+                    if(data.additionalData.registrationId && data.additionalData.registrationId==this.registrationId){
+                        console.log("just ignore it");
+                    }else{
+                        console.log("publish update");
+                        this.events.publish('update',data.additionalData.table);
+                        this.event.emit(data.additionalData.table); // 이 코드가 들어가야 위에 코드가 수행되는것같다 ㅜㅜ 
+                    }
             });
             this.pushNotification.on('error').subscribe((e:any)=>{
                 console.log("!!! notification error:"+e.message);

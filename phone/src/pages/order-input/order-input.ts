@@ -859,7 +859,8 @@ computeTotal(){
                                         }]
                             });
                             alert.present();                                    
-                    }   
+                    }
+                    this.navCtrl.pop();   
             },err=>{
                 if(typeof err==="string" && err.indexOf("SMS-")>=0){
                     if(this.order.diffDate){
@@ -892,6 +893,7 @@ computeTotal(){
                         });
                         alert.present();
                     }
+                    this.navCtrl.pop();
                 }else if(typeof err==="string" ){
                     let alert = this.alertCtrl.create({
                         title: '주문 변경에 실패했습니다.',

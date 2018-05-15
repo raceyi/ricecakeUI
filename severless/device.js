@@ -54,7 +54,7 @@ removeRegistrationId=function(registrationId){
         var params = {
                 TableName:"devices",
                 Key:{
-                                "registrationId":registrationId
+                       "registrationId":registrationId
                 }
             };
             console.log("removeRegistrationId-params:"+JSON.stringify(params));  
@@ -109,7 +109,7 @@ sendGCM=function(params,next){
 
     if(!android){
       message = {
-			"to" : pushId,
+			"to" : pushId,  // 한번에 여러번 보내는것이 가능한가? 아마도 yes   to 대신에 topic을 명시하면된다?
 			priority: 'high',
             collapseKey: 'takit',
             timeToLive: 3,
@@ -146,7 +146,8 @@ sendGCM=function(params,next){
                     console.log("body:"+body);
                     let response=JSON.parse(body);
                     if(response.results[0].error){
-                        console.log("error is "+response.results[0].err);
+                        //body:{"multicast_id":7663920924350604473,"success":0,"failure":1,"canonical_ids":0,"results":[{"error":"NotRegistered"}]}
+                        console.log("error is "+response.results[0].error);
                         console.log("please remove registrationId from table");
                         removeRegistrationId(pushId).then((value)=>{
                             console.log("removeRegistrationId "+pushId);
@@ -155,8 +156,7 @@ sendGCM=function(params,next){
                             console.log("removeRegistrationId "+pushId+" error");
                             next(null,"removeRegistrationId error");
                         })
-                    }
-                    if(res.statusCode==200){
+                    }else if(res.statusCode==200){
                         console.log(JSON.parse(body));
                         next(null,"success"); 
                     }else{
@@ -175,7 +175,7 @@ sendGCM=function(params,next){
         });
     }else{ //android
         console.log("send GCM into Android device");
-        
+
         data["content-available"]=1;
         message = new gcm.Message({
             priority: 'high',
@@ -186,16 +186,128 @@ sendGCM=function(params,next){
 
             sender.send(message, {"registrationTokens":pushId}, 4, function (err, result) {
             if(err){
-            console.log("err sender:"+JSON.stringify(err));
-            next(null,"gcm:"+err);
+                console.log("err sender:"+JSON.stringify(err));
+                //Please remove registrationId from DB.
+                next(null,"unregister");
             }else{
-            console.log("success sender:"+JSON.stringify(result));
-            next(null,result);
+                console.log("success sender:"+JSON.stringify(result));
+                next(null,result);
             }
         });
     }
 }
 
+sendAndroidPush=function(params){ //string[]
+    return new Promise((resolve,reject)=>{   
+        let sender = new gcm.Sender(API_KEY);          
+        console.log("send GCM into Android device "+JSON.stringify(params));
+        let data;        
+        //console.log("tableName:"+params.tableName);
+        if(params.registrationId){
+            data={  
+                table: params.tableName,
+                registrationId:params.registrationId
+            };
+        }else{
+            data={table:params.tableName};
+        }
+        console.log("data:"+JSON.stringify(data));
+        data["content-available"]=1;
+        message = new gcm.Message({
+            priority: 'high',
+            collapseKey: 'takit',
+            timeToLive: 3,
+            data : data,
+        });
+
+        sender.send(message, {topic:"/topics/ricecake"}, 4, function (err, result) {
+            if(err){
+                console.log("err sender:"+JSON.stringify(err));
+                reject("gcm:"+err);
+            }else{
+                console.log("success sender:"+JSON.stringify(result));
+                resolve(null,result);
+            }
+        });
+    });
+}
+
+sendiOSPush=function(params){
+    return new Promise((resolve,reject)=>{         
+        console.log("sendiOSPush:"+JSON.stringify(params));
+        let tableName=params.tableName;
+        let pushIds=params.pushIds;
+        console.log("tableName content:"+tableName);
+        let message;
+        let data;
+
+        if(params.registrationId){
+            data={  
+                table: tableName,
+                registrationId:params.registrationId
+            };
+        }else{
+            data={table:tableName};
+        }
+
+        message = {
+                "to" : "/topics/ricecake",  
+                priority: 'high',
+                collapseKey: 'takit',
+                timeToLive: 3,
+                "content_available": true,
+                data: data,
+                notification: {
+                    //title: "주문테이블 변경",
+                    //body: tableName
+                }
+            };
+
+            var body = JSON.stringify(message);
+            console.log(body);
+            var options = {
+                    host: 'android.googleapis.com',
+                    port: 443,
+                    path: '/gcm/send',
+                    headers: {
+                    'Authorization': 'key='+API_KEY,
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Content-Length': Buffer.byteLength(body)
+                    },
+                    method: 'POST'
+            };
+            
+            console.log(options);
+            var req = https.request(options, function(res){
+                    console.log("statusCode"+res.statusCode);
+                    var body = "";
+                    res.on('data', function(d) {
+                        body += d;
+                    });
+                    res.on('end', function(d) {
+                        console.log("body:"+body);
+                        let response=JSON.parse(body);
+                        if(res.statusCode==200){
+                            console.log(JSON.parse(body));
+                            resolve(); 
+                        }else{
+                            console.log(null,"gcm:400");
+                            reject("gcm:400");
+                        }
+                    });
+            });
+
+            req.write(body);
+            req.end();
+            req.on('error', function(e){
+                console.log("error");
+                console.error(e);
+                reject(e);   
+            });
+    });
+}
+
+/*
 router.notifyAll=function(name,registrationId){
     return new Promise((resolve,reject)=>{ 
         console.log("notifyAll comes!!!"+registrationId+"table:"+name);   
@@ -220,6 +332,18 @@ router.notifyAll=function(name,registrationId){
         })
     });
 }
+*/
+
+router.notifyAll=function(name,registrationId){
+        let params={tableName:name,registrationId:registrationId};
+
+        let android=sendAndroidPush(params);;
+        let iOS=sendiOSPush(params);
+
+        return Promise.all([android,iOS]);
+};
+
+//router.notifyAll("order");
 
 module.exports = router;
 /*

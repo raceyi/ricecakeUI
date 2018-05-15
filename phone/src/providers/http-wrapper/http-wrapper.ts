@@ -21,11 +21,13 @@ export class HttpWrapperProvider {
     console.log('Hello HttpWrapperProvider Provider');
   }
 
-  post(url,body){
+  post(url,bodyIn){
       return new Promise((resolve,reject)=>{        
         if(this.plt.is("cordova")){ //use native-plugin
               this.http.setDataSerializer("json"); 
-              this.http.setRequestTimeout(this.timeout);              
+              this.http.setRequestTimeout(this.timeout);
+              let body = Object.assign({}, bodyIn); 
+              body.version=this.configProvider.version;              
               this.http.post(this.configProvider.serverAddress+url,body, {"Content-Type":"application/json"}).then((res:any)=>{
                   resolve(JSON.parse(res.data));
               },err=>{
@@ -34,6 +36,8 @@ export class HttpWrapperProvider {
         }else{ // use httpClient
             let address="http://localhost:8100"+url;
             console.log("address:"+address);
+              let body = Object.assign({}, bodyIn); 
+              body.version=this.configProvider.version;              
             this.client.post(address,body).subscribe((res:any)=>{
                 resolve(res);
             },(err)=>{
