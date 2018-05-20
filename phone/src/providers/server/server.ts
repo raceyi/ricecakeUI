@@ -49,9 +49,36 @@ export class ServerProvider {
             this.pushNotification.on('registration').subscribe((response:any)=>{
                 this.registrationId=response.registrationId;
                 console.log("registrationId:"+this.registrationId);
+                if(!platform.is('ipad')){
                         this.pushNotification.subscribe("/topics/ricecake").then((data:any)=>{
                             console.log("subscribe /topics/ricecake once "+JSON.stringify(data));
+                            /*
+                            this.pushNotification.unsubscribe("/topics/ricecake").then((data:any)=>{
+                                this.pushNotification.subscribe("/topics/ricecake").then((data:any)=>{
+                                    console.log("subscribe /topics/ricecake twice "+JSON.stringify(data));
+                                },error=>{
+                                    console.log("subscribe failure in second turn")
+                                });
+                            },error=>{
+
+                            });
+                            */
+                        },error=>{
+                                console.log("subscribe failure in first turn")
                         });
+                }else{ //iPad
+                    console.log("iPad");
+                    this.registerDeviceRegistrationId(this.registrationId).then(()=>{
+
+                    },err=>{
+                        let alert = this.alertCtrl.create({
+                        title: '장치등록 오류입니다.',
+                        subTitle:"주문확인전 업데이트버튼을 사용해 주시기 바랍니다."+JSON.stringify(err),
+                        buttons: ['확인']
+                        });
+                        alert.present();
+                    })
+                }
             });
 
             this.pushNotification.on('notification').subscribe((data:any)=>{

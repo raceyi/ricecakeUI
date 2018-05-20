@@ -30,7 +30,7 @@ export class PhoneUnassignedCarrierOrderComponent {
 
   assingCarrier(order){
         if(order.carrier){
-              this.output.emit(this.order);      
+              this.output.emit(order);      
         }else{
             let alert = this.alertCtrl.create({
               title: '배달원을 선택해 주시기 바랍니다.',

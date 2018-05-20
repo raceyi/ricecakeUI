@@ -27,6 +27,7 @@ export class DeliveryPage {
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad DeliveryPage');
+    this.storageProvider.reconfigureDeliverySection();
   }
 
   manageCarrier(){

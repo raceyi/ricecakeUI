@@ -102,6 +102,19 @@ export class OrderInputPage { //order.ts와 동작이 동일해야만 한다.
     console.log('ionViewDidLoad OrderInputPage');
   }
 
+  inputBuyerName(){
+    console.log("inputBuyerName");
+    if(this.order.receiverSame){
+        this.order.recipientName=this.order.buyerName;
+    }
+  }
+
+ reflectBuyerPhoneNumber(){
+   if(this.order.receiverSame){
+        this.order.recipientPhoneNumber=this.order.buyerPhoneNumber;
+    }
+ }
+
   inputBuyerPhoneNumber(){
         let buyerPhoneNumber=this.order.buyerPhoneNumber.trim();
         this.order.buyerPhoneNumber=this.storageProvider.autoHypenPhone(buyerPhoneNumber); // look for phone number
@@ -208,6 +221,10 @@ export class OrderInputPage { //order.ts와 동작이 동일해야만 한다.
           }
     }
   }
+ 
+ removeMenu(i){
+    this.order.menuList.splice(i,1);
+ }
 
   inputRecipientPhoneNumber(){
         let recipientPhoneNumber=this.order.recipientPhoneNumber.trim();

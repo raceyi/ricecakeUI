@@ -219,7 +219,7 @@ export class ManagerPage {
   }
 
   onStartDaySelect(day){
-    console.log("day:"+JSON.stringify(day));
+    console.log("onStartDaySelect-day:"+JSON.stringify(day));
     this.startDateIn=day;
     console.log("start-day:"+JSON.stringify(day));
     /////////////////////////////////////////////
@@ -274,6 +274,12 @@ export class ManagerPage {
         this.cardPaid=value.cardPaid;
         this.cardUnpaid=value.cardUnpaid;
         this.totalSales=this.cashPaid+this.cardPaid+this.cashUnpaid+this.cardUnpaid;
+
+        this.startDay=this.startDateString;
+        this.endDay=this.endDateString;
+        console.log("startDay:"+this.startDay);
+        console.log("endDay:"+this.endDay);
+
         console.log("totalSales:"+this.totalSales);
         this.searchKeyWord="";
     },(err)=>{
@@ -289,7 +295,7 @@ export class ManagerPage {
 
   onEndDaySelect(day){
     this.endDateIn=day;    
-    console.log("end-day:"+JSON.stringify(day));
+    console.log("onEndDaySelect-day:"+JSON.stringify(day));
     /////////////////////////////////////////////
     // phone-begin
     var mm = day.month < 9 ? "0" + (day.month + 1) : (day.month + 1); // getMonth() is zero-based
@@ -1049,6 +1055,9 @@ undoModificationGeneralMenu(menu,i){
 //////////////////////////////////////////////////
 // phone버전 추가 함수 -begin
  selectInputChoice(type){
+     console.log("startDateString: ",this.startDateString);
+     console.log("endDateString: ",this.endDateString);
+     console.log("selectInputChoice-"+type);
     this.inputChoice=type;
  }
 // phone버전 추가 함수 -end

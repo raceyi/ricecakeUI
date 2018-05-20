@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams,AlertController } from 'ionic-angular';
+import { IonicPage, NavController, App,NavParams,AlertController } from 'ionic-angular';
 import {ServerProvider} from "../../providers/server/server";
 import { NativeStorage } from '@ionic-native/native-storage';
+import { TabsPage } from '../tabs/tabs';
 
 /**
  * Generated class for the InstallPasswordPage page.
@@ -26,6 +27,7 @@ export class InstallPasswordPage {
               public alertCtrl:AlertController,
               public serverProvider:ServerProvider,
               public nativeStorage:NativeStorage,
+              public app:App,
               public navParams: NavParams) {
   }
 
@@ -77,7 +79,8 @@ export class InstallPasswordPage {
                           });
                           alert.present();
                         });
-                        this.navCtrl.pop();
+                        //this.navCtrl.pop();
+                        this.app.getRootNavs()[0].setRoot(TabsPage);
               },err=>{
                     if(typeof err==="string" && err.indexOf("invalidPIN")>=0){
                         let alert = this.alertCtrl.create({
@@ -97,8 +100,9 @@ export class InstallPasswordPage {
         }
   }
 
+/*
   close(){
       this.navCtrl.pop();
   }
-
+*/
 }

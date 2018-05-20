@@ -5,7 +5,7 @@
              접수일시:{{order.orderedTimeString}}  
             </ion-col>
             <ion-col text-right col-4  text-right no-margin no-padding>
-                      <ion-select no-padding no-margin *ngIf="order.deliveryMethod!='픽업'" style="font-size:3vw;" placeholder="배달자" [(ngModel)]="order.carrier">
+                      <ion-select no-padding no-margin *ngIf="order.deliveryMethod!='픽업'" style="font-size:4vw;" placeholder="배달자" [(ngModel)]="carrier">
                         <ion-option  style="font-size:3vw;" *ngFor="let carrier of storageProvider.carriers" [value]="carrier.name" >{{carrier.name}}</ion-option>
                         <ion-option value="미지정" >미지정</ion-option>
                       </ion-select>

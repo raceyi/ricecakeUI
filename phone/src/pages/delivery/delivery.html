@@ -58,17 +58,15 @@
 <div style="background-color:lightgray;" >
 <div *ngFor="let carrier of storageProvider.assignOrderList;let i=index;" > 
 <h3>{{carrier.name}}</h3>
-<!--
     <phone-carrier-order [order]="order" (output)="storageProvider.modifyCarrier($event)" (modify)="storageProvider.savePayment(order)" *ngFor="let order of carrier.orders;let j=index;"></phone-carrier-order>      
- -->   
 </div>
 *배달
     <phone-unassigned-carrier-order *ngFor="let order of storageProvider.unassingOrderDeliveryList;" [order]="order" (output)="storageProvider.assingCarrier($event)" (modify)="storageProvider.savePayment(order)" ></phone-unassigned-carrier-order> 
-*픽업   
+<br>*픽업   
     <phone-unassigned-carrier-order [order]="order" (output)="storageProvider.assingCarrier($event)" (modify)="storageProvider.savePayment(order)" *ngFor="let order of storageProvider.unassingOrderPickupList;let i=index;"></phone-unassigned-carrier-order> 
-*냉동
+<br>*냉동
     <phone-unassigned-carrier-order [order]="order" (output)="storageProvider.assingCarrier($event)" (modify)="storageProvider.savePayment(order)" *ngFor="let order of storageProvider.unassingOrderFrozenList;let i=index;"></phone-unassigned-carrier-order> 
-*기타
+<br>*기타
     <phone-unassigned-carrier-order [order]="order" (output)="storageProvider.assingCarrier($event)" (modify)="storageProvider.savePayment(order)" *ngFor="let order of storageProvider.unassingOrderEtcList;let i=index;"></phone-unassigned-carrier-order> 
 </div>
 </ion-content>

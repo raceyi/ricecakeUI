@@ -99,7 +99,8 @@ export class StorageProvider {
                     data => {
                         console.log(data)
                     },error =>{ 
-                        this.app.getRootNavs()[0].push(InstallPasswordPage);
+                        //this.app.getRootNavs()[0].push(InstallPasswordPage);
+                        this.app.getRootNavs()[0].setRoot(InstallPasswordPage);
                         // 처음 설치함.
                         // 설치 비번화면으로 이동해야함.
                         // 설치 비번화면에서 실패시 계속 설치 비번화면
@@ -253,6 +254,7 @@ export class StorageProvider {
         var d = new Date(this.deliveryDate);
         this.deliveyDay = this.getDayInKorean(d.getDay());
         this.refresh("order");
+        this.refresh("carrier");
         this.newOrderInputShown=false;
     };
 
@@ -2053,6 +2055,7 @@ constructDeliveryPrint(){
   //////////////////////////////////////////////////////////////
   // Delivery Section
     assingCarrier(order) {
+        console.log("order:"+JSON.stringify(order));
         //please Update carrier, sort order list again
         this.assignCarrier(order.id,order.carrier).then(()=>{
             this.refresh("order");
