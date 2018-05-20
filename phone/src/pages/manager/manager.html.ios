@@ -442,10 +442,10 @@
       </ion-col>
     </ion-row>
     <ion-row *ngIf="inputChoice">
-      <ion-col *ngIf="inputChoice=='start'" text-center>
+      <ion-col [hidden]="inputChoice!='start'" text-center>
           <ion-calendar  (onDaySelect)="onStartDaySelect($event)"></ion-calendar>
       </ion-col>
-      <ion-col *ngIf="inputChoice=='end'" text-center>
+      <ion-col [hidden]="inputChoice!='end'" text-center>
           <ion-calendar  (onDaySelect)="onEndDaySelect($event)"></ion-calendar>
       </ion-col>      
     </ion-row>
