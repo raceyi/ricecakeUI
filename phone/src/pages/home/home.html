@@ -91,13 +91,24 @@
 </div>
 
 <div [hidden]="section!='produce'">
-    <ion-grid  style="font-size:large;" *ngFor="let table of storageProvider.produceTables" >
+    <div *ngFor="let group of storageProvider.produceTables">
+    <ion-row *ngIf="group.digit">
+    <ion-col col-1> {{group.digit}}.</ion-col> 
+    <ion-col *ngIf="group.edit" col-2> <ion-input type="text" class="input-no-margin" style="border-bottom:solid 0.5px darkgray !important;" [(ngModel)]="group.name"> </ion-input> </ion-col>
+    <ion-col *ngIf="!group.edit" col-2> {{group.name}}</ion-col>
+    <ion-col *ngIf="group.edit" col-2><button no-padding no-margin outline ion-button style="height:3vw;" (click)="save(group)">저장</button></ion-col>
+    <ion-col *ngIf="!group.edit" col-2><button no-padding no-margin outline ion-button style="height:3vw;" (click)="edit(group)">편집</button></ion-col>
+    </ion-row>
+    <ion-grid  style="font-size:large;" *ngFor="let table of group.tables" >
           <ion-row *ngFor="let menu of table.menus,let k=index" [ngStyle]="rowStyles(k)">
                 <ion-col  col-3 style="border-right:solid 1px darkgray;">
                     {{menu.menu}}
                 </ion-col>
                 <ion-col  col-7 *ngIf="menu.menu!='직접입력'">
-                    <span *ngFor="let item of menu.amount"><b>{{item.amount}}</b>({{item.time}}-{{item.timeEnd}}),</span>
+                    <div *ngFor="let item of menu.amount">
+                        <span *ngIf="item.delivery!='냉동'"><b>{{item.amount}}</b>({{item.time}}-{{item.timeEnd}}),</span>
+                        <span *ngIf="item.delivery=='냉동'" style="color:blue;"><b>{{item.amount}}</b>(냉동),</span>
+                        <br></div>
                 </ion-col>
                 <ion-col  col-2 *ngIf="menu.menu!='직접입력'" style="border-left: solid 1px darkgray;">
                     <span *ngIf="menu.kg>0"> {{menu.kg}}kg<br></span>
@@ -107,10 +118,14 @@
                     <span *ngIf="menu.gae>0"> {{menu.gae}}개 <br></span>
                 </ion-col>
                 <ion-col col-9 *ngIf="menu.menu=='직접입력'">
-                    <span *ngFor="let item of menu.amount">{{item.menu}}({{item.time}}),</span>
+                    <div *ngFor="let item of menu.amount">
+                        <span *ngIf="item.delivery!='냉동'">{{item.menu}}({{item.time}}),</span>
+                        <span *ngIf="item.delivery=='냉동'" style="color:blue;"><b>{{item.amount}}</b>(냉동),</span>                        
+                    <br></div>
                 </ion-col>                
           </ion-row>
     </ion-grid>
+    </div>
     <!--
       <ion-grid style="font-size:large;">
           <ion-row *ngFor="let menu of storageProvider.produceList" style="border:solid 1px darkgray;">

@@ -47,6 +47,7 @@
   </ion-row>
 
 <div [hidden]="section!='sales'">
+<!--
 <ion-row>
   <ion-col col-6>
     <ion-calendar  (onDaySelect)="onStartDaySelect($event)"></ion-calendar>
@@ -55,7 +56,7 @@
     <ion-calendar  (onDaySelect)="onEndDaySelect($event)"></ion-calendar>
   </ion-col>
 </ion-row>
-
+-->
 <div padding>
 <ion-row>
   <ion-col col-3>
@@ -427,7 +428,7 @@
     </ion-col>
   </ion-row>
   <div [hidden]="section!='sales'">
-    <ion-row class="date-button">
+    <ion-row *ngIf="!android" class="date-button">
       <ion-col no-padding no-margin>
         <ion-item no-padding no-margin class="no-item-border-bottom" text-center>
           <button no-padding no-margin *ngIf="inputChoice!='start'" (click)="selectInputChoice('start')" outline ion-button>{{startDateString}}</button>
@@ -441,14 +442,25 @@
         </ion-item>        
       </ion-col>
     </ion-row>
+    <!--
     <ion-row *ngIf="inputChoice">
-      <ion-col [hidden]="inputChoice!='start'" text-center>
+      <ion-col *ngIf="inputChoice=='start'" text-center>
           <ion-calendar  (onDaySelect)="onStartDaySelect($event)"></ion-calendar>
       </ion-col>
-      <ion-col [hidden]="inputChoice!='end'" text-center>
+      <ion-col *ngIf="inputChoice=='end'" text-center>
           <ion-calendar  (onDaySelect)="onEndDaySelect($event)"></ion-calendar>
-      </ion-col>      
+      </ion-col>
     </ion-row>
+    -->      
+    <ion-row *ngIf="android">
+      <ion-col>
+            <ion-datetime displayFormat="YYYY년 MM월 DD일" pickerFormat="YYYY MM DD" (ionChange)="startDaySelect()" [(ngModel)]="startDay"></ion-datetime>
+      </ion-col>
+      <ion-col>
+            <ion-datetime displayFormat="YYYY년 MM월 DD일" pickerFormat="YYYY MM DD" (ionChange)="endDaySelect()" [(ngModel)]="endDay"></ion-datetime>
+      </ion-col>            
+    </ion-row>
+
     <ion-row class="date-button">
        <ion-col col-9 no-padding no-margin text-center>
          <ion-item no-padding no-margin class="no-item-border-bottom"  text-center>

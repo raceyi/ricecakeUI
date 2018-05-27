@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams ,App} from 'ionic-angular';
+import { IonicPage, NavController, NavParams ,App,AlertController} from 'ionic-angular';
 import {ManagerEntrancePage} from '../manager-entrance/manager-entrance';
 import {TrashPage} from '../trash/trash';
 import { StorageProvider } from '../../providers/storage/storage';
+import {ServerProvider} from "../../providers/server/server";
 
 /**
  * Generated class for the ProducePage page.
@@ -19,7 +20,8 @@ import { StorageProvider } from '../../providers/storage/storage';
 export class ProducePage {
 
   constructor(public navCtrl: NavController, public navParams: NavParams,public app:App,
-              public storageProvider:StorageProvider) {
+              private alertCtrl:AlertController,
+              public storageProvider:StorageProvider,private serverProvider:ServerProvider) {
   }
 
   ionViewDidLoad() {
@@ -58,4 +60,52 @@ topRowStyles = {
   goTrash(){
       this.app.getRootNavs()[0].push(TrashPage);
   }
+
+  save(group){
+    group.edit=false;
+    //produceTitle에 저장하여 전송한다. 현재값이 있다면 override한다. 
+    console.log("produceTitle:"+JSON.stringify(this.storageProvider.produceTitle)+ this.storageProvider.produceTitle.length);
+   
+   let index=-1;
+   for(let i=0;i<this.storageProvider.produceTitle.length;i++){
+        if(this.storageProvider.produceTitle[i].number==group.digit){
+            index=i;
+        }
+   }
+   /* Why this doesn't work?
+    let index=this.storageProvider.produceTitle.findIndex(function(element){
+       return (element.number==group.digit);
+    })
+    */
+    let prevName;
+    let list=this.storageProvider.produceTitle.slice(); //Is it deep copy?yes
+     
+    if(index>=0){
+        prevName=this.storageProvider.produceTitle[index].name;
+        list[index].name=group.name;
+    }else
+        list.push({number:group.digit,name:group.name})
+    this.serverProvider.saveProduceTitle(this.storageProvider.deliveryDate.substr(0,10),JSON.stringify(list)).then((list)=>{
+        // 성공한다면 produceTitle을 업데이트한다.
+        if(index>=0)
+            this.storageProvider.produceTitle[index].name=group.name;
+        else
+            this.storageProvider.produceTitle.push({number:group.digit,name:group.name});
+    },err=>{
+        // 실패한다면 alert을 띄우고 값을 이전값으로 설정한다.
+        if(index>=0)
+            group.name=prevName;
+        let alert = this.alertCtrl.create({
+            title: '타이틀 변경에 실패하였습니다.',
+            buttons: ['확인']
+          });
+          alert.present();
+          return;
+
+    });
+  }
+
+ edit(group){
+    group.edit=true;
+ }
 }

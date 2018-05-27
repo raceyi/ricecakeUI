@@ -73,7 +73,7 @@ router.dynamoQueryItem=function (params){
     return new Promise((resolve,reject)=>{
         docClient.query(params, function(err, data) {
             if (err) {
-                console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+                console.error("Unable to query item. Error JSON:", JSON.stringify(err, null, 2));
                 reject(err);
             } else {
                 console.log("item:", JSON.stringify(data, null, 2));

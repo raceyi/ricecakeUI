@@ -226,7 +226,7 @@ sendAndroidPush=function(params){ //string[]
                 reject("gcm:"+err);
             }else{
                 console.log("success sender:"+JSON.stringify(result));
-                resolve(null,result);
+                resolve();
             }
         });
     });
@@ -307,8 +307,8 @@ sendiOSPush=function(params){
     });
 }
 
-/*
-router.notifyAll=function(name,registrationId){
+
+router.notifyEach=function(name,registrationId){
     return new Promise((resolve,reject)=>{ 
         console.log("notifyAll comes!!!"+registrationId+"table:"+name);   
         getRegistrationIds().then(ids=>{
@@ -332,16 +332,121 @@ router.notifyAll=function(name,registrationId){
         })
     });
 }
-*/
 
-router.notifyAll=function(name,registrationId){
+sendiPad=function(name,registrationId){
+    return new Promise((resolve,reject)=>{ 
+        console.log("sendiPad !!!"+registrationId+"table:"+name);   
+        getRegistrationIds().then(ids=>{
+            console.log("ids:"+JSON.stringify(ids));
+            let pushId=[];
+            ids.forEach(id=>{
+                pushId.push(id.registrationId);
+            });
+            let data;
+            if(registrationId){
+                data={  
+                    table: name,
+                    registrationId:registrationId
+                };
+            }else{
+                data={table:name};
+            }
+            console.log("!!!!pushdId:"+JSON.stringify(pushId));
+
+            message = {
+                    registration_ids:pushId, 
+                    //registrationTokens : pushId,  // 한번에 여러번 보내는것이 가능한가? 아마도 yes   to 대신에 topic을 명시하면된다?
+                    priority: 'high',
+                    collapseKey: 'takit',
+                    timeToLive: 3,
+                    "content_available": true,
+                    data: data,
+                    notification: {
+                        //title: "주문테이블 변경",
+                        //body: tableName
+                    }
+                };
+
+                var body = JSON.stringify(message);
+                console.log(body);
+                var options = {
+                        host: 'android.googleapis.com',
+                        port: 443,
+                        path: '/gcm/send',
+                        headers: {
+                        'Authorization': 'key='+API_KEY,
+                        'Content-Type': 'application/json; charset=utf-8',
+                        'Content-Length': Buffer.byteLength(body)
+                        },
+                        method: 'POST'
+                };
+                
+                console.log(options);
+                var req = https.request(options, function(res){
+                        console.log("statusCode"+res.statusCode);
+                        var body = "";
+                        res.on('data', function(d) {
+                            body += d;
+                        });
+                        res.on('end', function(d) {
+                            console.log("body:"+body);
+                            let response=JSON.parse(body);
+                            if(response.results[0].error){
+                                console.log("error is "+response.results[0].error);
+                            }else if(res.statusCode==200){
+                                resolve(); 
+                            }else{
+                                console.log(null,"gcm:400");
+                                reject("gcm:400");
+                            }
+                        });
+                });
+
+                req.write(body);
+                req.end();
+                req.on('error', function(e){
+                    console.log("error");
+                    console.error(e);
+                    reject(e);  // Please check if error is unregistered id. 
+                });
+        });
+    });
+}
+
+sendPhones=function(name,registrationId){
         let params={tableName:name,registrationId:registrationId};
-
+         
         let android=sendAndroidPush(params);;
         let iOS=sendiOSPush(params);
 
         return Promise.all([android,iOS]);
 };
+
+router.notifyAll=function(name,registrationId){
+     return new Promise((resolve,reject)=>{ 
+   
+        sendPhones(name,registrationId).then(()=>{
+            sendiPad(name,registrationId).then(()=>{
+                resolve();
+            },err=>{
+                reject();
+            });
+        },err=>{
+            sendiPad(name,registrationId).then(()=>{
+                resolve();
+            },err=>{
+                reject();
+            });        
+        });
+     });
+};
+
+
+//router.notifyEach("order");
+
+//sendPhones("order");???
+
+//sendiPad("order");
 
 //router.notifyAll("order");
 

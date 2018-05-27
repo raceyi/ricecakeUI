@@ -711,6 +711,71 @@ checkPIN(pin){
       });
   }
 
+  getProduceTitle(date){
+      return new Promise((resolve,reject)=>{        
+          let body = {date:date,registrationId:this.registrationId};
+          //this.http.setDataSerializer("json"); 
+          //this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          //progressBarLoader.present();
+          this.httpWrapperProvider.post("/getProduceTitle",body).then((response:any)=>{
+                  //progressBarLoader.dismiss();
+                  //let response=JSON.parse(res.data);            
+                  if(response.result=="success"){
+                      console.log("getProduceTitle Success");
+                      let list=response.list;
+                      if( typeof list =='string')
+                            resolve(JSON.parse(list));
+                      else      
+                            resolve(list);
+                  }else{
+                    if(response.error)
+                      reject(response.error);
+                    else
+                      reject("unknown error in server");
+                  }
+          },(err)=>{
+                //progressBarLoader.dismiss();
+                console.log("err:"+JSON.stringify(err));
+                reject(err);            
+          });            
+      });   
+  }
+
+  saveProduceTitle(date,list){
+      return new Promise((resolve,reject)=>{        
+          let body = {date:date,list:list,registrationId:this.registrationId};
+          //this.http.setDataSerializer("json"); 
+          //this.http.setRequestTimeout(this.timeout);
+          let progressBarLoader = this.loadingCtrl.create({
+            content: "진행중입니다.",
+            duration: this.timeout*1000
+            });
+          //progressBarLoader.present();
+          this.httpWrapperProvider.post("/saveProduceTitle",body).then((response:any)=>{
+                  //progressBarLoader.dismiss();
+                  //let response=JSON.parse(res.data);            
+                  if(response.result=="success"){
+                      console.log("saveProduceTitle Success");
+                      let list=response.list;
+                      resolve(list);
+                  }else{
+                    if(response.error)
+                      reject(response.error);
+                    else
+                      reject("unknown error in server");
+                  }
+          },(err)=>{
+                //progressBarLoader.dismiss();
+                console.log("err:"+JSON.stringify(err));
+                reject(err);            
+          });            
+      });   
+  }
+
   post(request,bodyIn){
       return new Promise((resolve,reject)=>{ 
           let body=bodyIn;

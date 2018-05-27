@@ -1072,7 +1072,7 @@ startDaySelect(){
 }
  
  endDaySelect(){
-    let date=new Date(this.startDay)
+    let date=new Date(this.endDay)
     let day={year:date.getFullYear(),month:date.getMonth(),date:date.getDate()};
     this.onEndDaySelect(day)
  }

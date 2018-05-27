@@ -39,6 +39,7 @@ export class StorageProvider {
   // produceSection
     produceList=[];
     produceTables=[];
+    produceTitle=[];
   /////////////////////
   // set section
   setTable=[];
@@ -74,7 +75,7 @@ export class StorageProvider {
             this.refresh("menu");
             this.refresh("order");
             this.refresh("carrier");
-
+            this.refresh("produce");
             this.printer.isAvailable().then((avail)=>{
                 console.log("avail:"+avail);
                 this.printer.check().then((output)=>{
@@ -140,6 +141,24 @@ export class StorageProvider {
                 },err=>{
                     let alert = this.alertCtrl.create({
                         title: '배달원 정보를 가져오는데 실패했습니다.',
+                        subTitle: '네트웍상태를 확인해주세요.',
+                        buttons: ['확인']
+                    });
+                    alert.present(); 
+                    reject();                                   
+                })
+            }     
+            if(tablename=="produce"){
+                this.serverProvider.getProduceTitle(this.deliveryDate.substr(0,10)).then((list:any)=>{
+                    console.log("list:"+JSON.stringify(list));
+                    this.ngZone.run(()=>{
+                        this.produceTitle=list;
+                        this.configureProduceSection();
+                    });
+                    resolve();
+                },err=>{
+                    let alert = this.alertCtrl.create({
+                        title: '생산 타이틀을 가져오는데 실패했습니다.',
                         subTitle: '네트웍상태를 확인해주세요.',
                         buttons: ['확인']
                     });
@@ -255,6 +274,7 @@ export class StorageProvider {
         this.deliveyDay = this.getDayInKorean(d.getDay());
         this.refresh("order");
         this.refresh("carrier");
+        this.refresh("produce");
         this.newOrderInputShown=false;
     };
 
@@ -280,6 +300,7 @@ export class StorageProvider {
         },err=>{
 
         });
+        this.refresh("produce");
     };
     
     orderGoTomorrow() {
@@ -292,6 +313,7 @@ export class StorageProvider {
         },err=>{
 
         });
+        this.refresh("produce");
     };
 
        todayOrders() {
@@ -324,6 +346,7 @@ export class StorageProvider {
         },err=>{
 
         });
+        this.refresh("produce");
     };
 
   convertOrderList(orderList){
@@ -550,7 +573,7 @@ export class StorageProvider {
 
     /////////////////////////////////////////////////////////
     //   Produce section - begin
-    addMenuInList(menu, deliveryTime,deliveryTimeEnd, amount,customerMenu) {
+    addMenuInList(menu, deliveryTime,deliveryTimeEnd, amount,customerMenu,delivery) {
         if(!deliveryTimeEnd) // deliveryTimeEnd가 없는 경우 오류 방지를 위해 설정함.
             deliveryTimeEnd=deliveryTime;
         console.log("menu.menu:" + JSON.stringify(menu.menu));
@@ -569,10 +592,10 @@ export class StorageProvider {
             console.log("index:" + index);
             if (index < 0) {
                 console.log
-                this.produceList.push({ menu: "직접입력", amount: [{ amount: amount + menu.unit, time: hhmm, timeEnd:endhhmm, min: min ,menu: menu.menu}] });
+                this.produceList.push({ menu: "직접입력", amount: [{ amount: amount + menu.unit, time: hhmm, timeEnd:endhhmm, min: min ,menu: menu.menu ,delivery:delivery}] });
             }
             else {
-                this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, timeEnd:endhhmm, min: min,menu:menu.menu });
+                this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, timeEnd:endhhmm, min: min,menu:menu.menu,delivery:delivery});
             }
             console.log("produceList:" + JSON.stringify(this.produceList));            
         }else{
@@ -586,10 +609,10 @@ export class StorageProvider {
             console.log("index:" + index);
             if (index < 0) {
                 console.log
-                this.produceList.push({ menu: menu.menu, amount: [{ amount: amount + menu.unit, time: hhmm, timeEnd:endhhmm, min: min ,unit:menu.unit,amountNum:amount}] });
+                this.produceList.push({ menu: menu.menu, amount: [{ amount: amount + menu.unit, time: hhmm, timeEnd:endhhmm, min: min ,unit:menu.unit,amountNum:amount,delivery:delivery}]});
             }
             else {
-                this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, timeEnd:endhhmm,min: min ,unit:menu.unit,amountNum:amount});
+                this.produceList[index].amount.push({ amount: amount + menu.unit, time: hhmm, timeEnd:endhhmm,min: min ,unit:menu.unit,amountNum:amount,delivery:delivery});
             }
             console.log("produceList:" + JSON.stringify(this.produceList));
         }
@@ -598,24 +621,24 @@ export class StorageProvider {
     configureProduceSection() {
         this.produceList = []; //[{menu:"단호박소담",amount:[{amount:"1kg",time:"03:00"}]}]
         this.orderList.forEach( (order)=> {
-            order.menuList.forEach( (menu) =>{
-                console.log("produceSection- menu:"+JSON.stringify(menu));
-                if(menu.category=="직접입력"){
-                    this.addMenuInList(menu, order.deliveryTime, order.deliveryTimeEnd,menu.amount,true);
-                }else if (menu.menu.indexOf("[") == 0) {
-                    var menuObjs = JSON.parse(menu.menu);
-                    menuObjs.forEach( (menuObj)=> {
-                        var key :any= Object.keys(menuObj);
-                        var menuInput = { menu: key[0], unit: menu.unit };
-                        var amount = Number(menuObj[key]) * Number(menu.amount);
-                        console.log("amount:" + amount);
-                        this.addMenuInList(menuInput, order.deliveryTime,order.deliveryTimeEnd, amount,false);
-                    });
-                }
-                else {
-                    this.addMenuInList(menu, order.deliveryTime, order.deliveryTimeEnd,menu.amount,false);
-                }
-            });
+                order.menuList.forEach( (menu) =>{
+                    console.log("produceSection- menu:"+JSON.stringify(menu));
+                    if(menu.category=="직접입력"){
+                        this.addMenuInList(menu, order.deliveryTime, order.deliveryTimeEnd,menu.amount,true,order.deliveryMethod);
+                    }else if (menu.menu.indexOf("[") == 0) {
+                        var menuObjs = JSON.parse(menu.menu);
+                        menuObjs.forEach( (menuObj)=> {
+                            var key :any= Object.keys(menuObj);
+                            var menuInput = { menu: key[0], unit: menu.unit };
+                            var amount = Number(menuObj[key]) * Number(menu.amount);
+                            console.log("amount:" + amount);
+                            this.addMenuInList(menuInput, order.deliveryTime,order.deliveryTimeEnd, amount,false,order.deliveryMethod);
+                        });
+                    }
+                    else {
+                        this.addMenuInList(menu, order.deliveryTime, order.deliveryTimeEnd,menu.amount,false,order.deliveryMethod);
+                    }
+                });
         });
         console.log("produceList:" + JSON.stringify(this.produceList));
         //humm sort each menu with deliveryTime(?)   
@@ -663,6 +686,12 @@ export class StorageProvider {
                   return 1;
             if(b.menu=="직접입력")
                   return -1;
+            if(a.menu.indexOf('.')==-1 && b.menu.indexOf('.')>=0){
+                  return 1;  
+            }   
+            if(a.menu.indexOf('.')>0 && b.menu.indexOf('.')==-1){
+                  return -1;  
+            }   
             if(a.menu <b.menu)
                   return -1;
             if(a.menu>b.menu)
@@ -674,8 +703,22 @@ export class StorageProvider {
             return;
 
         // humm... produceList의 각 메뉴별 합을 구한다. 이건 쉽다.
-        this.produceTables=[];
-        let table={menus:[]}
+        let produceTables=[];
+
+        // add Title
+        let dotIndex=this.produceList[0].menu.indexOf('.');
+        let digitPrefix,digit;
+        if(dotIndex>=1){
+             if(parseInt(this.produceList[0].menu.substr(0,dotIndex))!=NaN){
+                digitPrefix=this.produceList[0].menu.substr(0,dotIndex);
+                digit=parseInt(this.produceList[0].menu.substr(0,dotIndex));
+             }
+        }
+        console.log("digit:"+digit);
+        let table:any={menus:[]}
+        if(digit){
+            table.digit = digit;
+        }
 
         table.menus.push(this.produceList[0]);
         let prefix=this.getPrefix(this.produceList[0].menu);
@@ -686,15 +729,69 @@ export class StorageProvider {
             if(nextPrefix==prefix){
                   table.menus.push(this.produceList[i]);  
             }else{
-                  this.produceTables.push(table);
+                    produceTables.push(table);
+                    let nextDotIndex=this.produceList[i].menu.indexOf('.');
+                    let nextDigitPrefix,nextDigit;
+                    if(nextDotIndex>=1){
+                        if(parseInt(this.produceList[i].menu.substr(0,nextDotIndex))!=NaN){
+                            nextDigitPrefix=this.produceList[i].menu.substr(0,nextDotIndex);
+                            nextDigit=parseInt(this.produceList[i].menu.substr(0,nextDotIndex));
+                        }
+                    }
                   table={menus:[]};
+                  if(nextDigit){
+                      table.digit=nextDigit;
+                      console.log("digit:"+nextDigit);
+                  }
                   prefix=nextPrefix;
                   table.menus.push(this.produceList[i]);
                   this.produceList[i-1].delimeter=true;
             }            
         }
-        this.produceTables.push(table);
+        produceTables.push(table);
+        
+        console.log("!!!!group !!!!")
+        // 숫자가 동일할 경우 group으로 묶는다.
+        this.produceTables=[];
+        let group:any={tables:[]};
+        let i=0;
+        let prevDigit=produceTables[0].digit;
+        for(i=0;i<produceTables.length;i++){
+            if(!produceTables[i].digit){
+                group.digit=prevDigit;
+                group.name="";
+                this.produceTables.push(group);
+                break;
+            }
+            if(produceTables[i].digit!=prevDigit){
+                group.digit=prevDigit;
+                group.name="";
+                this.produceTables.push(group);
+                group={tables:[]};
+                prevDigit=produceTables[i].digit;
+            }else{
+                group.tables.push(produceTables[i])
+            }
+        }
+        group={tables:[]}
+        for(;i<produceTables.length;i++){
+            group.tables.push(produceTables[i]);
+        }
+        this.produceTables.push(group);
+        //각 group에 title을 적용한다.
+        if(this.produceTitle.length>0){
+            console.log("produceTitle: "+JSON.stringify(this.produceTitle));
+            this.produceTitle.forEach(title=>{
+              let index=this.produceTables.findIndex(function (element) {
+                            return (element.digit == title.number);
+                        });
+              if(index>=0)          
+                    this.produceTables[index].name=title.name  
+            })
+        }
+
         console.log("this.produceTables:"+JSON.stringify(this.produceTables));        
+
     };
 
    getPrefix(menu){
@@ -1283,6 +1380,7 @@ export class StorageProvider {
         this.refresh("order");
         this.refresh("menu");
         this.refresh("carrier");
+        this.refresh("produce");
     }
 
     print(type){
@@ -1428,106 +1526,118 @@ export class StorageProvider {
         let eachItems=[];
         let totalLinesNumber=0;
         console.log("constrcutProducePrint");
-        this.produceList.forEach(item=>{
-            let name="";
-            let nameLength=1;
-            console.log("item.menu.length:"+item.menu.length);
-            if(item.menu.length>leftCharacters){
-                let remain=item.menu.length;
-                let index=0;
-                console.log("remain>leftCharacters");
-                while(remain>=leftCharacters){
-                    name+=item.menu.substr(index,leftCharacters)+"<br>";
-                    index+=leftCharacters;
-                    remain-=leftCharacters;
-                    nameLength++;
-                    console.log("name:"+name+"index:"+index);
-                }
-                if(remain>0){
-                    name+=item.menu.substr(index);
-                }                
-            }else{
-                name=item.menu;
-            }
-            console.log("name:"+name);
-            let sumUnits=0;
-            let total="";
-            if(item.kg>0){ 
-                sumUnits++;
-                total+=item.kg.toString()+"kg<br>"
-            } 
-            if(item.mal>0){ 
-                sumUnits++;
-                total+=item.mal.toString()+"말<br>"                
-            }
-            if(item.doi>0){ 
-                sumUnits++;
-                total+=item.doi.toString()+"되<br>"                                
-            }
-            if(item.jyupsi>0){
-                sumUnits++;
-                total+=item.jyupsi.toString()+"접시<br>"                                                
-            }
-            if(item.gae>0){ 
-                sumUnits++;
-                total+=item.gae.toString()+"개<br>"                                                                
-            }
-            if(nameLength<sumUnits){
-                nameLength=sumUnits;
-                console.log("sumUnits change nameLength !!!!"+ sumUnits);
-            }
 
-            let list=" ";
-            let totalLine="";
-            //let boldCount=0;
-            item.amount.forEach(amount=>{
-                if(amount.amount){ 
-                    totalLine+=amount.amount;  ////====> <b>를 넣어야 한다 how?
-                }
-                if(amount.menu) totalLine+=amount.menu;
-                totalLine+='('+amount.time+'-'+amount.timeEnd+'),';
-            });
-            totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
-            let remain=totalLine.length;
+        this.produceTables.forEach(group=>{
+            eachItems.push({lines:group.name, name:group.digit,number:1 ,total:group.name,delimeter:false, title:true});    
+            group.tables.forEach(table=>{
+                table.menus.forEach(item=>{
+                    let name="";
+                    let nameLength=1;
+                    console.log("item.menu.length:"+item.menu.length);
+                    if(item.menu.length>leftCharacters){
+                        let remain=item.menu.length;
+                        let index=0;
+                        console.log("remain>leftCharacters");
+                        while(remain>=leftCharacters){
+                            name+=item.menu.substr(index,leftCharacters)+"<br>";
+                            index+=leftCharacters;
+                            remain-=leftCharacters;
+                            nameLength++;
+                            console.log("name:"+name+"index:"+index);
+                        }
+                        if(remain>0){
+                            name+=item.menu.substr(index);
+                        }                
+                    }else{
+                        name=item.menu;
+                    }
+                    console.log("name:"+name);
+                    let sumUnits=0;
+                    let total="";
+                    if(item.kg>0){ 
+                        sumUnits++;
+                        total+=item.kg.toString()+"kg<br>"
+                    } 
+                    if(item.mal>0){ 
+                        sumUnits++;
+                        total+=item.mal.toString()+"말<br>"                
+                    }
+                    if(item.doi>0){ 
+                        sumUnits++;
+                        total+=item.doi.toString()+"되<br>"                                
+                    }
+                    if(item.jyupsi>0){
+                        sumUnits++;
+                        total+=item.jyupsi.toString()+"접시<br>"                                                
+                    }
+                    if(item.gae>0){ 
+                        sumUnits++;
+                        total+=item.gae.toString()+"개<br>"                                                                
+                    }
+                    if(nameLength<sumUnits){
+                        nameLength=sumUnits;
+                        console.log("sumUnits change nameLength !!!!"+ sumUnits);
+                    }
 
-            let index=0;
-            let lineNumber=0;
-            while(remain>=rightCharacters){
-                list+=totalLine.substr(index,rightCharacters);
-                remain=remain-rightCharacters;
-                index+=rightCharacters;
-                console.log("index:"+index);
-                ++lineNumber;
-                if(remain>0)
-                    list+="<br>";
-            }
-            if(remain>0){
-                list+=totalLine.substr(index);
-                ++lineNumber;
-            }
-            console.log("lineNumber:"+lineNumber+"list:"+list);
-            if(nameLength>lineNumber){
-                //++lineNumber;
-                lineNumber=nameLength; // 
-                console.log("nameLength change lineNumber...");
-            }
-            totalLinesNumber+=lineNumber;
-            //////////////////////////////////////////
-            //bold를 포함한 list 를 다시 계산한다.동작할까?
-            totalLine="";
-            item.amount.forEach(amount=>{
-                if(amount.amount){ 
-                    totalLine+=("<b>"+amount.amount+"</b>");  ////====> <b>를 넣어야 한다 how?
-                }
-                if(amount.menu) totalLine+=amount.menu;
-                totalLine+='('+amount.time+'-'+amount.timeEnd+'),';
-            });
-            totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
-            eachItems.push({lines:totalLine, name:name,number:lineNumber,total:total,delimeter:item.delimeter});    
-            ////////////////////////////////////
-            //eachItems.push({lines:list, name:name,number:lineNumber,total:total,delimeter:item.delimeter});    
+                    let list=" ";
+                    let totalLine="";
+                    //let boldCount=0;
+                    item.amount.forEach(amount=>{
+                        if(amount.amount){ 
+                            totalLine+=amount.amount;  ////====> <b>를 넣어야 한다 how?
+                        }
+                        if(amount.menu) totalLine+=amount.menu;
+                        if(amount.delivery!="냉동")
+                            totalLine+='('+amount.time+'-'+amount.timeEnd+'),';
+                        else
+                            totalLine+='(냉동),';                            
+                    });
+                    totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
+                    let remain=totalLine.length;
+
+                    let index=0;
+                    let lineNumber=0;
+                    while(remain>=rightCharacters){
+                        list+=totalLine.substr(index,rightCharacters);
+                        remain=remain-rightCharacters;
+                        index+=rightCharacters;
+                        console.log("index:"+index);
+                        ++lineNumber;
+                        if(remain>0)
+                            list+="<br>";
+                    }
+                    if(remain>0){
+                        list+=totalLine.substr(index);
+                        ++lineNumber;
+                    }
+                    console.log("lineNumber:"+lineNumber+"list:"+list);
+                    if(nameLength>lineNumber){
+                        //++lineNumber;
+                        lineNumber=nameLength; // 
+                        console.log("nameLength change lineNumber...");
+                    }
+                    totalLinesNumber+=lineNumber;
+                    //////////////////////////////////////////
+                    //bold를 포함한 list 를 다시 계산한다.동작할까?
+                    totalLine="";
+                    item.amount.forEach(amount=>{
+                        if(amount.amount){ 
+                            totalLine+=("<b>"+amount.amount+"</b>");  ////====> <b>를 넣어야 한다 how?
+                        }
+                        if(amount.menu) totalLine+=amount.menu;
+
+                        if(amount.delivery!="냉동")
+                            totalLine+='('+amount.time+'-'+amount.timeEnd+'),';
+                        else
+                            totalLine+='<span style=\"color:blue;\">(냉동),</span>';                            
+                    });
+                    totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
+                    eachItems.push({lines:totalLine, name:name,number:lineNumber,total:total,delimeter:item.delimeter});    
+                    ////////////////////////////////////
+                    //eachItems.push({lines:list, name:name,number:lineNumber,total:total,delimeter:item.delimeter});    
+                })
+             })
         })
-
         console.log("eachItems:"+JSON.stringify(eachItems));
 
         let tables=[];
@@ -1567,7 +1677,14 @@ export class StorageProvider {
                       
             pages+="<table style=\"width:100%\;border-collapse:collapse;\">";          
             tables[index].items.forEach(item=>{
-                if(item.hasOwnProperty("delimeter")&& item.delimeter){
+                if(item.title){
+                    if(item.name)
+                        pages+="<tr><td style=\"font-size:1.6em;\" colspan=\"3\">"+item.name+" "+item.total+"</td>"+
+                                "</tr>";
+                    else
+                        pages+="<tr><td style=\"font-size:1.6em;\" colspan=\"3\">&nbsp;"+"</td>"+
+                                "</tr>";                                
+                }else if(item.hasOwnProperty("delimeter")&& item.delimeter){
                     pages+="<tr><td style=\"width:30%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.name+"</td>"+
                             "<td style=\"width:60%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.lines+"</td>"+
                             "<td style=\"width:10%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.total+"</td>"+

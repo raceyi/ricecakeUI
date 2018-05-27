@@ -56,5 +56,13 @@ page-home hr {
   border-width: 1px;
 }
 
+.input-no-margin{
+     .text-input-ios {
+        margin:0px;
+    }
+    input{
+        border-bottom:solid 0.5px darkgray !important;
+    }
+}
     
 }

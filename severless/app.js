@@ -12,6 +12,7 @@ var carrier = require('./carrier');
 var bankda = require('./bankda');
 var device = require('./device');
 var manager =require('./manager');
+var produce = require('./produce');
 
 var atomicCounter = require('./atomic-counter');
 
@@ -303,5 +304,26 @@ app.post('/getSales',(req,res) =>{
             res.json({result:"failure",error:JSON.stringify(err)});
         });
 });
+
+app.post('/getProduceTitle',(req,res) =>{
+        console.log("getProduceTitle:",req.body);
+        produce.getProduceTitle(req.body).then(value=>{
+            console.log("value:"+value);
+            res.json({result:"success",list:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
+
+app.post('/saveProduceTitle',(req,res) =>{
+        console.log("saveProduceTitle:",req.body);
+        produce.saveProduceTitle(req.body).then(value=>{
+            console.log("value:"+value);
+            res.json({result:"success",list:value});
+        },err=>{
+            res.json({result:"failure",error:JSON.stringify(err)});
+        });
+});
+
 module.exports = app
 
