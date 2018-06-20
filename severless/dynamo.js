@@ -34,12 +34,41 @@ router.dynamoScanItem=function (params){
                 console.error("Unable to get item. Error JSON:", JSON.stringify(err, null, 2));
                 reject(err);
             } else {
-                //console.log("item:", JSON.stringify(data, null, 2));
                 resolve(data);
             }
         });   
     }); 
 }
+
+router.dynamoScanOrders=function(params) {
+    return new Promise((resolve,reject)=>{    
+        var results = [];
+        var callback = function(err, data) {
+            console.log("data.LastEvaluatedKey:"+data.LastEvaluatedKey);
+            if (err) {
+                console.log('Dynamo fail ' + err);
+                reject(err);
+            } else if (typeof data.LastEvaluatedKey != "undefined") {
+                params.ExclusiveStartKey = data.LastEvaluatedKey;
+                console.log("call docClient.scan again");
+                data.Items.forEach(function(item) {
+                    results.push(item);
+                });
+                docClient.scan(params, callback);
+            } else {
+                console.log("results.length:"+results.length);
+                console.log("data.Items.length:"+data.Items.length);
+                data.Items.forEach(function(item) {
+                    results.push(item);
+                });                
+                resolve(results);
+            }
+        }
+        docClient.scan(params, callback);
+    });
+}
+
+
 
 router.dynamoUpdateItem=function(params){
     return new Promise((resolve,reject)=>{

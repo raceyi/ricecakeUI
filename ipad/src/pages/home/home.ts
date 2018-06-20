@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController,AlertController,Platform,LoadingController } from 'ionic-angular';
+import { IonicPage,NavController,AlertController,Platform,LoadingController } from 'ionic-angular';
 import {StorageProvider} from "../../providers/storage/storage";
 import {ServerProvider} from "../../providers/server/server";
 import {CarrierManagementPage} from "../carrier-management/carrier-management";
@@ -16,6 +16,7 @@ import { Events } from 'ionic-angular';
 import * as moment from 'moment';
 var gHomePage;
 
+@IonicPage()
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
@@ -44,7 +45,7 @@ export class HomePage {
         this.section = "order";
         this.storageProvider.newOrderInputShown = false;
         this.storageProvider.reconfigureDeliverySection();
-
+/*
         this.platform.ready().then(() => {
             this.printer.isAvailable().then((avail)=>{
                 console.log("avail:"+avail);
@@ -66,7 +67,7 @@ export class HomePage {
                         alert.present();            
             });
         });
-
+*/
         events.subscribe('update', (tablename) => {
             console.log("homePage receive update event");
             /*
@@ -638,15 +639,15 @@ export class HomePage {
     print(){
         let page;
         if(this.section == 'order'){
-            page=this.constructOrderPrint();
+            page=this.storageProvider.constructOrderPrint();
         }else if(this.section == 'delivery'){
-            page=this.constructDeliveryPrint();
+            page=this.storageProvider.constructDeliveryPrint();
         }else if(this.section == 'produce'){
             console.log("produce print");
-            page=this.constructProducePrint();
+            page=this.storageProvider.constructProducePrint();
         }else if(this.section =='set'){
             console.log("produce set");
-            page=this.constructSetPrint();            
+            page=this.storageProvider.constructSetPrint();            
         }
         let options: PrintOptions = {
             name: 'MyDocument',
@@ -662,638 +663,6 @@ export class HomePage {
         });
 
     }
-
-    constructSetPrint(){
-        let rightCharacters:number=22;
-        let leftCharacters:number=13;
-        let linesPerPage=25; 
-        let title=this.storageProvider.deliveryDate.substr(0,4)+"년"+
-                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
-                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay;
-        let currentPage=1;
-        let currentLines=0;
-        let eachItems=[];
-        let totalLinesNumber=0;
-        console.log("constructSetPrint");
-
-        this.setTable.forEach(menu=>{
-            let index;
-            for(index=0;index<menu.orders.length;index++){
-                let order=menu.orders[index];
-                let deliveryTime= order.hhmm+'-'+order.hhmmEnd;
-                let line;
-                let lineNumber=0;
-                console.log("lineNumber is "+lineNumber);
-                if(order.option)
-                    line=order.name+order.option+'-<b>'+order.amount+'개</b>'; //right
-                else 
-                    line=order.name+'-<b>'+order.amount+'개</b>'; //right
-                
-                let remain=line.length;
-                while(remain>=rightCharacters){
-                    console.log("remain:"+remain+" lineNumber:"+lineNumber);
-                    remain=remain-rightCharacters;
-                    ++lineNumber;
-                }
-                if(remain>0){
-                    console.log("remain:"+remain+" lineNumber:"+lineNumber);                    
-                    ++lineNumber;
-                }
-                console.log(" lineNumber:"+lineNumber);                    
-                totalLinesNumber+=lineNumber;
-                if(index==menu.orders.length-1)
-                    eachItems.push({deliveryTime:deliveryTime, lines:line, number:lineNumber,delimeter:true});
-                else
-                    eachItems.push({deliveryTime:deliveryTime, lines:line, number:lineNumber,delimeter:false});                    
-            }
-        });
-
-        console.log("eachItems:"+JSON.stringify(eachItems));
-
-        let tables=[];
-        let pageNumber=1;
-        let currentPageNums=0;
-        let currentPageItems=[];
-        eachItems.forEach((item)=>{
-            if(currentPageNums+item.number>linesPerPage){  ///Please verify this line............
-                //move into next pages
-                tables.push({page:pageNumber,items:currentPageItems})
-                pageNumber++;
-                currentPageItems=[];
-                currentPageItems.push(item);
-                currentPageNums=item.number;
-            }else{
-                currentPageItems.push(item);
-                currentPageNums+=item.number;
-            }
-        })  
-        if(currentPageItems.length>0){ //last page
-              tables.push({page:pageNumber,items:currentPageItems})            
-        }
-        console.log("Tables:"+JSON.stringify(tables));
-
-        let pages="<html>\
-                    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
-        let index;
-        for(index=0;index<tables.length;index++){
-            // page title
-            if(index>0){
-                pages+="<H1 style=\"page-break-before: always;\">";
-            }else
-                pages+="<H1>";
-            pages+=this.storageProvider.deliveryDate.substr(0,4)+"년"+
-                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
-                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+"("+(index+1)+"/"+pageNumber+")"+"</H1>";
-                      
-            pages+="<table style=\"width:100%\;border-collapse:collapse;\">";          
-            tables[index].items.forEach(item=>{
-                if(item.delimeter){
-                    pages+="<tr><td style=\"width:30%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.deliveryTime+"</td>"+
-                            "<td style=\"width:60%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.lines+"</td>"
-                            "</tr>";
-                }else{
-                    pages+="<tr><td style=\"width:30%;border: solid 1px; border-bottom-width:1px; font-size:1.6em;\">"+item.deliveryTime+"</td>"+
-                            "<td style=\"width:60%;border: solid 1px; border-bottom-width:1px; font-size:1.6em;\">"+item.lines+"</td>"
-                            "</tr>";
-                }       
-            })
-            pages+="</table>";
-        }
-        pages+="</html>";
-        console.log("pages:"+pages);
-        return pages;
-    }
-
-    constructProducePrint(){
-        //let rightCharacters:number=27;
-        let rightCharacters:number=22;
-        let leftCharacters:number=10;
-        let linesPerPage=25;
-        //let linesPerPage=20;
-        let title=this.storageProvider.deliveryDate.substr(0,4)+"년"+
-                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
-                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay;
-        let currentPage=1;
-        let currentLines=0;
-        let eachItems=[];
-        let totalLinesNumber=0;
-        console.log("constrcutProducePrint");
-        this.storageProvider.produceList.forEach(item=>{
-            let name="";
-            let nameLength=1;
-            console.log("item.menu.length:"+item.menu.length);
-            if(item.menu.length>leftCharacters){
-                let remain=item.menu.length;
-                let index=0;
-                console.log("remain>leftCharacters");
-                while(remain>=leftCharacters){
-                    name+=item.menu.substr(index,leftCharacters)+"<br>";
-                    index+=leftCharacters;
-                    remain-=leftCharacters;
-                    nameLength++;
-                    console.log("name:"+name+"index:"+index);
-                }
-                if(remain>0){
-                    name+=item.menu.substr(index);
-                }                
-            }else{
-                name=item.menu;
-            }
-            console.log("name:"+name);
-            let sumUnits=0;
-            let total="";
-            if(item.kg>0){ 
-                sumUnits++;
-                total+=item.kg.toString()+"kg<br>"
-            } 
-            if(item.mal>0){ 
-                sumUnits++;
-                total+=item.mal.toString()+"말<br>"                
-            }
-            if(item.doi>0){ 
-                sumUnits++;
-                total+=item.doi.toString()+"되<br>"                                
-            }
-            if(item.jyupsi>0){
-                sumUnits++;
-                total+=item.jyupsi.toString()+"접시<br>"                                                
-            }
-            if(item.gae>0){ 
-                sumUnits++;
-                total+=item.gae.toString()+"개<br>"                                                                
-            }
-            if(nameLength<sumUnits){
-                nameLength=sumUnits;
-                console.log("sumUnits change nameLength !!!!"+ sumUnits);
-            }
-
-            let list=" ";
-            let totalLine="";
-            //let boldCount=0;
-            item.amount.forEach(amount=>{
-                if(amount.amount){ 
-                    totalLine+=amount.amount;  ////====> <b>를 넣어야 한다 how?
-                }
-                if(amount.menu) totalLine+=amount.menu;
-                totalLine+='('+amount.time+'-'+amount.timeEnd+'),';
-            });
-            totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
-            let remain=totalLine.length;
-
-            let index=0;
-            let lineNumber=0;
-            while(remain>=rightCharacters){
-                list+=totalLine.substr(index,rightCharacters);
-                remain=remain-rightCharacters;
-                index+=rightCharacters;
-                console.log("index:"+index);
-                ++lineNumber;
-                if(remain>0)
-                    list+="<br>";
-            }
-            if(remain>0){
-                list+=totalLine.substr(index);
-                ++lineNumber;
-            }
-            console.log("lineNumber:"+lineNumber+"list:"+list);
-            if(nameLength>lineNumber){
-                //++lineNumber;
-                lineNumber=nameLength; // 
-                console.log("nameLength change lineNumber...");
-            }
-            totalLinesNumber+=lineNumber;
-            //////////////////////////////////////////
-            //bold를 포함한 list 를 다시 계산한다.동작할까?
-            totalLine="";
-            item.amount.forEach(amount=>{
-                if(amount.amount){ 
-                    totalLine+=("<b>"+amount.amount+"</b>");  ////====> <b>를 넣어야 한다 how?
-                }
-                if(amount.menu) totalLine+=amount.menu;
-                totalLine+='('+amount.time+'-'+amount.timeEnd+'),';
-            });
-            totalLine=totalLine.substr(0,totalLine.length-1); // remove last comma
-            eachItems.push({lines:totalLine, name:name,number:lineNumber,total:total,delimeter:item.delimeter});    
-            ////////////////////////////////////
-            //eachItems.push({lines:list, name:name,number:lineNumber,total:total,delimeter:item.delimeter});    
-        })
-
-        console.log("eachItems:"+JSON.stringify(eachItems));
-
-        let tables=[];
-        let pageNumber=1;
-        let currentPageNums=0;
-        let currentPageItems=[];
-        eachItems.forEach((item)=>{
-            if(currentPageNums+item.number>linesPerPage){  ///Please verify this line............
-                //move into next pages
-                tables.push({page:pageNumber,items:currentPageItems})
-                pageNumber++;
-                currentPageItems=[];
-                currentPageItems.push(item);
-                currentPageNums=item.number;
-            }else{
-                currentPageItems.push(item);
-                currentPageNums+=item.number;
-            }
-        })  
-        if(currentPageItems.length>0){ //last page
-              tables.push({page:pageNumber,items:currentPageItems})            
-        }
-        console.log("Tables:"+JSON.stringify(tables));
-
-        let pages="<html>\
-                    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
-        let index;
-        for(index=0;index<tables.length;index++){
-            // page title
-            if(index>0){
-                pages+="<H1 style=\"page-break-before: always;\">";
-            }else
-                pages+="<H1>";
-            pages+=this.storageProvider.deliveryDate.substr(0,4)+"년"+
-                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
-                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+"("+(index+1)+"/"+pageNumber+")"+"</H1>";
-                      
-            pages+="<table style=\"width:100%\;border-collapse:collapse;\">";          
-            tables[index].items.forEach(item=>{
-                if(item.hasOwnProperty("delimeter")&& item.delimeter){
-                    pages+="<tr><td style=\"width:30%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.name+"</td>"+
-                            "<td style=\"width:60%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.lines+"</td>"+
-                            "<td style=\"width:10%;border: solid 1px; border-bottom-width:4px; font-size:1.6em;\">"+item.total+"</td>"+
-                            "</tr>";
-                }else{
-                    pages+="<tr><td style=\"width:30%;border: solid 1px; font-size:1.6em;\">"+item.name+"</td>"+
-                            "<td style=\"width:55%;border: solid 1px; font-size:1.6em;\">"+item.lines+"</td>"+
-                            "<td style=\"width:15%;border: solid 1px; font-size:1.6em;\">"+item.total+"</td>"+
-                            "</tr>";
-                }
-            })
-            pages+="</table>";
-        }
-        pages+="</html>";
-        console.log("pages:"+pages);
-        return pages;
-    }
-
-    constructOrderPrint(){
-
-        let charactersInLine:number=55;
-        let linesPerPage=30;
-
-        let title="배달일:"+this.storageProvider.deliveryDate.substr(0,4)+"년"+
-                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
-                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay+" 총:"+this.storageProvider.orderList.length+" ";
-
-        let eachPages=[]; // tables(order,addressPrint, menusPrint, memoPrint) per page,pageNumber
-        let eachTables=[];
-        let totalLinesNumber=0;
-        let defaultLinesNumber=4; 
-
-        this.storageProvider.orderList.forEach(item=>{
-            let addressPrint="";
-            let menusPrint="";
-            let memoPrint="";
-            let lineNumTable=0;
-
-            lineNumTable+=defaultLinesNumber;
-
-            if(item.recipientAddressDetail){
-                addressPrint= item.recipientAddress+" "+item.recipientAddressDetail;
-            }else
-                addressPrint= item.recipientAddress;
-            if(addressPrint.length>charactersInLine){
-                lineNumTable+=2;
-                addressPrint=addressPrint.substr(0,charactersInLine)+"<br>"+addressPrint.substr(charactersInLine);
-            }else{
-                ++lineNumTable;
-            }
-            if(item.memo!=undefined && item.memo!=null && item.memo.trim().length>0){
-                let characters=item.memo.trim().length;
-                let index=0;
-                while((characters-charactersInLine)>0){
-                    memoPrint+=item.memo.substr(index,charactersInLine)+"<br>";
-                    ++lineNumTable;
-                    index+=charactersInLine;
-                    characters-=charactersInLine;
-                }
-                ++lineNumTable;
-                memoPrint+=item.memo.substr(index);
-                console.log("memoPrint:"+memoPrint);
-            }
-            let menus="";
-            item.menuList.forEach(menu=>{
-                if(menu.type=="complex")
-                    menus+=menu.category;
-                else
-                    menus+=menu.category+"-["+menu.menuString+"]";
-                if(menu.amount) menus+=menu.amount;
-                if(menu.unit) menus+=menu.unit+",";
-            })
-            console.log("!!!menus:"+menus);
-            menus=menus.substr(0,menus.length-1);
-            {
-                let characters=menus.length;
-                let index=0;
-                while((characters-charactersInLine)>0){
-                    menusPrint+=menus.substr(index,charactersInLine)+"<br>";
-                    ++lineNumTable;
-                    index+=charactersInLine;
-                    characters-=charactersInLine;
-                }
-                ++lineNumTable;
-                menusPrint+=menus.substr(index);
-            }
-            console.log("!!! menusPrint:"+menusPrint);
-            totalLinesNumber+=lineNumTable;
-            eachTables.push({ order:item ,addressPrint:addressPrint,memoPrint:memoPrint,menusPrint:menusPrint, lines:lineNumTable });
-        })
-
-        let currentPage=1;
-        let currentLines=0;
-        let tablesPerPage=[];
-
-        eachTables.forEach(table=>{
-            console.log("tableLines:"+table.lines+" currentLines:"+currentLines+" currentPage:"+currentPage);
-            if(currentLines+(table.lines+1)>linesPerPage){ // table출력+table상단 1줄 번호 출력
-                eachPages.push({tables:tablesPerPage,page:currentPage});
-                ++currentPage;
-                tablesPerPage=[];
-                tablesPerPage.push(table);
-                currentLines=table.lines+1;    
-            }else{  
-                tablesPerPage.push(table);
-                currentLines+=(table.lines+1);
-            }
-        });
-        if(tablesPerPage.length>0){
-            eachPages.push({tables:tablesPerPage,page:currentPage});
-        }
-        console.log("currentPage: "+currentPage+" currentLines")
-
-        let pages="<html>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\n";
-        let index;
-       let tableNumber=0;     
-        for(index=0;index<eachPages.length;index++){
-            // page title
-            if(index>0){
-                pages+="<H1 style=\"page-break-before: always;\">\n";
-            }else
-                pages+="<H1>";
-            pages+=title+"("+(index+1)+"/"+eachPages.length+")</H1>\n";
-            eachPages[index].tables.forEach(table=>{
-                //console.log("table:"+JSON.stringify(table));
-++tableNumber;
-pages+="<span>"+tableNumber+"/"+this.storageProvider.orderList.length+"</span><br>\n";
-pages+="<table style=\"width:100%;border-collapse:collapse;\">\n";
-pages+="<tr>"
-pages+="<td style=\"border:solid 1px; font-size:1.6em;\" colspan=\"4\">배달지:"+ table.addressPrint+"</td>\n";
-pages+="</tr>\n";
-pages+="<tr>\n";
-pages+="<td width=\"15%\" style=\"border: solid 1px; font-size:1.2em;\">배달요청시간</td>\n";
-pages+="<td width=\"35%\" style=\"border: solid 1px; font-size:1.2em;\">"+ table.order.deliveryTime.slice(11,13) + "시 " + table.order.deliveryTime.slice(14,16) + "분-"+ table.order.deliveryTimeEnd.slice(11,13) + "시 " + table.order.deliveryTimeEnd.slice(14,16) + "분" +"</td>\n";
-pages+="<td width=\"10%\" style=\"border: solid 1px; font-size:1.2em;\">수신자</td>\n";
-pages+="<td style=\"border:solid 1px;font-size:1.2em;\">"+table.order.recipientName+" "+table.order.recipientPhoneNumber+"</td>\n";
-pages+="</tr>\n";
-pages+="<tr>\n";
-pages+="<td width=\"15%\" style=\"border:solid 1px; font-size:1.2em;\">주문금액</td>\n";
-pages+="<td width=\"35%\" style=\"border:solid 1px; font-size:1.2em;\">"+ (table.order.price+table.order.deliveryFee).toLocaleString()+"원"+"(배달료 "+0+"원)</td>\n";
-pages+="<td width=\"10%\" style=\"border:solid 1px; font-size:1.2em;\">결제</td>\n";
-pages+="<td style=\"border:solid 1px;font-size:1.2em;\">"+table.order.paymentString+"</td>\n";
-pages+="</tr>\n";
-pages+="<tr>\n";
-pages+="<td width=\"20%\" style=\"border:solid 1px; font-size:1.2em;\">주문자</td>\n";
-pages+="<td style=\"border:solid 1px; font-size:1.2em;\" colspan=\"3\">"+table.order.buyerName+" "+table.order.buyerPhoneNumber+"<span>(접수:"+table.order.orderedTimeString+")</span></td>\n";
-pages+="</tr>\n";
-pages+="<tr>\n";
-pages+="<td width=\"15%\" style=\"border:solid 1px; font-size:1.2em;\">배송방법</td>\n";
-if(table.order.deliveryMethod=="픽업")
-    pages+="<td style=\"border:solid 1px;font-size:1.2em;\" colspan=\"3\">"+table.order.deliveryMethod+"</td>\n";  
-else if(!table.order.carrier)
-    pages+="<td style=\"border:solid 1px;font-size:1.2em;\" colspan=\"3\">"+table.order.deliveryMethod+"</td>\n";  
-else
-    pages+="<td style=\"border:solid 1px;font-size:1.2em;\" colspan=\"3\">"+table.order.deliveryMethod+"("+table.order.carrier+")</td>\n";  
-pages+="</tr>\n";     
-pages+="<td style=\"border:solid 1px;font-size:1.2em;\" width=\"100%\" colspan=\"4\">\n";
-pages+=table.menusPrint;
-pages+="</td>\n";
-pages+="</tr>\n";
-if(table.memoPrint){ 
-    pages+="<tr>\n";
-    pages+="<td style=\"border:solid 1px;font-size:1.2em;\" width=\"100%\" colspan=\"4\">"+table.memoPrint+"</td>\n";
-    pages+="</tr>\n"; 
-}
-pages+="</table>\n";
-            })  
-        }
-        pages+="</html>";
-        console.log("pages:"+pages);
-        return pages;
-    }
-
-printPages(titleHead,orders,pageBreakFirst){
-        let charactersInLine:number=55; //font크기에 따라 조정이 필요하다.
-        let linesPerPage=30; //font크기에 따라 조정이 필요하다. 
-
-        let title=titleHead+" 총:"+orders.length+" ";
-
-        let eachPages=[]; // tables(order,addressPrint, menusPrint, memoPrint) per page,pageNumber
-        let eachTables=[];
-        let totalLinesNumber=0;
-        let defaultLinesNumber=4; 
-
-        orders.forEach(item=>{
-            let addressPrint="";
-            let menusPrint="";
-            let memoPrint="";
-            let lineNumTable=0;
-
-            lineNumTable+=defaultLinesNumber;
-
-            if(item.recipientAddressDetail){
-                addressPrint= item.recipientAddress+" "+item.recipientAddressDetail;
-            }else
-                addressPrint= item.recipientAddress;
-            if(addressPrint.length>charactersInLine){
-                lineNumTable+=2;
-                addressPrint=addressPrint.substr(0,charactersInLine)+"<br>"+addressPrint.substr(charactersInLine);
-            }else{
-                ++lineNumTable;
-            }
-            if(item.memo!=undefined && item.memo!=null && item.memo.trim().length>0){
-                let characters=item.memo.trim().length;
-                let index=0;
-                while((characters-charactersInLine)>0){
-                    memoPrint+=item.memo.substr(index,charactersInLine)+"<br>";
-                    ++lineNumTable;
-                    index+=charactersInLine;
-                    characters-=charactersInLine;
-                }
-                ++lineNumTable;
-                memoPrint+=item.memo.substr(index);
-                console.log("memoPrint:"+memoPrint);
-            }
-            let menus="";
-            item.menuList.forEach(menu=>{
-                if(menu.type=="complex")
-                    menus+=menu.category;
-                else
-                    menus+=menu.category+"-["+menu.menuString+"]";
-                if(menu.amount) menus+=menu.amount;
-                if(menu.unit) menus+=menu.unit+",";
-            })
-
-            console.log("!!!menus:"+menus);
-            menus=menus.substr(0,menus.length-1);
-            {
-                let characters=menus.length;
-                let index=0;
-                while((characters-charactersInLine)>0){
-                    menusPrint+=menus.substr(index,charactersInLine)+"<br>";
-                    ++lineNumTable;
-                    index+=charactersInLine;
-                    characters-=charactersInLine;
-                }
-                ++lineNumTable;
-                menusPrint+=menus.substr(index);
-            }
-            console.log("!!! menusPrint:"+menusPrint);
-            totalLinesNumber+=lineNumTable;
-            eachTables.push({ order:item ,addressPrint:addressPrint,memoPrint:memoPrint,menusPrint:menusPrint, lines:lineNumTable });
-        })
-
-        let currentPage=1;
-        let currentLines=0;
-        let tablesPerPage=[];
-
-        eachTables.forEach(table=>{
-            console.log("tableLines:"+table.lines+" currentLines:"+currentLines+" currentPage:"+currentPage);
-            if(currentLines+(table.lines+1)>linesPerPage){ // table출력+table상단 1줄 번호 출력
-                eachPages.push({tables:tablesPerPage,page:currentPage});
-                ++currentPage;
-                tablesPerPage=[];
-                tablesPerPage.push(table);
-                currentLines=table.lines+1;    
-            }else{  
-                tablesPerPage.push(table);
-                currentLines+=(table.lines+1);
-            }
-        });
-        if(tablesPerPage.length>0){
-            eachPages.push({tables:tablesPerPage,page:currentPage});
-        }
-        console.log("currentPage: "+currentPage+" currentLines")
-
-        let pages="";
-        let index;
-       let tableNumber=0;     
-        for(index=0;index<eachPages.length;index++){
-            // page title
-            if(index>0){
-                pages+="<H1 style=\"page-break-before: always;\">\n";
-            }else if(pageBreakFirst){
-                console.log("!!!pageBreakFirst:"+pageBreakFirst);
-                pages+="<H1 style=\"page-break-before: always;\">\n";
-            }else
-                pages+="<H1>";
-            pages+=title+"("+(index+1)+"/"+eachPages.length+")</H1>\n";
-            eachPages[index].tables.forEach(table=>{
-                //console.log("table:"+JSON.stringify(table));
-++tableNumber;
-pages+="<span>"+tableNumber+"/"+orders.length+"</span><br>\n";
-pages+="<table style=\"width:100%;border-collapse:collapse;\">\n";
-pages+="<tr>"
-pages+="<td style=\"border:solid 1px; font-size:1.6em;\" colspan=\"4\">배달지:"+ table.addressPrint+"</td>\n";
-pages+="</tr>\n";
-pages+="<tr>\n";
-pages+="<td width=\"15%\" style=\"border: solid 1px; font-size:1.2em;\">배달요청시간</td>\n";
-pages+="<td width=\"35%\" style=\"border: solid 1px; font-size:1.2em;\">"+ table.order.deliveryTime.slice(11,13) + "시 " + table.order.deliveryTime.slice(14,16) + "분-"+ table.order.deliveryTimeEnd.slice(11,13) + "시 " + table.order.deliveryTimeEnd.slice(14,16) + "분" +"</td>\n";
-pages+="<td width=\"10%\" style=\"border: solid 1px; font-size:1.2em;\">수신자</td>\n";
-pages+="<td style=\"border:solid 1px;font-size:1.2em;\">"+table.order.recipientName+" "+table.order.recipientPhoneNumber+"</td>\n";
-pages+="</tr>\n";
-pages+="<tr>\n";
-pages+="<td width=\"15%\" style=\"border:solid 1px; font-size:1.2em;\">주문금액</td>\n";
-pages+="<td width=\"35%\" style=\"border:solid 1px; font-size:1.2em;\">"+ (table.order.price+table.order.deliveryFee).toLocaleString()+"원"+"(배달료 "+0+"원)</td>\n";
-pages+="<td width=\"10%\" style=\"border:solid 1px; font-size:1.2em;\">결제</td>\n";
-pages+="<td style=\"border:solid 1px;font-size:1.2em;\">"+table.order.paymentString+"</td>\n";
-pages+="</tr>\n";
-pages+="<tr>\n";
-pages+="<td width=\"20%\" style=\"border:solid 1px; font-size:1.2em;\">주문자</td>\n";
-pages+="<td style=\"border:solid 1px; font-size:1.2em;\" colspan=\"3\">"+table.order.buyerName+" "+table.order.buyerPhoneNumber+"<span>(접수:"+table.order.orderedTimeString+")</span></td>\n";
-pages+="</tr>\n";
-//pages+="<tr>\n"; 
-pages+="<td style=\"border:solid 1px;font-size:1.2em;\" width=\"100%\" colspan=\"4\">\n";
-pages+=table.menusPrint;
-pages+="</td>\n";
-pages+="</tr>\n";
-if(table.memoPrint){ 
-    pages+="<tr>\n";
-    pages+="<td style=\"border:solid 1px;font-size:1.2em;\" width=\"100%\" colspan=\"4\">"+table.memoPrint+"</td>\n";
-    pages+="</tr>\n"; 
-}
-pages+="</table>\n";
-            })  
-        }
-        console.log("pages:"+pages);
-        return pages;
-}
-
-constructDeliveryPrint(){
-//
-//H1 배달자별 다른 페이지  title:배달일(배달자:xxx) 배달수: 개
-// eachCarriers
-//
-// 픽업,냉동,기타 각각 다른 페이지
-// pickup
-// fronzon
-// etc
-// 
-   let pages="<html>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\n";
-
-   let defaultTitle="배달일:"+this.storageProvider.deliveryDate.substr(0,4)+"년"+
-                      this.storageProvider.deliveryDate.substr(5,2)+"월"+
-                      this.storageProvider.deliveryDate.substr(8,2)+"일"+this.storageProvider.deliveyDay;
-
-   let index=0;
-   let pageBreakFirst:boolean=false;
-   for(index=0;index<this.storageProvider.assignOrderList.length;index++){
-       console.log("hum...storageProvider.assignOrderList[index].orders");
-       if(this.storageProvider.assignOrderList[index].orders.length==0){ 
-           continue;
-       }else{
-            let title;
-            title=defaultTitle+"("+ this.storageProvider.assignOrderList[index].name+")";
-            pages+=this.printPages(title,this.storageProvider.assignOrderList[index].orders,pageBreakFirst);
-            pageBreakFirst=true;
-
-       }
-   }
-
-   let title;
-   if(this.storageProvider.unassingOrderDeliveryList.length>0){
-        title=defaultTitle+" 배송 ";
-        pages+=this.printPages(title,this.storageProvider.unassingOrderDeliveryList,pageBreakFirst);
-        pageBreakFirst=true;
-   }
-   if(this.storageProvider.unassingOrderFrozenList.length>0){
-        title=defaultTitle+" 냉동 ";
-        pages+=this.printPages(title,this.storageProvider.unassingOrderFrozenList,pageBreakFirst);
-        pageBreakFirst=true;
-   }
-   if(this.storageProvider.unassingOrderPickupList.length>0){
-        title=defaultTitle+" 픽업 ";
-        console.log("pageBreakFirst:"+pageBreakFirst);
-        pages+=this.printPages(title,this.storageProvider.unassingOrderPickupList,pageBreakFirst);
-        pageBreakFirst=true;
-   }
-   if(this.storageProvider.unassingOrderEtcList.length>0){
-        title=defaultTitle+" 기타 ";
-        pages+=this.printPages(title,this.storageProvider.unassingOrderEtcList,pageBreakFirst);
-        pageBreakFirst=true;
-   }
-   pages+="</html>";
-   return pages;
-}
 
 topRowStyles = {
     'border-style':'solid',
@@ -1320,7 +689,7 @@ topRowStyles = {
             return this.otherRowStyles;
     }
 
-///////////////////////////////////////////////////////
+
    setSection(){
        this.section="set";
        this.configureSetSection();
@@ -1410,5 +779,53 @@ topRowStyles = {
             return 0;
         } );
     }
+
+  save(group){
+    group.edit=false;
+    //produceTitle에 저장하여 전송한다. 현재값이 있다면 override한다. 
+    console.log("produceTitle:"+JSON.stringify(this.storageProvider.produceTitle)+ this.storageProvider.produceTitle.length);
+   
+   let index=-1;
+   for(let i=0;i<this.storageProvider.produceTitle.length;i++){
+        if(this.storageProvider.produceTitle[i].number==group.digit){
+            index=i;
+        }
+   }
+   /* Why this doesn't work?
+    let index=this.storageProvider.produceTitle.findIndex(function(element){
+       return (element.number==group.digit);
+    })
+    */
+    let prevName;
+    let list=this.storageProvider.produceTitle.slice(); //Is it deep copy?yes
+     
+    if(index>=0){
+        prevName=this.storageProvider.produceTitle[index].name;
+        list[index].name=group.name;
+    }else
+        list.push({number:group.digit,name:group.name})
+    this.serverProvider.saveProduceTitle(this.storageProvider.deliveryDate.substr(0,10),JSON.stringify(list)).then((list)=>{
+        // 성공한다면 produceTitle을 업데이트한다.
+        if(index>=0)
+            this.storageProvider.produceTitle[index].name=group.name;
+        else
+            this.storageProvider.produceTitle.push({number:group.digit,name:group.name});
+    },err=>{
+        // 실패한다면 alert을 띄우고 값을 이전값으로 설정한다.
+        if(index>=0)
+            group.name=prevName;
+        let alert = this.alertCtrl.create({
+            title: '타이틀 변경에 실패하였습니다.',
+            buttons: ['확인']
+          });
+          alert.present();
+          return;
+
+    });  
+}
+
+ edit(group){
+    group.edit=true;
+ }
 
 }

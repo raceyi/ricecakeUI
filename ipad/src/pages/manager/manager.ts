@@ -27,6 +27,10 @@ export class ManagerPage {
   startDateIn;  //input format
   endDateIn;    // input format
 
+  startDateString:string; // phone 버전 변수 
+  endDateString:string; // phone 버전 변수
+  inputChoice; // one of start,end
+
   cashPaid:number=0;
   cashUnpaid:number=0;
   cardPaid:number=0;
@@ -34,6 +38,8 @@ export class ManagerPage {
 
   totalSales:number=0;
 
+  startDay; // android 버전을 위한 변수 
+  endDay;   // android 버전을 위한 변수
  ///////////////////////////////////////////////////////////////////////////////
  // 메뉴에 sequence 적용 코드-begin
   newComplexMenuItems=[];
@@ -52,6 +58,7 @@ export class ManagerPage {
   currentCategoryMenus;
   
   editSequence:boolean=false;
+  android;
 
   // 메뉴에 sequence 적용 코드-end
   ///////////////////////////////////////////////////////////////////////////////
@@ -67,11 +74,26 @@ export class ManagerPage {
               private drag: DragulaService) {
 
       console.log("manager-constructor");
-
+      this.android=platform.is("android");
       // today
       let today=new Date();
       this.startDateIn={year:today.getFullYear(),month:today.getMonth(),date:today.getDate()};
       this.endDateIn={year:today.getFullYear(),month:today.getMonth(),date:today.getDate()};
+
+      var mm = today.getMonth() < 9 ? "0" + (today.getMonth() + 1) : (today.getMonth() + 1); // getMonth() is zero-based
+      var dd = today.getDate() < 10 ? "0" + today.getDate() : today.getDate();
+      var dString =today.getFullYear() + '-' + (mm) + '-' + dd;
+      this.startDateString= dString;
+      this.endDateString= dString;
+
+      //////////////////////////////
+      // android 버전 -begin
+      this.startDay=dString;
+      this.endDay=dString;
+      // android 버전 -end
+      /////////////////////////////
+      if(!this.storageProvider.ipad)
+          this.updateSales();
 
       gPage=this;
       this.storageProvider.maxMenuId=0;
@@ -197,9 +219,17 @@ export class ManagerPage {
   }
 
   onStartDaySelect(day){
-    console.log("day:"+JSON.stringify(day));
+    console.log("onStartDaySelect-day:"+JSON.stringify(day));
     this.startDateIn=day;
     console.log("start-day:"+JSON.stringify(day));
+    /////////////////////////////////////////////
+    // phone-begin
+    var mm = day.month < 9 ? "0" + (day.month + 1) : (day.month + 1); // getMonth() is zero-based
+    var dd = day.date < 10 ? "0" + day.date : day.date;
+    var dString =day.year + '-' + (mm) + '-' + dd;
+    this.startDateString= dString;     
+    // phone-end
+    /////////////////////////////////////////////
     this.updateSales();
   }
   
@@ -225,6 +255,7 @@ export class ManagerPage {
   }
 
   updateSales(){
+    console.log("updateSales");
     if(!this.peridoCheck()){
             let alert = this.alertCtrl.create({
               title: '시작일은 종료일보다 빨라야만 합니다.',
@@ -235,6 +266,7 @@ export class ManagerPage {
     }
     let startDate=this.formatDate(this.startDateIn);
     let endDate=this.formatDate(this.endDateIn);
+    console.log("[updateSales]startDate:"+startDate+"endDate:"+endDate);
     this.serverProvider.getSales(startDate,endDate).then((value:any)=>{
         console.log("sales:"+JSON.stringify(value));
         this.cashPaid=value.cashPaid;
@@ -242,6 +274,12 @@ export class ManagerPage {
         this.cardPaid=value.cardPaid;
         this.cardUnpaid=value.cardUnpaid;
         this.totalSales=this.cashPaid+this.cardPaid+this.cashUnpaid+this.cardUnpaid;
+
+        this.startDay=this.startDateString;
+        this.endDay=this.endDateString;
+        console.log("startDay:"+this.startDay);
+        console.log("endDay:"+this.endDay);
+
         console.log("totalSales:"+this.totalSales);
         this.searchKeyWord="";
     },(err)=>{
@@ -257,7 +295,16 @@ export class ManagerPage {
 
   onEndDaySelect(day){
     this.endDateIn=day;    
-    console.log("end-day:"+JSON.stringify(day));
+    console.log("onEndDaySelect-day:"+JSON.stringify(day));
+    /////////////////////////////////////////////
+    // phone-begin
+    var mm = day.month < 9 ? "0" + (day.month + 1) : (day.month + 1); // getMonth() is zero-based
+    var dd = day.date < 10 ? "0" + day.date : day.date;
+    var dString =day.year + '-' + (mm) + '-' + dd;
+    this.endDateString= dString;     
+    // phone-end
+    /////////////////////////////////////////////
+    
     this.updateSales();    
   }
 
@@ -1000,8 +1047,35 @@ undoModificationGeneralMenu(menu,i){
      });
   }
 /////////////////////////////////////////////////
- openConfig(){
+ openConfig(type){
    console.log("push ManagerPasswordPage");
-   this.navCtrl.push(ManagerPasswordPage);
+   this.navCtrl.push(ManagerPasswordPage,{type:type});
  }
+
+//////////////////////////////////////////////////
+// phone버전 추가 함수 -begin
+ selectInputChoice(type){
+     console.log("startDateString: ",this.startDateString);
+     console.log("endDateString: ",this.endDateString);
+     console.log("selectInputChoice-"+type);
+    this.inputChoice=type;
+ }
+// phone버전 추가 함수 -end
+//////////////////////////////////////////////////
+ 
+ /////////////////////////////////////////////////
+ // android 버전 추가 함수 -begin
+startDaySelect(){
+    let date=new Date(this.startDay)
+    let day={year:date.getFullYear(),month:date.getMonth(),date:date.getDate()};
+    this.onStartDaySelect(day);
+}
+ 
+ endDaySelect(){
+    let date=new Date(this.endDay)
+    let day={year:date.getFullYear(),month:date.getMonth(),date:date.getDate()};
+    this.onEndDaySelect(day)
+ }
+ // android 버전 추가 함수 -end
+ /////////////////////////////////////////////////
 }

@@ -57,4 +57,32 @@ page-manager {
        }
     }
 
+    .date-button{
+        .label-ios {
+            margin:0; 
+        }
+    }
+
+    .phone-menu{
+        .label-ios {
+            margin: 0;
+        }
+        .item-ios .item-button {
+            padding:0;
+        }
+        .col{
+            padding:0;
+            font-size:3vw;
+        }
+        button{
+            font-size:3vw;
+        }
+        ion-input{
+            font-size:3vw;
+        }
+
+        ion-item{
+            font-size:3vw;
+        }
+    }
 }

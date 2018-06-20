@@ -18,7 +18,6 @@ import { Events } from 'ionic-angular';
   templateUrl: 'trash.html',
 })
 export class TrashPage {
-
   constructor(public navCtrl: NavController, public navParams: NavParams,
               public events: Events,
               public alertCtrl:AlertController,

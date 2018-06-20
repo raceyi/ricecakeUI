@@ -16,20 +16,20 @@ import {ServerProvider} from "../../providers/server/server";
 })
 export class ManagerPasswordPage {
   passwordLength:number=4;
-  passwordInput=['',' ',' ',' '];
+  passwordInput=[' ',' ',' ',' '];
   password=[' ',' ',' ',' '];
   cursor:number=0;
 
 
-  existingPasswordInput=['',' ',' ',' '];
+  existingPasswordInput=[' ',' ',' ',' '];
   existingPassword=[' ',' ',' ',' '];
   existingCursor:number=0;
 
-  newPasswordInput=['',' ',' ',' '];
+  newPasswordInput=[' ',' ',' ',' '];
   newPassword=[' ',' ',' ',' '];
   newPasswordCursor:number=0;
 
-  newPasswordConfirmInput=['',' ',' ',' '];
+  newPasswordConfirmInput=[' ',' ',' ',' '];
   newPasswordConfirm=[' ',' ',' ',' '];
   newPasswordConfirmCursor:number=0;
 
@@ -39,10 +39,13 @@ export class ManagerPasswordPage {
 
   currentInput="existingPassword";
 
+  type:string;
+
   constructor(public navCtrl: NavController,
               public alertCtrl:AlertController,
               public serverProvider:ServerProvider, 
               public navParams: NavParams) {
+       this.type=navParams.get('type');
   }
 
   ionViewDidLoad() {
@@ -105,7 +108,14 @@ export class ManagerPasswordPage {
     }
     
     let reqbody:any={existingPin:this.existingPasswordPin,newPin:this.newPasswordPin};
-    this.serverProvider.post("modifyPin",reqbody).then(()=>{
+
+    let url;
+    if(this.type=="manager"){
+        url="modifyPin";    
+    }else{
+        url="modifyInstallPin";  // 구현이 필요하다.
+    }
+    this.serverProvider.post(url,reqbody).then(()=>{
                 let alert = this.alertCtrl.create({
                     title: '비밀번호가 변경되었습니다.',
                     buttons: ['확인']

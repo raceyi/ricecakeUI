@@ -426,17 +426,23 @@ router.notifyAll=function(name,registrationId){
      return new Promise((resolve,reject)=>{ 
    
         sendPhones(name,registrationId).then(()=>{
+            /*
             sendiPad(name,registrationId).then(()=>{
                 resolve();
             },err=>{
                 reject();
             });
+            */
+            resolve();
         },err=>{
+            /*
             sendiPad(name,registrationId).then(()=>{
                 resolve();
             },err=>{
                 reject();
-            });        
+            });
+            */
+            reject();        
         });
      });
 };
@@ -444,7 +450,7 @@ router.notifyAll=function(name,registrationId){
 
 //router.notifyEach("order");
 
-//sendPhones("order");???
+//sendPhones("order");//???
 
 //sendiPad("order");
 

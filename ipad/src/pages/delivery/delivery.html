@@ -1,0 +1,72 @@
+<!--
+  Generated template for the DeliveryPage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+  <ion-navbar>
+    <ion-buttons start>
+        <button  (click)="goManager()" style="width:15vw;" ion-button  clear>
+            <ion-icon name="ios-person-outline" ></ion-icon>
+        </button>      
+        <button  (click)="goTrash()" style="width:15vw;" ion-button  clear>
+            <ion-icon name="ios-trash-outline" ></ion-icon>
+        </button>
+      </ion-buttons>
+    <ion-title>배달</ion-title>
+    <ion-buttons end>
+        <button ion-button clear style="width:15vw;" (click)="storageProvider.refreshWhole()">
+            <ion-icon name="ios-refresh-circle-outline" ></ion-icon>
+        </button>
+        <button ion-button clear style="width:15vw;" (click)="storageProvider.print('delivery')">
+            <ion-icon name="ios-print-outline" ></ion-icon>
+        </button>        
+    </ion-buttons>
+  </ion-navbar>
+</ion-header>
+
+
+<ion-content>
+<ion-row>
+  <ion-col no-padding no-margin col-1>
+    <button no-margin ion-button clear style="font-size:3.4vw;" (click)="storageProvider.todayOrders()">오늘</button>
+  </ion-col>
+  <ion-col no-padding no-margin col-1>
+  <button no-padding no-margin ion-button float-right clear style="font-size:3.4vw;" (click)="storageProvider.orderGoYesterday()">
+  <ion-icon class="icon-md-datetime-left" name="arrow-back"></ion-icon>
+  </button>
+  </ion-col>
+  <ion-col col-5 no-padding no-margin >
+  <ion-item class="item-datetime-inner no-item-border-bottom">
+  <ion-datetime style="font-size:3.4vw;" class="main-datetime-text" displayFormat="YYYY년 MM월 DD일" pickerFormat="YYYY MM DD"  (ionChange)="storageProvider.updateDeliveryDay()" [(ngModel)]="storageProvider.deliveryDate"></ion-datetime>
+  </ion-item>
+  </ion-col>
+  <ion-col col-2 no-padding no-margin style="font-size:3.4vw;" align-self-center>
+            {{storageProvider.deliveyDay}}
+  </ion-col>
+  <ion-col col-1 no-padding no-margin>
+  <button no-padding no-margin ion-button float-left clear style="font-size:3.4vw;" (click)="storageProvider.orderGoTomorrow()">
+  <ion-icon class="icon-md-datetime-right" name="arrow-forward"></ion-icon>
+  </button>
+  </ion-col>
+  <ion-col col-2 no-padding no-margin>
+    <button ion-button no-padding no-margin clear (click)="manageCarrier()" style="font-size:3.4vw;">배달인원</button>
+  </ion-col>
+</ion-row>
+
+<div style="background-color:lightgray;" >
+<div *ngFor="let carrier of storageProvider.assignOrderList;let i=index;" > 
+<h3>{{carrier.name}}</h3>
+    <phone-carrier-order [order]="order" (output)="storageProvider.modifyCarrier($event)" (modify)="storageProvider.savePayment(order)" *ngFor="let order of carrier.orders;let j=index;"></phone-carrier-order>      
+</div>
+*배달
+    <phone-unassigned-carrier-order *ngFor="let order of storageProvider.unassingOrderDeliveryList;" [order]="order" (output)="storageProvider.assingCarrier($event)" (modify)="storageProvider.savePayment(order)" ></phone-unassigned-carrier-order> 
+<br>*픽업   
+    <phone-unassigned-carrier-order [order]="order" (output)="storageProvider.assingCarrier($event)" (modify)="storageProvider.savePayment(order)" *ngFor="let order of storageProvider.unassingOrderPickupList;let i=index;"></phone-unassigned-carrier-order> 
+<br>*냉동
+    <phone-unassigned-carrier-order [order]="order" (output)="storageProvider.assingCarrier($event)" (modify)="storageProvider.savePayment(order)" *ngFor="let order of storageProvider.unassingOrderFrozenList;let i=index;"></phone-unassigned-carrier-order> 
+<br>*기타
+    <phone-unassigned-carrier-order [order]="order" (output)="storageProvider.assingCarrier($event)" (modify)="storageProvider.savePayment(order)" *ngFor="let order of storageProvider.unassingOrderEtcList;let i=index;"></phone-unassigned-carrier-order> 
+</div>
+</ion-content>

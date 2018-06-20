@@ -90,6 +90,20 @@ router.addOrder=function (param){
     });
 }
 
+
+
+function queryDynamoDB(counter,success,fail){
+
+    if(counter>=0)
+
+    success(counter);
+
+    else
+
+    fail(counter);
+
+}
+
 router.getOrderWithDeliveryDate=function (param){
     return new Promise((resolve,reject)=>{    
         let deliveryDate=param.deliveryDate;
@@ -108,13 +122,31 @@ router.getOrderWithDeliveryDate=function (param){
                 ":end": end ,
                 ":hide":false
             }
-        };
+        };        
+        console.log("call dynamoDB.dynamoScanOrders");
+        dynamoDB.dynamoScanOrders(params).then((result)=>{
+            console.log("order length:"+result.length);
+            resolve(result);
+        },err=>{
+            reject(err);
+        })
+        /*
+        //LastEvaluatedKey
         console.log("getOrderWithDeliveryDate-params:"+JSON.stringify(params));        
         dynamoDB.dynamoScanItem(params).then((result)=>{
-            resolve(result.Items);
+            if (typeof result.LastEvaluatedKey != "undefined") {
+                console.log("Scanning for more...");
+                params.ExclusiveStartKey = result.LastEvaluatedKey;
+                dynamoDB.dynamoScanItem(params).then((result2)=>{
+                    let merge= result.Items.concat(result2.Items); 
+                    resolve(merge);
+                });                
+            }else
+                resolve(result.Items);
         },(err)=>{
             reject(err);
         });
+        */
     });
 }
 
@@ -130,12 +162,21 @@ router.getOrdersWithHide=function(param){
                 ":hide":true
             }
         };
-        console.log("getOrderWithDeliveryDate-params:"+JSON.stringify(params));        
+        console.log("getOrderWithDeliveryDate-params:"+JSON.stringify(params));  
+        /*      
         dynamoDB.dynamoScanItem(params).then((result)=>{
             resolve(result.Items);
         },(err)=>{
             reject(err);
         });
+        */
+        dynamoDB.dynamoScanOrders(params).then((result)=>{
+            console.log("order length:"+result.length);
+            resolve(result);
+        },err=>{
+            reject(err);
+        })
+
     });
 }
 

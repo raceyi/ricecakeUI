@@ -1,0 +1,93 @@
+<!--
+  Generated template for the ProducePage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+  <ion-navbar>
+    <ion-buttons start>
+        <button  (click)="goManager()" style="width:15vw;" ion-button  clear>
+            <ion-icon name="ios-person-outline" ></ion-icon>
+        </button>      
+        <button  (click)="goTrash()" style="width:15vw;" ion-button  clear>
+            <ion-icon name="ios-trash-outline" ></ion-icon>
+        </button>
+      </ion-buttons>
+    <ion-title>생산</ion-title>
+    <ion-buttons end>
+        <button ion-button clear style="width:15vw;" (click)="storageProvider.refreshWhole()">
+            <ion-icon name="ios-refresh-circle-outline" ></ion-icon>
+        </button>
+        <button ion-button clear style="width:15vw;" (click)="storageProvider.print('produce')">
+            <ion-icon name="ios-print-outline" ></ion-icon>
+        </button>        
+    </ion-buttons>
+
+  </ion-navbar>
+</ion-header>
+
+
+<ion-content>
+<ion-row>
+  <ion-col no-padding no-margin col-1>
+    <button no-margin ion-button clear style="font-size:3.4vw;" (click)="storageProvider.todayOrders()">오늘</button>
+  </ion-col>
+  <ion-col no-padding no-margin col-1>
+  <button no-padding no-margin ion-button float-right clear style="font-size:3.4vw;" (click)="storageProvider.orderGoYesterday()">
+  <ion-icon class="icon-md-datetime-left" name="arrow-back"></ion-icon>
+  </button>
+  </ion-col>
+  <ion-col col-5 no-padding no-margin >
+  <ion-item class="item-datetime-inner no-item-border-bottom">
+  <ion-datetime style="font-size:3.4vw;" class="main-datetime-text" displayFormat="YYYY년 MM월 DD일" pickerFormat="YYYY MM DD"  (ionChange)="storageProvider.updateDeliveryDay()" [(ngModel)]="storageProvider.deliveryDate"></ion-datetime>
+  </ion-item>
+  </ion-col>
+  <ion-col col-2 no-padding no-margin style="font-size:3.4vw;" align-self-center>
+            {{storageProvider.deliveyDay}}
+  </ion-col>
+  <ion-col col-1 no-padding no-margin>
+  <button no-padding no-margin ion-button float-left clear style="font-size:3.4vw;" (click)="storageProvider.orderGoTomorrow()">
+  <ion-icon class="icon-md-datetime-right" name="arrow-forward"></ion-icon>
+  </button>
+  </ion-col>
+  <ion-col col-2 no-padding no-margin>
+  </ion-col>
+</ion-row>
+
+<div *ngFor="let group of storageProvider.produceTables">
+    <ion-row *ngIf="group.digit">
+    <ion-col col-1> {{group.digit}}.</ion-col> 
+    <ion-col *ngIf="group.edit" col-4> <ion-input type="text" style="border-bottom:solid 0.5px darkgray;" [(ngModel)]="group.name"> </ion-input> </ion-col>
+    <ion-col *ngIf="!group.edit" col-4> {{group.name}}</ion-col>
+    <ion-col *ngIf="group.edit" col-2><button no-padding no-margin style="height:4vw;font-size:3vw;" outline ion-button (click)="save(group)">저장</button></ion-col>
+    <ion-col *ngIf="!group.edit" col-2><button no-padding no-margin style="height:4vw;font-size:3vw;" outline ion-button (click)="edit(group)">편집</button></ion-col>
+    </ion-row>
+    <ion-grid  style="font-size:3.4vw;" *ngFor="let table of group.tables" >
+          <ion-row *ngFor="let menu of table.menus,let k=index" [ngStyle]="rowStyles(k)">
+                <ion-col col-3 style="border-right:solid 1px darkgray;">
+                    {{menu.menu}} 
+                </ion-col>
+                <ion-col col-7 *ngIf="menu.menu!='직접입력'">
+                    <div *ngFor="let item of menu.amount">
+                        <span *ngIf="item.delivery!='냉동'"><b>{{item.amount}}</b>({{item.time}}-{{item.timeEnd}}),</span>
+                        <span *ngIf="item.delivery=='냉동'" style="color:blue;"><b>{{item.amount}}</b>(냉동),</span>
+                        <br></div>
+                </ion-col>
+                <ion-col col-2 *ngIf="menu.menu!='직접입력'" style="border-left: solid 1px darkgray;">
+                    <span *ngIf="menu.kg>0"> {{menu.kg}}kg<br></span>
+                    <span *ngIf="menu.mal>0"> {{menu.mal}}말<br></span>
+                    <span *ngIf="menu.doi>0"> {{menu.doi}}되<br></span>
+                    <span *ngIf="menu.jyupsi>0"> {{menu.jyupsi}}접시<br></span>
+                    <span *ngIf="menu.gae>0"> {{menu.gae}}개 <br></span>
+                </ion-col>
+                <ion-col col-9 *ngIf="menu.menu=='직접입력'">
+                    <div *ngFor="let item of menu.amount">
+                        <span *ngIf="item.delivery!='냉동'">{{item.menu}}({{item.time}}),</span>
+                        <span *ngIf="item.delivery=='냉동'" style="color:blue;"><b>{{item.menu}}</b>(냉동),</span>                        
+                    <br></div>
+                </ion-col>
+          </ion-row>
+    </ion-grid>
+</div>
+</ion-content>

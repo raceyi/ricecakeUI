@@ -5,22 +5,35 @@
   Ionic pages and navigation.
 -->
 <ion-header>
-
-  <ion-navbar hideBackButton>
-    <ion-title>휴지통</ion-title>
+  <ion-navbar *ngIf="storageProvider.ipad" hideBackButton>
+        <ion-title>휴지통</ion-title>
     <ion-buttons end>
       <button ion-button style="font-size:4vw;" color="black" (click)="close()"><ion-icon  large name="md-close"></ion-icon></button>
     </ion-buttons>
   </ion-navbar>
-</ion-header>
+  <ion-navbar *ngIf="!storageProvider.ipad" hideBackButton>
+    <ion-buttons start>
+        <button  (click)="removeAll()" style="width:15vw;" ion-button  clear>
+            비우기
+        </button>      
+    </ion-buttons>
+    <ion-title>휴지통</ion-title>
+    <ion-buttons end>
+      <button ion-button style="font-size:4vw;" color="black" (click)="close()"><ion-icon  large name="md-close"></ion-icon></button>
+      </ion-buttons>
+  </ion-navbar>
+ </ion-header>
 
 <ion-content>
+  <div *ngIf="storageProvider.ipad">
   <ion-row>
     <ion-col text-right>
       <button ion-button color="danger" (click)="removeAll()" outline>비우기</button>
     </ion-col>
-  </ion-row>
-
-<trash-order [order]="order" (output)="recovery($event)" *ngFor="let order of storageProvider.trashList;let j=index;"></trash-order>      
-
+  </ion-row>    
+    <trash-order [order]="order" (output)="recovery($event)" *ngFor="let order of storageProvider.trashList;let j=index;"></trash-order>      
+  </div>
+  <div *ngIf="!storageProvider.ipad" style="background-color:lightgray;">
+        <phone-trash-order [order]="order" (output)="recovery($event)" *ngFor="let order of storageProvider.trashList;let j=index;"></phone-trash-order>      
+  </div>
 </ion-content>
