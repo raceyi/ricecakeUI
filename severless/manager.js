@@ -158,9 +158,9 @@ router.getSalesWithBuyer=function(param){
                 console.log("start:"+start+" end:"+end);
                 let params = {
                     TableName: "order",
-                    FilterExpression: "(#orderedTime between :start and :end) AND (#hide=:hide) AND( #buyer=:buyer)",
+                    FilterExpression: "(#deliveryTime between :start and :end) AND (#hide=:hide) AND( #buyer=:buyer)",
                     ExpressionAttributeNames: {
-                        "#orderedTime": "orderedTime",
+                        "#deliveryTime": "deliveryTime",
                         "#hide":"hide",
                         "#buyer":"buyerName"
                     },
@@ -172,8 +172,8 @@ router.getSalesWithBuyer=function(param){
                     }
                 };
                 console.log("getOrderWithDeliveryDate-params:"+JSON.stringify(params));        
-                dynamoDB.dynamoScanItem(params).then((result)=>{
-                    let sum=summarize(result.Items)
+                dynamoDB.dynamoScanOrders(params).then((result)=>{
+                    let sum=summarize(result)
                     resolve(sum);
                 },err=>{
                     reject(err);
@@ -189,6 +189,7 @@ summarize=function(orders){
     let cardUnpaid=0;
 
     orders.forEach(order=>{
+                        console.log("order:"+JSON.stringify(order));
                         let totalPrice;
                         if(typeof order.totalPrice ==="string")
                             totalPrice=parseInt(order.totalPrice);
@@ -198,13 +199,13 @@ summarize=function(orders){
                         if(order.paymentMethod=="cash" && totalPrice){
                              if(order.payment.startsWith("paid")){
                                     cashPaid+=totalPrice ;
-                             }else if(order.payment.startsWith("unpaid")){
+                             }else/* if(order.payment.startsWith("unpaid"))*/{
                                     cashUnpaid+=totalPrice ;
                              }
                         }else if(order.paymentMethod=="card" && totalPrice){
                              if(order.payment.startsWith("paid")){
                                     cardPaid+=totalPrice ;
-                             }else if(order.payment.startsWith("unpaid")){
+                             }else/* if(order.payment.startsWith("unpaid"))*/{
                                     cardUnpaid+=totalPrice ;
                              }
                         }
@@ -224,9 +225,9 @@ router.getSales=function(param){
                 console.log("start:"+start+" end:"+end);
                 let params = {
                     TableName: "order",
-                    FilterExpression: "(#orderedTime between :start and :end) AND (#hide=:hide)",
+                    FilterExpression: "(#deliveryTime between :start and :end) AND (#hide=:hide)",
                     ExpressionAttributeNames: {
-                        "#orderedTime": "orderedTime",
+                        "#deliveryTime": "deliveryTime",
                         "#hide":"hide"
                     },
                     ExpressionAttributeValues: {
@@ -236,8 +237,8 @@ router.getSales=function(param){
                     }
                 };
                 console.log("getSales-params:"+JSON.stringify(params));        
-                dynamoDB.dynamoScanItem(params).then((result)=>{
-                    let sum=summarize(result.Items)
+                dynamoDB.dynamoScanOrders(params).then((result)=>{
+                    let sum=summarize(result)
                     resolve(sum);
                 },(err)=>{
                     reject(err);
